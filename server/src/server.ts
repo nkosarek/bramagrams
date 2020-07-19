@@ -9,7 +9,6 @@ const server = http.createServer(app);
 const io = socketIO(server);
 
 app.set('port', port);
-app.use('/static', express.static(__dirname + '/static'));
 
 // Routing
 app.get('/', function(request: any, response: any) {
@@ -17,7 +16,7 @@ app.get('/', function(request: any, response: any) {
 });
 
 // Starts the server.
-server.listen(5000, function() {
+server.listen(port, function() {
   console.log(`Starting server on port ${port}`);
 });
 
