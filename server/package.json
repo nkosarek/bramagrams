@@ -5,28 +5,16 @@
   "author": "nkosarek",
   "license": "MIT",
   "devDependencies": {
-    "@babel/cli": "^7.10.5",
-    "@babel/core": "^7.10.5",
-    "@babel/preset-env": "^7.10.4",
     "nodemon": "^2.0.4",
     "npm-run-all": "^4.1.5",
-    "rimraf": "^3.0.2"
+    "ts-node": "^8.10.2",
+    "typescript": "^3.9.7"
   },
   "scripts": {
-    "start": "yarn prod",
-    "build": "npm-run-all clean transpile",
+    "build": "tsc",
+    "dev": "NODE_ENV=development nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/server.ts",
+    "prod": "NODE_ENV=production yarn start",
     "server": "node ./dist/server",
-    "dev": "NODE_ENV=development npm-run-all build server",
-    "prod": "NODE_ENV=production npm-run-all build server",
-    "transpile": "babel ./src --out-dir dist",
-    "clean": "rimraf dist",
-    "watch": "nodemon"
-  },
-  "nodemonConfig": {
-    "exec": "yarn dev",
-    "watch": [ "src/*" ]
-  },
-  "babel": {
-    "presets": [ "@babel/preset-env" ]
+    "start": "npm-run-all build server"
   }
 }
