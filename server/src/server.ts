@@ -1,6 +1,7 @@
 import express from 'express';
 import http from 'http';
 import socketIO from 'socket.io';
+import { GameState, GamesMap } from './models';
 
 const port = process.env.PORT || 4001;
 
@@ -8,11 +9,35 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
 
+const generateGameId = () => {
+  const min = 0x10000000;
+  const max = 0x100000000;
+  return (Math.floor(Math.random() * (max - min)) + min).toString(16);
+};
+
+const games: GamesMap = {};
+
 app.set('port', port);
 
 // Routing
-app.get('/', function(request: any, response: any) {
-  response.send("Please go to bramagrams.com");
+app.get('/', function(req: express.Request, res: express.Response) {
+  res.send("Please go to bramagrams.com");
+});
+
+app.post('/games', (req: express.Request, res: express.Response) => {
+  console.log("Received request to create game");
+  let id: string;
+  let count: number = 0;
+  do {
+    if (++count > 5) {
+      res.status(500).send("ERROR: Failed to create a unique game ID\n");
+      return;
+    }
+    id = generateGameId();
+  } while (games[id]);
+  games[id] = new GameState(id);
+  console.log(`Created game ${id}`);
+  res.send(id);
 });
 
 // Starts the server.
