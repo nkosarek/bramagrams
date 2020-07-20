@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import socketIOClient from 'socket.io-client';
+import React from 'react';
+// import socketIOClient from 'socket.io-client';
 import Router from './components/router/Router';
 import AppThemeProvider from './components/theme/AppThemeProvider';
 
-const SERVER_URL = "http://127.0.0.1:4001";
+// const SERVER_URL = "http://127.0.0.1:4001";
 
 function App() {
   // const [response, setResponse] = useState("");
