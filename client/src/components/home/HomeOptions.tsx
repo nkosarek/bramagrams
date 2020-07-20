@@ -41,7 +41,7 @@ const HomeOptions = () => {
             onChange={(event) => setGameId(event.target.value)}
             fullWidth
             autoFocus
-            type="number"
+            placeholder="ex: f005ba11"
             size="small"
             variant="outlined"
           />

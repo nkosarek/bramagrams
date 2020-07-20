@@ -9,7 +9,7 @@ const Game = () => {
   return (
     <MessagePage>
       <Typography variant="h4" color="secondary">
-        Game {gameId} does not exist!
+        Game ID '{gameId}' does not exist!
       </Typography>
     </MessagePage>
   );
