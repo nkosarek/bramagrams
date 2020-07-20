@@ -1,22 +1,19 @@
 import express from 'express';
 import http from 'http';
 import socketIO from 'socket.io';
-import { GameState, GamesMap } from './models';
+import cors from 'cors';
+import { ServerEvents, ClientEvents } from './models';
+import GamesController from './game-controller';
 
 const port = process.env.PORT || 4001;
+
+const gamesController = new GamesController();
 
 const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
 
-const generateGameId = () => {
-  const min = 0x10000000;
-  const max = 0x100000000;
-  return (Math.floor(Math.random() * (max - min)) + min).toString(16);
-};
-
-const games: GamesMap = {};
-
+app.use(cors({ origin: 'http://localhost:3000' }))
 app.set('port', port);
 
 // Routing
@@ -26,16 +23,11 @@ app.get('/', function(req: express.Request, res: express.Response) {
 
 app.post('/games', (req: express.Request, res: express.Response) => {
   console.log("Received request to create game");
-  let id: string;
-  let count: number = 0;
-  do {
-    if (++count > 5) {
-      res.status(500).send("ERROR: Failed to create a unique game ID\n");
-      return;
-    }
-    id = generateGameId();
-  } while (games[id]);
-  games[id] = new GameState(id);
+  const id = gamesController.createGame()
+  if (!id) {
+    res.status(500).send("ERROR: Failed to create a unique game ID\n");
+    return;
+  }
   console.log(`Created game ${id}`);
   res.send(id);
 });
@@ -45,22 +37,41 @@ server.listen(port, function() {
   console.log(`Starting server on port ${port}`);
 });
 
-let interval: NodeJS.Timeout;
-
-io.on("connection", (socket) => {
+io.on('connection', (socket) => {
   console.log("New client connected");
-  if (interval) {
-    clearInterval(interval);
-  }
-  interval = setInterval(() => getApiAndEmit(socket), 1000);
-  socket.on("disconnect", () => {
+  socket.on('disconnect', () => {
     console.log("Client disconnected");
-    clearInterval(interval);
+  });
+
+  socket.on(ClientEvents.JOIN_GAME, (gameId: string, player: string) => {
+    try {
+      const gameState = gamesController.addPlayer(gameId, player);
+      socket.join(gameId);
+      io.to(gameId).emit(ServerEvents.GAME_UPDATED, gameState);
+    } catch (err) {
+      socket.emit(ServerEvents.GAME_DNE);
+    }
+  });
+
+  socket.on(ClientEvents.READY_TO_START, (gameId: string, player: string) => {
+    try {
+      const gameState = gamesController.setPlayerReady(gameId, player);
+      if (gameState) {
+        io.to(gameId).emit(ServerEvents.GAME_UPDATED, gameState);
+      }
+    } catch (err) {
+      socket.emit(ServerEvents.GAME_DNE);
+    }
+  });
+
+  socket.on(ClientEvents.START_GAME, (gameId: string) => {
+    try {
+      const gameState = gamesController.startGame(gameId);
+      if (gameState) {
+        io.to(gameId).emit(ServerEvents.GAME_UPDATED, gameState);
+      }
+    } catch (err) {
+      socket.emit(ServerEvents.GAME_DNE);
+    }
   });
 });
-
-const getApiAndEmit = (socket: socketIO.Socket) => {
-  const response = new Date();
-  // Emitting a new message. Will be consumed by the client
-  socket.emit("FromAPI", response);
-};
