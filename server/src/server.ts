@@ -45,6 +45,7 @@ const updateGameStateWrapper = (
   try {
     const gameState = updateGameState();
     if (gameState) {
+      console.log("Updated state:", gameState);
       io.to(gameId).emit(ServerEvents.GAME_UPDATED, gameState);
     }
   } catch (err) {

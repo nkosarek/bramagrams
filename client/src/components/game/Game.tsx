@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom'
-import { CircularProgress, Typography } from '@material-ui/core';
+import { Box, Button, CircularProgress, Typography } from '@material-ui/core';
 import MessagePage from '../shared/MessagePage';
 import Page from '../shared/Page';
-import { GameState } from '../../server-models';
+import { GameState, GameStatuses } from '../../server-models';
 import api from '../../api/api';
+import TilePool from './TilePool';
 
 const genRandomId = () => {
   const min = 0x10000;
@@ -18,6 +19,9 @@ const Game = () => {
   const [gameState, setGameState] = useState<GameState | undefined>();
   const [playerName, setPlayerName] = useState('player_' + genRandomId());
 
+  const letters = (gameState && gameState.tiles) || [];
+  const gameStatus = gameState && gameState.status;
+
   useEffect(() => {
     const onGameDne = () => setGameDne(true);
     const onGameUpdate = (gameState: GameState) => setGameState(gameState);
@@ -26,6 +30,11 @@ const Game = () => {
 
   useEffect(() => {
     api.joinGame(gameId, playerName);
+    window.addEventListener('keydown', (event) => {
+      if (event.charCode === 32 || event.keyCode === 32) {
+        api.addTile(gameId, playerName);
+      }
+    });
   }, [gameId, playerName]);
 
   return gameDne ? (
@@ -41,9 +50,20 @@ const Game = () => {
       </Typography>
       <CircularProgress />
     </MessagePage>
+  ) : gameStatus === GameStatuses.WAITING_TO_START ? (
+    <Page>
+      <Button onClick={() => api.readyToStart(gameId, playerName)}>Ready</Button>
+      <Button onClick={() => api.startGame(gameId)}>Start</Button>
+    </Page>
+  ) : gameStatus === GameStatuses.IN_PROGRESS ? (
+    <Page>
+      <Box px="10%" py={2} display="flex" justifyContent="center">
+        <TilePool letters={letters} />
+      </Box>
+    </Page>
   ) : (
     <Page>
-      <p>Game</p>
+      <p>Done</p>
     </Page>
   );
 };
