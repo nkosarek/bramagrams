@@ -1,4 +1,4 @@
-import { GamesMap, GameState, PlayerStatuses } from './models';
+import { GameState, GameStatuses, PlayerStatuses } from './models';
 
 const newTile = (): string => {
   return String.fromCharCode(Math.random() * 26 + 65);
@@ -11,7 +11,7 @@ const generateGameId = () => {
 };
 
 export default class GamesController {
-  public games: GamesMap = {};
+  public games: { [gameId: string]: GameState} = {};
 
   private getGame(gameId: string) {
     const game = this.games[gameId];
@@ -24,7 +24,8 @@ export default class GamesController {
 
   private gameCanStart(game: GameState): boolean {
     const players = Object.values(game.players);
-    return !game.started && !!players.length &&
+    return game.status === GameStatuses.WAITING_TO_START &&
+      !!players.length &&
       players.every(player => player.status === PlayerStatuses.READY_TO_START);
   }
 
@@ -39,7 +40,7 @@ export default class GamesController {
     } while (this.games[id]);
     this.games[id] = {
       players: {},
-      started: false,
+      status: GameStatuses.WAITING_TO_START,
       tiles: [],
     };
     return id;
@@ -67,7 +68,7 @@ export default class GamesController {
   startGame(gameId: string): GameState | undefined {
     const game = this.getGame(gameId);
     if (this.gameCanStart(game)) {
-      game.started = true;
+      game.status = GameStatuses.IN_PROGRESS;
       const playerNames = Object.keys(game.players);
       game.currPlayer = playerNames[0];
       return game;

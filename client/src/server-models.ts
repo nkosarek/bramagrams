@@ -1,3 +1,4 @@
+// TODO: import this instead of copying it
 export enum ClientEvents {
   JOIN_GAME = 'joinGame',
   READY_TO_START = 'readyToStart',
