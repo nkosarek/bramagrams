@@ -1,40 +1,43 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom'
-import { Box, Button, CircularProgress, Typography } from '@material-ui/core';
+import { Box, CircularProgress, Typography } from '@material-ui/core';
 import MessagePage from '../shared/MessagePage';
 import Page from '../shared/Page';
-import { GameState, GameStatuses } from '../../server-models';
+import { GameState, GameStatuses, PlayerStatuses } from '../../server-models';
 import api from '../../api/api';
 import TilePool from './TilePool';
-
-const genRandomId = () => {
-  const min = 0x10000;
-  const max = 0x100000;
-  return Math.floor(Math.random() * (max - min) + min).toString(16);
-};
+import GameLobby from './GameLobby';
 
 const Game = () => {
   const { gameId } = useParams();
   const [gameDne, setGameDne] = useState(false);
   const [gameState, setGameState] = useState<GameState | undefined>();
-  const [playerName, setPlayerName] = useState('player_' + genRandomId());
+  const [playerName, setPlayerName] = useState("");
 
-  const letters = (gameState && gameState.tiles) || [];
-  const gameStatus = gameState && gameState.status;
+  const gameStatus = gameState?.status;
+  const players = (gameState && Object.values(gameState.players)) || [];
+  const canStart = gameState?.status === GameStatuses.WAITING_TO_START &&
+    players.length > 1 &&
+    players.every(player => player.status === PlayerStatuses.READY_TO_START);
 
   useEffect(() => {
     const onGameDne = () => setGameDne(true);
-    const onGameUpdate = (gameState: GameState) => setGameState(gameState);
+    const onGameUpdate = (gameState: GameState) => {
+      console.log("State update:", gameState);
+      setGameState(gameState);
+    }
     api.createSubscriptions(onGameUpdate, onGameDne);
-  }, []);
+    api.connectToGame(gameId);
+  }, [gameId]);
 
   useEffect(() => {
-    api.joinGame(gameId, playerName);
-    window.addEventListener('keydown', (event) => {
-      if (event.charCode === 32 || event.keyCode === 32) {
-        api.addTile(gameId, playerName);
-      }
-    });
+    if (playerName) {
+      window.addEventListener('keydown', (event) => {
+        if (event.charCode === 32 || event.keyCode === 32) {
+          api.addTile(gameId, playerName);
+        }
+      });
+    }
   }, [gameId, playerName]);
 
   return gameDne ? (
@@ -45,20 +48,21 @@ const Game = () => {
     </MessagePage>
   ) : !gameState ? (
     <MessagePage>
-      <Typography variant="h4" color="secondary">
-        Loading game '{gameId}'...
-      </Typography>
       <CircularProgress />
     </MessagePage>
   ) : gameStatus === GameStatuses.WAITING_TO_START ? (
-    <Page>
-      <Button onClick={() => api.readyToStart(gameId, playerName)}>Ready</Button>
-      <Button onClick={() => api.startGame(gameId)}>Start</Button>
-    </Page>
+    <GameLobby
+      gameId={gameId}
+      playerName={playerName}
+      players={players}
+      canStart={canStart}
+      onNameClaimed={(name) => setPlayerName(name)}
+      onGameDne={() => setGameDne(true)}
+    />
   ) : gameStatus === GameStatuses.IN_PROGRESS ? (
     <Page>
       <Box px="10%" py={2} display="flex" justifyContent="center">
-        <TilePool letters={letters} />
+        <TilePool letters={gameState?.tiles || []} />
       </Box>
     </Page>
   ) : (

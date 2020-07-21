@@ -21,9 +21,18 @@ class Api {
     return response.data;
   }
 
+  async claimName(gameId: string, name: string): Promise<void> {
+    console.log("Claiming name:", name);
+    return await this.client.post(`/games/${gameId}/claim-name?name=${name}`);
+  }
+
   createSubscriptions(onGameUpdate: (gameState: GameState) => void, onGameDne: () => void) {
     this.socket.on(ServerEvents.GAME_UPDATED, onGameUpdate);
     this.socket.on(ServerEvents.GAME_DNE, onGameDne);
+  }
+
+  connectToGame(gameId: string) {
+    this.socket.emit(ClientEvents.CONNECT_TO_GAME, gameId);
   }
 
   joinGame(gameId: string, player: string) {

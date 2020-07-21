@@ -1,4 +1,5 @@
 export enum ClientEvents {
+  CONNECT_TO_GAME = 'connectToGame',
   JOIN_GAME = 'joinGame',
   READY_TO_START = 'readyToStart',
   START_GAME = 'startGame',

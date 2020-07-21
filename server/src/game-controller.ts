@@ -13,20 +13,24 @@ const generateGameId = () => {
 export default class GamesController {
   public games: { [gameId: string]: GameState} = {};
 
-  private getGame(gameId: string) {
+  private gameCanStart(game: GameState): boolean {
+    const players = Object.values(game.players);
+    return game.status === GameStatuses.WAITING_TO_START &&
+      players.length > 1 &&
+      players.every(player => player.status === PlayerStatuses.READY_TO_START);
+  }
+
+  gameExists(gameId: string) {
+    return !!this.games[gameId];
+  }
+
+  getGame(gameId: string) {
     const game = this.games[gameId];
     if (!game) {
       // TODO: what to do here?
       throw 'Game does not exist';
     }
     return game;
-  }
-
-  private gameCanStart(game: GameState): boolean {
-    const players = Object.values(game.players);
-    return game.status === GameStatuses.WAITING_TO_START &&
-      !!players.length &&
-      players.every(player => player.status === PlayerStatuses.READY_TO_START);
   }
 
   createGame(): string {
@@ -77,6 +81,7 @@ export default class GamesController {
 
   addTile(gameId: string, playerName: string): GameState | undefined {
     const game = this.getGame(gameId);
+    // TODO: Advance currPlayer
     if (playerName === game.currPlayer) {
       game.tiles.push(newTile());
       return game;
