@@ -50,8 +50,11 @@ export default class GamesController {
     return id;
   }
 
-  addPlayer(gameId: string, name: string): GameState {
+  addPlayer(gameId: string, name: string): GameState | undefined {
     const game = this.getGame(gameId);
+    if (!name) {
+      return;
+    }
     game.players[name] = {
       name,
       status: PlayerStatuses.NOT_READY,
@@ -63,6 +66,9 @@ export default class GamesController {
   setPlayerReady(gameId: string, name: string): GameState | undefined {
     const game = this.getGame(gameId);
     const player = game.players[name];
+    if (!player) {
+      return;
+    }
     if (player.status === PlayerStatuses.NOT_READY) {
       player.status = PlayerStatuses.READY_TO_START;
       return game;
@@ -90,6 +96,9 @@ export default class GamesController {
 
   claimWord(gameId: string, playerName: string, word: string): GameState | undefined {
     const game = this.getGame(gameId);
+    if (!game.players[playerName] || !word) {
+      return;
+    }
     const tiles = [...game.tiles];
     for (let i = 0; i < word.length; ++i) {
       const index = tiles.indexOf(word.charAt(i));

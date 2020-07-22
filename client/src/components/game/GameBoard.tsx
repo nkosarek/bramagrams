@@ -34,11 +34,14 @@ const GameBoard = ({ gameState, gameId, playerName}: GameBoardProps) => {
     };
 
     const handleEnter = () => {
-      api.claimWord(gameId, playerName, typedWord);
-      setTypedWord("");
+      if (typedWord) {
+        api.claimWord(gameId, playerName, typedWord);
+        setTypedWord("");
+      }
     };
 
-    const handleBackspace = () => {
+    const handleBackspace = (event: KeyboardEvent) => {
+      event.preventDefault();
       if (typedWord) {
         setTypedWord(typedWord.slice(0, -1));
       }
@@ -51,7 +54,6 @@ const GameBoard = ({ gameState, gameId, playerName}: GameBoardProps) => {
     };
 
     const handleKeyDownEvent = (event: KeyboardEvent) => {
-      event.preventDefault();
       if (event.key != null) {
         const upperCaseKey = event.key.toUpperCase();
         switch (event.key) {
@@ -60,7 +62,7 @@ const GameBoard = ({ gameState, gameId, playerName}: GameBoardProps) => {
           case 'Enter':
             return handleEnter();
           case 'Backspace':
-            return handleBackspace();
+            return handleBackspace(event);
           default:
             if (upperCaseKey >= 'A' && upperCaseKey <= 'Z') {
               return handleTypedLetter(upperCaseKey);
@@ -74,7 +76,7 @@ const GameBoard = ({ gameState, gameId, playerName}: GameBoardProps) => {
           case 13:
             return handleEnter();
           case 8:
-            return handleBackspace();
+            return handleBackspace(event);
           default:
             if (event.keyCode >= 65 && event.keyCode <= 90) {
               return handleTypedLetter(String.fromCharCode(event.keyCode));
