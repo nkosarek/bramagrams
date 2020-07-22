@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom'
-import { Box, CircularProgress, Typography } from '@material-ui/core';
+import { CircularProgress, Typography } from '@material-ui/core';
 import MessagePage from '../shared/MessagePage';
 import Page from '../shared/Page';
 import { GameState, GameStatuses, PlayerStatuses } from '../../server-models';
 import api from '../../api/api';
-import TilePool from './TilePool';
 import GameLobby from './GameLobby';
+import GameBoard from './GameBoard';
 
 const Game = () => {
   const { gameId } = useParams();
@@ -30,16 +30,6 @@ const Game = () => {
     api.connectToGame(gameId);
   }, [gameId]);
 
-  useEffect(() => {
-    if (playerName) {
-      window.addEventListener('keydown', (event) => {
-        if (event.charCode === 32 || event.keyCode === 32) {
-          api.addTile(gameId, playerName);
-        }
-      });
-    }
-  }, [gameId, playerName]);
-
   return gameDne ? (
     <MessagePage>
       <Typography variant="h4" color="secondary">
@@ -60,11 +50,7 @@ const Game = () => {
       onGameDne={() => setGameDne(true)}
     />
   ) : gameStatus === GameStatuses.IN_PROGRESS ? (
-    <Page>
-      <Box px="10%" py={2} display="flex" justifyContent="center">
-        <TilePool letters={gameState?.tiles || []} />
-      </Box>
-    </Page>
+    <GameBoard gameState={gameState} gameId={gameId} playerName={playerName} />
   ) : (
     <Page>
       <p>Done</p>
