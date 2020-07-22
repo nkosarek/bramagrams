@@ -21,9 +21,10 @@ class Api {
     return response.data;
   }
 
-  async claimName(gameId: string, name: string): Promise<void> {
-    console.log("Claiming name:", name);
-    return await this.client.post(`/games/${gameId}/claim-name?name=${name}`);
+  async claimName(gameId: string, newName: string, oldName?: string): Promise<void> {
+    console.log("Claiming name:", newName);
+    const currNameParam = oldName ? `&oldName=${oldName}` : '';
+    return await this.client.post(`/games/${gameId}/claim-name?newName=${newName}${currNameParam}`);
   }
 
   createSubscriptions(onGameUpdate: (gameState: GameState) => void, onGameDne: () => void) {
@@ -35,8 +36,8 @@ class Api {
     this.socket.emit(ClientEvents.CONNECT_TO_GAME, gameId);
   }
 
-  joinGame(gameId: string, player: string) {
-    this.socket.emit(ClientEvents.JOIN_GAME, gameId, player);
+  joinGame(gameId: string, playerName: string, oldName?: string) {
+    this.socket.emit(ClientEvents.JOIN_GAME, gameId, playerName, oldName);
   }
 
   readyToStart(gameId: string, player: string) {

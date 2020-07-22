@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Button, TextField, Typography } from '@material-ui/core';
+import { Box, Button, ButtonGroup, TextField, Typography } from '@material-ui/core';
 import { Check, MoreHoriz, Person } from '@material-ui/icons';
 import Page from '../shared/Page';
 import api from '../../api/api';
@@ -10,22 +10,27 @@ interface GameLobbyProps {
   playerName: string;
   players: Player[];
   canStart: boolean;
-  onNameClaimed: (name: string) => void;
+  onNameClaimed: (newName: string, oldName: string) => void;
   onGameDne: () => void;
 };
 
 const GameLobby = ({ gameId, playerName, players, canStart, onNameClaimed, onGameDne }: GameLobbyProps) => {
-  const [requestedName, setRequestedName] = useState("");
-  const [claimedNames, setClaimedNames] = useState<string[]>([]);
+  const [requestedName, setRequestedName] = useState(playerName);
+  const [claimedNames, setClaimedNames] = useState<string[]>(players.map(p => p.name));
+  const [editingName, setEditingName] = useState(!playerName || !players.find(p => p.name === playerName));
 
-  const hasNameError = claimedNames.includes(requestedName);
+  const hasNameError = requestedName !== playerName && claimedNames.includes(requestedName);
   const playerState = players.find(player => player.name === playerName);
 
   const handleNameSubmitted = () => {
-    api.claimName(gameId, requestedName)
+    // TODO: clean this up
+    api.claimName(gameId, requestedName, playerName)
       .then(() => {
-        onNameClaimed(requestedName);
-        api.joinGame(gameId, requestedName);
+        setEditingName(false);
+        let newClaimedNames = [...claimedNames];
+        newClaimedNames.splice(newClaimedNames.indexOf(playerName), 1);
+        setClaimedNames(newClaimedNames);
+        onNameClaimed(requestedName, playerName);
       })
       .catch((err) => {
         if (err?.response?.data?.includes("does not exist")) {
@@ -62,9 +67,7 @@ const GameLobby = ({ gameId, playerName, players, canStart, onNameClaimed, onGam
             </Box>
           ))}
         </Box>
-        {playerName ? (
-          <Typography variant="h4" color="secondary">{playerName}</Typography>
-        ) : (
+        {editingName ? (
           <form onSubmit={(e) => {e.preventDefault(); handleNameSubmitted()}}>
             <Box display="flex" flexDirection="column">
               <TextField
@@ -86,22 +89,33 @@ const GameLobby = ({ gameId, playerName, players, canStart, onNameClaimed, onGam
               </Button>
             </Box>
           </form>
+        ) : (
+          <Typography variant="h4" color="secondary">{playerName}</Typography>
         )}
-        <Box display="flex" mt={3}>
-          <Button
-            disabled={!playerName || playerState?.status === PlayerStatuses.READY_TO_START}
-            onClick={() => handleReady()}
-            color="secondary"
-          >
-            Ready
-          </Button>
-          <Button
-            disabled={!canStart}
-            onClick={() => handleStart()}
-            color="secondary"
-          >
-            Start Game
-          </Button>
+        <Box mt={3}>
+          <ButtonGroup variant="text">
+            <Button
+              disabled={editingName}
+              onClick={() => setEditingName(true)}
+              color="secondary"
+            >
+              Edit Name
+            </Button>
+            <Button
+              disabled={!playerName || playerState?.status === PlayerStatuses.READY_TO_START}
+              onClick={() => handleReady()}
+              color="secondary"
+            >
+              Ready
+            </Button>
+            <Button
+              disabled={!canStart}
+              onClick={() => handleStart()}
+              color="secondary"
+            >
+              Start Game
+            </Button>
+          </ButtonGroup>
         </Box>
       </Box>
     </Page>

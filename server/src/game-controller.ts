@@ -11,7 +11,7 @@ const generateGameId = () => {
 };
 
 export default class GamesController {
-  public games: { [gameId: string]: GameState} = {};
+  private games: { [gameId: string]: GameState} = {};
 
   private gameCanStart(game: GameState): boolean {
     const players = Object.values(game.players);
@@ -52,7 +52,7 @@ export default class GamesController {
 
   addPlayer(gameId: string, name: string): GameState | undefined {
     const game = this.getGame(gameId);
-    if (!name) {
+    if (!name || Object.keys(game.players).length >= 2) {
       return;
     }
     game.players[name] = {
@@ -60,6 +60,15 @@ export default class GamesController {
       status: PlayerStatuses.NOT_READY,
       words: [],
     };
+    return game;
+  }
+
+  removePlayer(gameId: string, name: string): GameState | undefined {
+    const game = this.getGame(gameId);
+    if (!name || game.status !== GameStatuses.WAITING_TO_START) {
+      return;
+    }
+    delete game.players[name];
     return game;
   }
 

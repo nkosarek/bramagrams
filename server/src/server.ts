@@ -4,11 +4,12 @@ import socketIO from 'socket.io';
 import cors from 'cors';
 import { ServerEvents, ClientEvents, GameState } from './models';
 import GamesController from './game-controller';
+import { runInNewContext } from 'vm';
 
 const port = process.env.PORT || 4001;
 
 const gamesController = new GamesController();
-const claimedNames: { [gameId: string]: string[] } = {}
+const claimedNames: { [gameId: string]: Set<string> } = {}
 
 const app = express();
 const server = http.createServer(app);
@@ -25,7 +26,7 @@ app.get('/', function(req: express.Request, res: express.Response) {
 app.post('/games', (req: express.Request, res: express.Response) => {
   console.log("Received request to create game");
   const id = gamesController.createGame();
-  claimedNames[id] = [];
+  claimedNames[id] = new Set();
   if (!id) {
     res.status(500).send("ERROR: Failed to create a unique game ID\n");
     return;
@@ -35,18 +36,25 @@ app.post('/games', (req: express.Request, res: express.Response) => {
 });
 
 app.post('/games/:id/claim-name', (req: express.Request, res: express.Response) => {
-  const name = req.query.name;
+  const newName = req.query.newName;
+  const oldName = req.query.oldName;
   const gameId = req.params.id;
-  console.log(`Receive request to claim name '${name}' in game ${gameId}`);
+  console.log(`Receive request to claim name '${newName}' in game ${gameId}`);
   if (!gamesController.gameExists(gameId)) {
     res.status(400).send("Game does not exist");
-  } else if (!name || typeof name !== 'string') {
-    res.status(400).send("Exactly one name must be requested");
-  } else if (claimedNames[gameId].includes(name)) {
+  } else if (!newName || typeof newName !== 'string') {
+    res.status(400).send("Exactly one new name must be requested");
+  } else if (oldName && typeof oldName !== 'string') {
+    res.status(400).send("At most one old name must be specified");
+  } else if (claimedNames[gameId].has(newName)) {
     res.status(409).send("Name already claimed");
   } else {
-    claimedNames[gameId].push(name);
-    console.log(`Claimed name '${name}; in game ${gameId}`);
+    claimedNames[gameId].add(newName);
+    console.log(`Claimed name '${newName}' in game ${gameId}`);
+    if (oldName) {
+      claimedNames[gameId].delete(oldName);
+      console.log(`Freed up name '${oldName}' in game ${gameId}`)
+    }
     res.sendStatus(200);
   }
 });
@@ -94,9 +102,14 @@ io.on('connection', (socket) => {
     }, false);
   });
 
-  socket.on(ClientEvents.JOIN_GAME, (gameId: string, player: string) => {
-    console.log(`Received JOIN_GAME request with args: gameId=${gameId} player=${player}`);
-    updateGameStateWrapper(socket, gameId, () => gamesController.addPlayer(gameId, player));
+  socket.on(ClientEvents.JOIN_GAME, (gameId: string, playerName: string, oldName: string) => {
+    console.log(`Received JOIN_GAME request with args: gameId=${gameId} playerName=${playerName} oldName=${oldName}`);
+    updateGameStateWrapper(socket, gameId, () => {
+      if (oldName) {
+        gamesController.removePlayer(gameId, oldName);
+      }
+      return gamesController.addPlayer(gameId, playerName);
+    });
   });
 
   socket.on(ClientEvents.READY_TO_START, (gameId: string, player: string) => {
