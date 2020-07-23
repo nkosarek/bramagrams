@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, FormEvent } from 'react';
 import { Box, Button, ButtonGroup, TextField, Typography } from '@material-ui/core';
 import { Check, MoreHoriz, Person } from '@material-ui/icons';
 import Page from '../shared/Page';
@@ -10,35 +10,32 @@ interface GameLobbyProps {
   playerName: string;
   players: Player[];
   canStart: boolean;
-  onNameClaimed: (newName: string, oldName: string) => void;
-  onGameDne: () => void;
+  onNameClaimed: (name: string) => void;
 };
 
-const GameLobby = ({ gameId, playerName, players, canStart, onNameClaimed, onGameDne }: GameLobbyProps) => {
+const GameLobby = ({ gameId, playerName, players, canStart, onNameClaimed }: GameLobbyProps) => {
   const [requestedName, setRequestedName] = useState(playerName);
-  const [claimedNames, setClaimedNames] = useState<string[]>(players.map(p => p.name));
-  const [editingName, setEditingName] = useState(!playerName || !players.find(p => p.name === playerName));
-
-  const hasNameError = requestedName !== playerName && claimedNames.includes(requestedName);
   const playerState = players.find(player => player.name === playerName);
+  const [editingName, setEditingName] = useState(!playerState);
+  const [hasEdited, setHasEdited] = useState(false);
 
-  const handleNameSubmitted = () => {
-    // TODO: clean this up
-    api.claimName(gameId, requestedName, playerName)
-      .then(() => {
-        setEditingName(false);
-        let newClaimedNames = [...claimedNames];
-        newClaimedNames.splice(newClaimedNames.indexOf(playerName), 1);
-        setClaimedNames(newClaimedNames);
-        onNameClaimed(requestedName, playerName);
-      })
-      .catch((err) => {
-        if (err?.response?.data?.includes("does not exist")) {
-          onGameDne();
-        } else {
-          setClaimedNames([...claimedNames, requestedName]);
-        }
-      });
+  const hasNameError = requestedName !== playerName && players.map(p => p.name).includes(requestedName);
+
+  const handleNameEdited = (name: string) => {
+    !hasEdited && setHasEdited(true);
+    setRequestedName(name);
+  };
+
+  const handleNameSubmitted = (event: MouseEvent | FormEvent) => {
+    event.preventDefault();
+    if (!requestedName || hasNameError) {
+      return;
+    }
+    if (playerState && requestedName !== playerName) {
+      api.changeName(gameId, requestedName, playerName);
+    } else if (!playerState) {
+      api.joinGame(gameId, requestedName);
+    }
   };
 
   const handleReady = () => {
@@ -48,6 +45,20 @@ const GameLobby = ({ gameId, playerName, players, canStart, onNameClaimed, onGam
   const handleStart = () => {
     api.startGame(gameId);
   }
+
+  useEffect(() => {
+    if (!requestedName && !hasEdited) {
+      setRequestedName(playerName);
+    }
+  }, [playerName, requestedName, hasEdited]);
+
+  useEffect(() => {
+    const handleNameClaimed = (name: string) => {
+      onNameClaimed(name);
+      setEditingName(false);
+    };
+    api.initNameClaimedSubscription(handleNameClaimed);
+  }, [onNameClaimed]);
 
   return (
     <Page>
@@ -68,25 +79,37 @@ const GameLobby = ({ gameId, playerName, players, canStart, onNameClaimed, onGam
           ))}
         </Box>
         {editingName ? (
-          <form onSubmit={(e) => {e.preventDefault(); handleNameSubmitted()}}>
+          <form onSubmit={handleNameSubmitted}>
             <Box display="flex" flexDirection="column">
               <TextField
                 color="secondary"
                 label="Enter Your Name"
                 variant="outlined"
+                autoFocus
                 value={requestedName}
-                onChange={(event) => setRequestedName(event.target.value)}
+                onChange={(event) => handleNameEdited(event.target.value)}
                 error={hasNameError}
                 helperText={hasNameError && "Name has already been claimed"}
               />
-              <Button
-                disabled={!requestedName}
-                type="submit"
-                color="secondary"
-                onClick={() => handleNameSubmitted()}
-              >
-                Submit Name
-              </Button>
+              <Box display="flex" justifyContent="space-evenly">
+                <Button
+                  disabled={!playerState}
+                  color="secondary"
+                  fullWidth
+                  onClick={() => setEditingName(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  disabled={!requestedName || hasNameError}
+                  type="submit"
+                  color="secondary"
+                  fullWidth
+                  onClick={handleNameSubmitted}
+                >
+                  Submit
+                </Button>
+              </Box>
             </Box>
           </form>
         ) : (
@@ -102,7 +125,7 @@ const GameLobby = ({ gameId, playerName, players, canStart, onNameClaimed, onGam
               Edit Name
             </Button>
             <Button
-              disabled={!playerName || playerState?.status === PlayerStatuses.READY_TO_START}
+              disabled={!playerState || playerState.status === PlayerStatuses.READY_TO_START}
               onClick={() => handleReady()}
               color="secondary"
             >

@@ -52,9 +52,10 @@ export default class GamesController {
 
   addPlayer(gameId: string, name: string): GameState | undefined {
     const game = this.getGame(gameId);
-    if (!name || Object.keys(game.players).length >= 2) {
+    if (!name || game.players[name] || Object.keys(game.players).length >= 2) {
       return;
     }
+    // TODO: after multiple players supported, allow players to join mid game (different status)
     game.players[name] = {
       name,
       status: PlayerStatuses.NOT_READY,
@@ -69,6 +70,18 @@ export default class GamesController {
       return;
     }
     delete game.players[name];
+    return game;
+  }
+
+  renamePlayer(gameId: string, newName: string, oldName: string): GameState | undefined {
+    const game = this.getGame(gameId);
+    const player = game.players[oldName];
+    if (!player || !newName) {
+      return;
+    }
+    player.name = newName;
+    game.players[newName] = player;
+    delete game.players[oldName];
     return game;
   }
 

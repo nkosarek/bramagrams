@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom'
 import { CircularProgress, Typography } from '@material-ui/core';
 import Cookies from 'universal-cookie';
@@ -13,9 +13,15 @@ export const PLAYER_NAME_COOKIE = 'bramagrams-player-name';
 
 const cookies = new Cookies();
 
-const updateCookie = (newValue: string) => {
+interface GameCookie {
+  gameId: string;
+  name: string;
+}
+
+const updateCookie = (gameId: string, name: string) => {
+  const cookie: GameCookie = { gameId, name };
   cookies.remove(PLAYER_NAME_COOKIE);
-  cookies.set(PLAYER_NAME_COOKIE, newValue);
+  cookies.set(PLAYER_NAME_COOKIE, cookie, { path: '/' });
 };
 
 const Game = () => {
@@ -23,29 +29,36 @@ const Game = () => {
   const [gameDne, setGameDne] = useState(false);
   const [gameState, setGameState] = useState<GameState | undefined>();
   const [playerName, setPlayerName] = useState("");
+  const handleNameClaimed = useCallback((name: string) => {
+    setPlayerName(name);
+    updateCookie(gameId, name);
+  }, [gameId]);
 
-  const gameStatus = gameState?.status;
   const players = (gameState && Object.values(gameState.players)) || [];
   const canStart = gameState?.status === GameStatuses.WAITING_TO_START &&
     players.length > 1 &&
     players.every(player => player.status === PlayerStatuses.READY_TO_START);
 
-  const handleNameClaimed = (newName: string, oldName: string) => {
-    setPlayerName(newName);
-    updateCookie(newName);
-    api.joinGame(gameId, newName, oldName);
-  };
 
   useEffect(() => {
     const onGameDne = () => setGameDne(true);
     const onGameUpdate = (gameState: GameState) => setGameState(gameState);
-    api.createSubscriptions(onGameUpdate, onGameDne);
+    api.initGameSubscriptions(onGameUpdate, onGameDne);
     api.connectToGame(gameId);
-    const cookiePlayerName = cookies.get(PLAYER_NAME_COOKIE);
-    if (cookiePlayerName && typeof cookiePlayerName === 'string') {
-      setPlayerName(cookiePlayerName);
-    }
   }, [gameId]);
+
+  useEffect(() => {
+    if (playerName || !gameState) {
+      return;
+    }
+    const cookie = cookies.get(PLAYER_NAME_COOKIE);
+    if (cookie && typeof cookie === 'object' && cookie.name) {
+      const cookieNameInGame = gameState.players[cookie.name];
+      if ((cookieNameInGame && gameId === cookie.gameId) || !cookieNameInGame) {
+        setPlayerName(cookie.name);
+      }
+    }
+  }, [gameId, gameState, playerName]);
 
   return gameDne ? (
     <MessagePage>
@@ -57,16 +70,15 @@ const Game = () => {
     <MessagePage>
       <CircularProgress />
     </MessagePage>
-  ) : gameStatus === GameStatuses.WAITING_TO_START ? (
+  ) : gameState.status === GameStatuses.WAITING_TO_START ? (
     <GameLobby
       gameId={gameId}
       playerName={playerName}
       players={players}
       canStart={canStart}
-      onNameClaimed={(newName, oldName) => handleNameClaimed(newName, oldName)}
-      onGameDne={() => setGameDne(true)}
+      onNameClaimed={handleNameClaimed}
     />
-  ) : gameStatus === GameStatuses.IN_PROGRESS ? (
+  ) : gameState.status === GameStatuses.IN_PROGRESS ? (
     <GameBoard gameState={gameState} gameId={gameId} playerName={playerName} />
   ) : (
     <Page>

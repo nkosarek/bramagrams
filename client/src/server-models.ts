@@ -2,6 +2,7 @@
 export enum ClientEvents {
   CONNECT_TO_GAME = 'connectToGame',
   JOIN_GAME = 'joinGame',
+  CHANGE_NAME = 'changeName',
   READY_TO_START = 'readyToStart',
   START_GAME = 'startGame',
   ADD_TILE = 'addTile',
@@ -11,6 +12,7 @@ export enum ClientEvents {
 export enum ServerEvents {
   GAME_DNE = 'gameDNE',
   GAME_UPDATED = 'gameUpdated',
+  NAME_CLAIMED = 'nameClaimed',
 }
 
 export enum PlayerStatuses {

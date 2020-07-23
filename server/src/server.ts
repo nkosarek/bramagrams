@@ -4,7 +4,6 @@ import socketIO from 'socket.io';
 import cors from 'cors';
 import { ServerEvents, ClientEvents, GameState } from './models';
 import GamesController from './game-controller';
-import { runInNewContext } from 'vm';
 
 const port = process.env.PORT || 4001;
 
@@ -35,30 +34,6 @@ app.post('/games', (req: express.Request, res: express.Response) => {
   res.status(201).send(id);
 });
 
-app.post('/games/:id/claim-name', (req: express.Request, res: express.Response) => {
-  const newName = req.query.newName;
-  const oldName = req.query.oldName;
-  const gameId = req.params.id;
-  console.log(`Receive request to claim name '${newName}' in game ${gameId}`);
-  if (!gamesController.gameExists(gameId)) {
-    res.status(400).send("Game does not exist");
-  } else if (!newName || typeof newName !== 'string') {
-    res.status(400).send("Exactly one new name must be requested");
-  } else if (oldName && typeof oldName !== 'string') {
-    res.status(400).send("At most one old name must be specified");
-  } else if (claimedNames[gameId].has(newName)) {
-    res.status(409).send("Name already claimed");
-  } else {
-    claimedNames[gameId].add(newName);
-    console.log(`Claimed name '${newName}' in game ${gameId}`);
-    if (oldName) {
-      claimedNames[gameId].delete(oldName);
-      console.log(`Freed up name '${oldName}' in game ${gameId}`)
-    }
-    res.sendStatus(200);
-  }
-});
-
 // Starts the server.
 server.listen(port, function() {
   console.log(`Starting server on port ${port}`);
@@ -79,9 +54,12 @@ const updateGameStateWrapper = (
       } else {
         socket.emit(ServerEvents.GAME_UPDATED, gameState);
       }
+    } else {
+      console.log("State not updated");
     }
   } catch (err) {
     socket.emit(ServerEvents.GAME_DNE);
+    console.log("Game does not exist");
   }
 }
 
@@ -102,13 +80,25 @@ io.on('connection', (socket) => {
     }, false);
   });
 
-  socket.on(ClientEvents.JOIN_GAME, (gameId: string, playerName: string, oldName: string) => {
-    console.log(`Received JOIN_GAME request with args: gameId=${gameId} playerName=${playerName} oldName=${oldName}`);
+  socket.on(ClientEvents.JOIN_GAME, (gameId: string, playerName: string) => {
+    console.log(`Received JOIN_GAME request with args: gameId=${gameId} playerName=${playerName}`);
     updateGameStateWrapper(socket, gameId, () => {
-      if (oldName) {
-        gamesController.removePlayer(gameId, oldName);
+      const game = gamesController.addPlayer(gameId, playerName);
+      if (game) {
+        socket.emit(ServerEvents.NAME_CLAIMED, playerName);
       }
-      return gamesController.addPlayer(gameId, playerName);
+      return game;
+    });
+  });
+
+  socket.on(ClientEvents.CHANGE_NAME, (gameId: string, newName: string, oldName: string) => {
+    console.log(`Received CHANGE_NAME request with args: gameId=${gameId} newName=${newName} oldName=${oldName}`);
+    updateGameStateWrapper(socket, gameId, () => {
+      const game = gamesController.renamePlayer(gameId, newName, oldName);
+      if (game) {
+        socket.emit(ServerEvents.NAME_CLAIMED, newName);
+      }
+      return game;
     });
   });
 
