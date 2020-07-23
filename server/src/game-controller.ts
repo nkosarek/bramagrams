@@ -1,4 +1,5 @@
 import { GameState, Player, GameStatuses, PlayerStatuses } from './models';
+import Dictionary from './dictionary';
 
 const newTile = (): string => {
   return String.fromCharCode(Math.random() * 26 + 65);
@@ -30,7 +31,6 @@ export default class GamesController {
   getGame(gameId: string) {
     const game = this.games[gameId];
     if (!game) {
-      // TODO: what to do here?
       throw 'Game does not exist';
     }
     return game;
@@ -110,9 +110,10 @@ export default class GamesController {
   claimWord(gameId: string, playerName: string, word: string): GameState | undefined {
     const game = this.getGame(gameId);
     const player = this.getPlayer(game, playerName);
-    if (!player || !word || word.length < 3) {
+    if (!player || !word) {
       return;
     }
+    // First check if word can be constructed with the tile pool.
     const tiles = [...game.tiles];
     for (let i = 0; i < word.length; ++i) {
       const index = tiles.indexOf(word.charAt(i));
@@ -120,6 +121,9 @@ export default class GamesController {
         return;
       }
       tiles.splice(index, 1);
+    }
+    if (!Dictionary.isValidWord(word)) {
+      return;
     }
     game.tiles = tiles;
     player.words.push(word);

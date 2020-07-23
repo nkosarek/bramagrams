@@ -36,7 +36,7 @@ const GameBoard = ({ gameState, gameId, playerName}: GameBoardProps) => {
     };
 
     const handleEnter = () => {
-      if (typedWord) {
+      if (typedWord && typedWord.length >= 3) {
         api.claimWord(gameId, playerName, typedWord);
       }
     };
