@@ -89,16 +89,20 @@ const GameBoard = ({ gameState, gameId, playerName}: GameBoardProps) => {
 
   return (
     <Page>
-      <Box height="50%" px="10%" py={2} display="flex" flexDirection="column" alignItems="center">
+      <Box flexGrow={1} px="10%" py={2} display="flex" flexDirection="column" alignItems="center">
         <Box flexGrow={1}>
           <TilePool letters={gameState.tiles || []} />
         </Box>
         <Word word={typedWord} dark />
       </Box>
-      <Box height="50%" px={10} display="flex">
+      <Box minHeight="70%" px={3} display="flex">
         {gameState.players.map((player, index) => (
-          <Box key={index} flexGrow={1}>
-            <PlayerHand name={player.name} words={player.words} />
+          <Box key={index} width={1 / gameState.players.length}>
+            <PlayerHand
+              name={player.name}
+              words={player.words}
+              yourTurn={index === gameState.currPlayerIdx}
+            />
           </Box>
         ))}
       </Box>

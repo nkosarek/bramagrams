@@ -5,12 +5,15 @@ import Word from './Word';
 interface PlayerHandProps {
   name: string;
   words: string[];
+  yourTurn: boolean;
 }
 
-const PlayerHand = ({ name, words }: PlayerHandProps) => {
+const PlayerHand = ({ name, words, yourTurn }: PlayerHandProps) => {
   return (
     <Box display="flex" flexDirection="column" alignItems="center">
-      <Typography variant="h4" color="secondary">{name}</Typography>
+      <Typography variant="h4" color={yourTurn ? "secondary" : undefined}>
+        {name}
+      </Typography>
       <Box
         display="flex"
         flexWrap="wrap"

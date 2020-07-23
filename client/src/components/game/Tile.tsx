@@ -6,8 +6,8 @@ const useStyles = makeStyles((theme) => ({
   paper: {
     display: "flex",
     justifyContent: "center",
-    height: "3rem",
-    width: "3rem",
+    height: "2.2rem",
+    width: "2.2rem",
   },
   lightTile: {
     backgroundColor: theme.palette.secondary.light,
@@ -29,7 +29,7 @@ const Tile = ({ letter, dark = false }: TileProps) => {
       elevation={3}
       className={`${classes.paper} ${dark ? classes.darkTile : classes.lightTile}`}
     >
-      <Typography variant="h3">{letter}</Typography>
+      <Typography variant="h4">{letter}</Typography>
     </Paper>
   );
 };
