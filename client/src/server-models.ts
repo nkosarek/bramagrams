@@ -36,8 +36,8 @@ export interface Player {
 }
 
 export interface GameState {
-  players: { [name: string]: Player };
-  currPlayer?: string;
+  players: Player[];
+  currPlayerIdx: number;
   status: GameStatuses;
   tiles: string[];
 }

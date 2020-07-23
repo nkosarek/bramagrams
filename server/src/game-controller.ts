@@ -1,4 +1,4 @@
-import { GameState, GameStatuses, PlayerStatuses } from './models';
+import { GameState, Player, GameStatuses, PlayerStatuses } from './models';
 
 const newTile = (): string => {
   return String.fromCharCode(Math.random() * 26 + 65);
@@ -13,11 +13,14 @@ const generateGameId = () => {
 export default class GamesController {
   private games: { [gameId: string]: GameState} = {};
 
+  private getPlayer(game: GameState, name: string): Player | undefined {
+    return game?.players.find(p => p.name === name);
+  }
+
   private gameCanStart(game: GameState): boolean {
-    const players = Object.values(game.players);
     return game.status === GameStatuses.WAITING_TO_START &&
-      players.length > 1 &&
-      players.every(player => player.status === PlayerStatuses.READY_TO_START);
+      game.players.length > 1 &&
+      game.players.every(player => player.status === PlayerStatuses.READY_TO_START);
   }
 
   gameExists(gameId: string) {
@@ -43,7 +46,8 @@ export default class GamesController {
       id = generateGameId();
     } while (this.games[id]);
     this.games[id] = {
-      players: {},
+      players: [],
+      currPlayerIdx: 0,
       status: GameStatuses.WAITING_TO_START,
       tiles: [],
     };
@@ -52,42 +56,31 @@ export default class GamesController {
 
   addPlayer(gameId: string, name: string): GameState | undefined {
     const game = this.getGame(gameId);
-    if (!name || game.players[name] || Object.keys(game.players).length >= 2) {
+    if (!name || this.getPlayer(game, name) || game.players.length >= 2) {
       return;
     }
     // TODO: after multiple players supported, allow players to join mid game (different status)
-    game.players[name] = {
+    game.players.push({
       name,
       status: PlayerStatuses.NOT_READY,
       words: [],
-    };
-    return game;
-  }
-
-  removePlayer(gameId: string, name: string): GameState | undefined {
-    const game = this.getGame(gameId);
-    if (!name || game.status !== GameStatuses.WAITING_TO_START) {
-      return;
-    }
-    delete game.players[name];
+    });
     return game;
   }
 
   renamePlayer(gameId: string, newName: string, oldName: string): GameState | undefined {
     const game = this.getGame(gameId);
-    const player = game.players[oldName];
+    const player = this.getPlayer(game, oldName);
     if (!player || !newName) {
       return;
     }
     player.name = newName;
-    game.players[newName] = player;
-    delete game.players[oldName];
     return game;
   }
 
   setPlayerReady(gameId: string, name: string): GameState | undefined {
     const game = this.getGame(gameId);
-    const player = game.players[name];
+    const player = this.getPlayer(game, name);
     if (!player) {
       return;
     }
@@ -101,24 +94,23 @@ export default class GamesController {
     const game = this.getGame(gameId);
     if (this.gameCanStart(game)) {
       game.status = GameStatuses.IN_PROGRESS;
-      const playerNames = Object.keys(game.players);
-      game.currPlayer = playerNames[0];
       return game;
     }
   }
 
   addTile(gameId: string, playerName: string): GameState | undefined {
     const game = this.getGame(gameId);
-    // TODO: Advance currPlayer
-    if (playerName === game.currPlayer) {
+    if (playerName === game.players[game.currPlayerIdx].name) {
       game.tiles.push(newTile());
+      game.currPlayerIdx = (game.currPlayerIdx + 1) % game.players.length;
       return game;
     }
   }
 
   claimWord(gameId: string, playerName: string, word: string): GameState | undefined {
     const game = this.getGame(gameId);
-    if (!game.players[playerName] || !word) {
+    const player = this.getPlayer(game, playerName);
+    if (!player || !word) {
       return;
     }
     const tiles = [...game.tiles];
@@ -130,7 +122,7 @@ export default class GamesController {
       tiles.splice(index, 1);
     }
     game.tiles = tiles;
-    game.players[playerName].words.push(word);
+    player.words.push(word);
     return game;
   }
 }

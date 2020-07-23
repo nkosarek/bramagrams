@@ -24,11 +24,9 @@ interface GameBoardProps {
 const GameBoard = ({ gameState, gameId, playerName}: GameBoardProps) => {
   const [typedWord, setTypedWord] = useState("");
 
-  const players = Object.values(gameState.players);
-
   useEffect(() => {
     const handleSpacebar = () => {
-      if (gameState.currPlayer === playerName) {
+      if (gameState.players[gameState.currPlayerIdx].name === playerName) {
         api.addTile(gameId, playerName);
       }
     };
@@ -87,7 +85,7 @@ const GameBoard = ({ gameState, gameId, playerName}: GameBoardProps) => {
 
     window.addEventListener('keydown', handleKeyDownEvent);
     return () => window.removeEventListener('keydown', handleKeyDownEvent);
-  }, [gameState.currPlayer, gameState.tiles, gameId, playerName, typedWord]);
+  }, [gameState.players, gameState.currPlayerIdx, gameState.tiles, gameId, playerName, typedWord]);
 
   return (
     <Page>
@@ -98,7 +96,7 @@ const GameBoard = ({ gameState, gameId, playerName}: GameBoardProps) => {
         <Word word={typedWord} dark />
       </Box>
       <Box height="50%" px={10} display="flex">
-        {players.map((player, index) => (
+        {gameState.players.map((player, index) => (
           <Box key={index} flexGrow={1}>
             <PlayerHand name={player.name} words={player.words} />
           </Box>

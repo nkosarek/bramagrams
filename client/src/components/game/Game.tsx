@@ -34,7 +34,7 @@ const Game = () => {
     updateCookie(gameId, name);
   }, [gameId]);
 
-  const players = (gameState && Object.values(gameState.players)) || [];
+  const players = gameState?.players || [];
   const canStart = gameState?.status === GameStatuses.WAITING_TO_START &&
     players.length > 1 &&
     players.every(player => player.status === PlayerStatuses.READY_TO_START);
@@ -53,7 +53,7 @@ const Game = () => {
     }
     const cookie = cookies.get(PLAYER_NAME_COOKIE);
     if (cookie && typeof cookie === 'object' && cookie.name) {
-      const cookieNameInGame = gameState.players[cookie.name];
+      const cookieNameInGame = gameState.players.find(p => p.name === cookie.name);
       if ((cookieNameInGame && gameId === cookie.gameId) || !cookieNameInGame) {
         setPlayerName(cookie.name);
       }
