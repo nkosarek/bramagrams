@@ -119,6 +119,12 @@ io.on('connection', (socket) => {
 
   socket.on(ClientEvents.CLAIM_WORD, (gameId: string, player: string, word: string) => {
     console.log(`Received CLAIM_WORD request with args: gameId=${gameId} player=${player} word=${word}`);
-    updateGameStateWrapper(socket, gameId, () => gamesController.claimWord(gameId, player, word));
+    updateGameStateWrapper(socket, gameId, () => {
+      const game = gamesController.claimWord(gameId, player, word);
+      if (game) {
+        socket.emit(ServerEvents.WORD_CLAIMED, word);
+      }
+      return game;
+    });
   });
 });

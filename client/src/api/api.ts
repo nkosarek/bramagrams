@@ -33,6 +33,10 @@ class Api {
     this.socket.on(ServerEvents.NAME_CLAIMED, onNameClaimed);
   }
 
+  initWordClaimedSubscription(onWordClaimed: (word: string) => void) {
+    this.socket.on(ServerEvents.WORD_CLAIMED, onWordClaimed);
+  }
+
   connectToGame(gameId: string) {
     this.socket.emit(ClientEvents.CONNECT_TO_GAME, gameId);
   }

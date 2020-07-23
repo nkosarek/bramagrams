@@ -25,6 +25,10 @@ const GameBoard = ({ gameState, gameId, playerName}: GameBoardProps) => {
   const [typedWord, setTypedWord] = useState("");
 
   useEffect(() => {
+    api.initWordClaimedSubscription(() => setTypedWord(""));
+  }, [gameId]);
+
+  useEffect(() => {
     const handleSpacebar = () => {
       if (gameState.players[gameState.currPlayerIdx].name === playerName) {
         api.addTile(gameId, playerName);
@@ -34,7 +38,6 @@ const GameBoard = ({ gameState, gameId, playerName}: GameBoardProps) => {
     const handleEnter = () => {
       if (typedWord) {
         api.claimWord(gameId, playerName, typedWord);
-        setTypedWord("");
       }
     };
 

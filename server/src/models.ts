@@ -12,6 +12,7 @@ export enum ServerEvents {
   GAME_DNE = 'gameDNE',
   GAME_UPDATED = 'gameUpdated',
   NAME_CLAIMED = 'nameClaimed',
+  WORD_CLAIMED = 'wordClaimed',
 }
 
 export enum PlayerStatuses {

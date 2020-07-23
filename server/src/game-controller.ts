@@ -110,7 +110,7 @@ export default class GamesController {
   claimWord(gameId: string, playerName: string, word: string): GameState | undefined {
     const game = this.getGame(gameId);
     const player = this.getPlayer(game, playerName);
-    if (!player || !word) {
+    if (!player || !word || word.length < 3) {
       return;
     }
     const tiles = [...game.tiles];
