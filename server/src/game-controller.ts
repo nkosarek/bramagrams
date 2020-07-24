@@ -11,6 +11,11 @@ const generateGameId = () => {
   return (Math.floor(Math.random() * (max - min)) + min).toString(16);
 };
 
+interface PlayerWord {
+  playerIdx: number;
+  wordIdx: number;
+}
+
 export default class GamesController {
   private games: { [gameId: string]: GameState} = {};
 
@@ -22,6 +27,46 @@ export default class GamesController {
     return game.status === GameStatuses.WAITING_TO_START &&
       game.players.length > 1 &&
       game.players.every(player => player.status === PlayerStatuses.READY_TO_START);
+  }
+
+  private wordCanBeStolen(game: GameState, newWord: string, wordToSteal: string): boolean {
+    if (newWord.length <= wordToSteal.length) {
+      return false;
+    }
+    // Check that the word to steal is a subset of the new word
+    let newWordRemainder: string = newWord;
+    for (let i = 0; i < wordToSteal.length; ++i) {
+      const char = wordToSteal.charAt(i);
+      if (!newWordRemainder.includes(char)) {
+        return false;
+      }
+      newWordRemainder.replace(char, '');
+    }
+
+    // Check that the remainder of the new word can be constructed from the pool
+    const poolRemainder: string[] = [...game.tiles];
+    for (let i = 0; i < newWordRemainder.length; ++i) {
+      const poolIdx = poolRemainder.indexOf(newWordRemainder.charAt(i));
+      if (poolIdx < 0) {
+        return false;
+      }
+      poolRemainder.splice(poolIdx, 1);
+    }
+    return true;;
+  }
+
+  private getWordsThatCanBeStolen(game: GameState, newWord: string): PlayerWord[] {
+    const allPlayerWords: PlayerWord[] = game.players.reduce((allWords, player, playerIdx) => {
+      allWords.push(...player.words.map((word, wordIdx) => ({ playerIdx, wordIdx })));
+      return allWords;
+    }, [] as PlayerWord[]);
+
+    const wordsThatCanBeStolen = allPlayerWords.filter((playerWord: PlayerWord) => {
+      const word = game.players[playerWord.playerIdx].words[playerWord.wordIdx];
+      return this.wordCanBeStolen(game, newWord, word);
+    });
+
+    return wordsThatCanBeStolen;
   }
 
   gameExists(gameId: string) {
@@ -113,15 +158,18 @@ export default class GamesController {
     if (!player || !word) {
       return;
     }
-    // First check if word can be constructed with the tile pool.
+    // Check if a word can be stolen.
+    const stolenWords = this.getWordsThatCanBeStolen(game, word);
+
+    // Check if word can be constructed solely from the tile pool.
     const tiles = [...game.tiles];
-    for (let i = 0; i < word.length; ++i) {
-      const index = tiles.indexOf(word.charAt(i));
-      if (index < 0) {
-        return;
-      }
-      tiles.splice(index, 1);
-    }
+    // for (let i = 0; i < word.length; ++i) {
+    //   const index = tiles.indexOf(word.charAt(i));
+    //   if (index < 0) {
+    //     return;
+    //   }
+    //   tiles.splice(index, 1);
+    // }
     if (!Dictionary.isValidWord(word)) {
       return;
     }
