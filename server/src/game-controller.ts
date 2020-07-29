@@ -1,12 +1,16 @@
 import { GameState, Player, PlayerWord, GameStatuses, PlayerStatuses } from './models';
 import Dictionary from './dictionary';
 
-const TILES = ['d', 'i', 's', 'h', 'w', 'a', 's', 'h', 'e', 'r'];
+const TILES = ['d', 'i', 's', 'h', 'w', 'a', 's', 'h', 'w', 'a', 's', 'e', 'r'];
 let TILES_IDX = 0;
 
+const isRunningInDev = () => process.env.NODE_ENV === 'development';
+
 const newTile = (): string => {
-  if (TILES_IDX < TILES.length) {
-    return TILES[TILES_IDX++].toUpperCase();
+  if (isRunningInDev()) {
+    const char = TILES[TILES_IDX].toUpperCase();
+    TILES_IDX = (TILES_IDX + 1) % TILES.length;
+    return char;
   }
   return String.fromCharCode(Math.random() * 26 + 65);
 };
@@ -150,7 +154,7 @@ export default class GamesController {
 
   addTile(gameId: string, playerName: string): GameState | undefined {
     const game = this.getGame(gameId);
-    if (playerName === game.players[game.currPlayerIdx].name) {
+    if (isRunningInDev() || playerName === game.players[game.currPlayerIdx].name) {
       game.tiles.push(newTile());
       game.currPlayerIdx = (game.currPlayerIdx + 1) % game.players.length;
       return game;

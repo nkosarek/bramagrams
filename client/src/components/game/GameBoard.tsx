@@ -6,7 +6,7 @@ import TilePool from './TilePool';
 import PlayerHand from './PlayerHand';
 import api from '../../api/api';
 import Word from './Word';
-import StealHandler from '../../util/stealHandler';
+import ClaimHandler from '../../util/claimHandler';
 
 const getAllAvailableTiles = (gameState: GameState) => {
   let poolAndWords = [...gameState.tiles];
@@ -39,15 +39,18 @@ const GameBoard = ({ gameState, gameId, playerName}: GameBoardProps) => {
 
   useEffect(() => {
     const handleSpacebar = () => {
-      if (gameState.players[gameState.currPlayerIdx].name === playerName) {
+      if (process.env.NODE_ENV === "development" ||
+          gameState.players[gameState.currPlayerIdx].name === playerName) {
         api.addTile(gameId, playerName);
       }
     };
 
     const handleEnter = () => {
       if (typedWord && typedWord.length >= 3) {
-        const stealOptions = StealHandler.getAllPossibleSteals(gameState, typedWord);
-        api.claimWord(gameId, playerName, typedWord, stealOptions[0]);
+        const claimOptions = ClaimHandler.getAllPossibleClaims(gameState, typedWord);
+        // Default to steal if it's possible
+        const { wordsToSteal } = claimOptions[claimOptions.length - 1];
+        api.claimWord(gameId, playerName, typedWord, wordsToSteal);
       }
     };
 
