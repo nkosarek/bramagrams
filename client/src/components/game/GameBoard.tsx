@@ -6,6 +6,15 @@ import TilePool from './TilePool';
 import PlayerHand from './PlayerHand';
 import api from '../../api/api';
 import Word from './Word';
+import StealHandler from '../../util/stealHandler';
+
+const getAllAvailableTiles = (gameState: GameState) => {
+  let poolAndWords = [...gameState.tiles];
+  gameState.players.forEach(player =>
+    player.words.forEach(word =>
+      poolAndWords.push(...word.split(''))));
+  return poolAndWords;
+};
 
 const getPoolWithoutTypedWord = (pool: string[], word: string): string[] => {
   let adjustedPool = [...pool];
@@ -37,7 +46,8 @@ const GameBoard = ({ gameState, gameId, playerName}: GameBoardProps) => {
 
     const handleEnter = () => {
       if (typedWord && typedWord.length >= 3) {
-        api.claimWord(gameId, playerName, typedWord);
+        const stealOptions = StealHandler.getAllPossibleSteals(gameState, typedWord);
+        api.claimWord(gameId, playerName, typedWord, stealOptions[0]);
       }
     };
 
@@ -49,7 +59,8 @@ const GameBoard = ({ gameState, gameId, playerName}: GameBoardProps) => {
     };
 
     const handleTypedLetter = (letter: string) => {
-      if (getPoolWithoutTypedWord(gameState.tiles, typedWord).includes(letter)) {
+      const allTiles = getAllAvailableTiles(gameState);
+      if (getPoolWithoutTypedWord(allTiles, typedWord).includes(letter)) {
         setTypedWord(typedWord + letter);
       }
     };
@@ -88,7 +99,7 @@ const GameBoard = ({ gameState, gameId, playerName}: GameBoardProps) => {
 
     window.addEventListener('keydown', handleKeyDownEvent);
     return () => window.removeEventListener('keydown', handleKeyDownEvent);
-  }, [gameState.players, gameState.currPlayerIdx, gameState.tiles, gameId, playerName, typedWord]);
+  }, [gameId, gameState, playerName, typedWord]);
 
   return (
     <Page>

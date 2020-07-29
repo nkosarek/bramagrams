@@ -30,6 +30,11 @@ export enum GameStatuses {
   ENDED,
 }
 
+export interface PlayerWord {
+  playerIdx: number;
+  wordIdx: number;
+}
+
 export interface Player {
   name: string;
   status: PlayerStatuses;
