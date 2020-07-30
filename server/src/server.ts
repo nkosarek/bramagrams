@@ -2,7 +2,7 @@ import express from 'express';
 import http from 'http';
 import socketIO from 'socket.io';
 import cors from 'cors';
-import { ServerEvents, ClientEvents, GameState } from './models';
+import { ServerEvents, ClientEvents, GameState, PlayerWord } from './models';
 import GamesController from './game-controller';
 
 const port = process.env.PORT || 4001;
@@ -117,14 +117,16 @@ io.on('connection', (socket) => {
     updateGameStateWrapper(socket, gameId, () => gamesController.addTile(gameId, player));
   });
 
-  socket.on(ClientEvents.CLAIM_WORD, (gameId: string, player: string, word: string) => {
-    console.log(`Received CLAIM_WORD request with args: gameId=${gameId} player=${player} word=${word}`);
-    updateGameStateWrapper(socket, gameId, () => {
-      const game = gamesController.claimWord(gameId, player, word);
-      if (game) {
-        socket.emit(ServerEvents.WORD_CLAIMED, word);
-      }
-      return game;
-    });
+  socket.on(ClientEvents.CLAIM_WORD,
+    (gameId: string, player: string, newWord: string, wordsToSteal?: PlayerWord[]) => {
+      console.log(`Received CLAIM_WORD request with args: \
+        gameId=${gameId} player=${player} newWord=${newWord} wordsToSteal=${wordsToSteal}`);
+      updateGameStateWrapper(socket, gameId, () => {
+        const game = gamesController.claimWord(gameId, player, newWord, wordsToSteal);
+        if (game) {
+          socket.emit(ServerEvents.WORD_CLAIMED, newWord);
+        }
+        return game;
+      });
   });
 });

@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import socketIOClient from 'socket.io-client';
-import { GameState, ClientEvents, ServerEvents } from '../server-models';
+import { GameState, PlayerWord, ClientEvents, ServerEvents } from '../server-models';
 
 const SERVER_URL = 'http://localhost:4001';
 
@@ -61,8 +61,8 @@ class Api {
     this.socket.emit(ClientEvents.ADD_TILE, gameId, player);
   }
 
-  claimWord(gameId: string, player: string, word: string) {
-    this.socket.emit(ClientEvents.CLAIM_WORD, gameId, player, word);
+  claimWord(gameId: string, player: string, newWord: string, wordsToSteal?: PlayerWord[]) {
+    this.socket.emit(ClientEvents.CLAIM_WORD, gameId, player, newWord, wordsToSteal);
   }
 };
 

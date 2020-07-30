@@ -6,6 +6,15 @@ import TilePool from './TilePool';
 import PlayerHand from './PlayerHand';
 import api from '../../api/api';
 import Word from './Word';
+import ClaimHandler from '../../util/claimHandler';
+
+const getAllAvailableTiles = (gameState: GameState) => {
+  let poolAndWords = [...gameState.tiles];
+  gameState.players.forEach(player =>
+    player.words.forEach(word =>
+      poolAndWords.push(...word.split(''))));
+  return poolAndWords;
+};
 
 const getPoolWithoutTypedWord = (pool: string[], word: string): string[] => {
   let adjustedPool = [...pool];
@@ -30,14 +39,18 @@ const GameBoard = ({ gameState, gameId, playerName}: GameBoardProps) => {
 
   useEffect(() => {
     const handleSpacebar = () => {
-      if (gameState.players[gameState.currPlayerIdx].name === playerName) {
+      if (process.env.NODE_ENV === "development" ||
+          gameState.players[gameState.currPlayerIdx].name === playerName) {
         api.addTile(gameId, playerName);
       }
     };
 
     const handleEnter = () => {
       if (typedWord && typedWord.length >= 3) {
-        api.claimWord(gameId, playerName, typedWord);
+        const claimOptions = ClaimHandler.getAllPossibleClaims(gameState, typedWord);
+        // Default to steal if it's possible
+        const { wordsToSteal } = claimOptions[claimOptions.length - 1];
+        api.claimWord(gameId, playerName, typedWord, wordsToSteal);
       }
     };
 
@@ -49,7 +62,8 @@ const GameBoard = ({ gameState, gameId, playerName}: GameBoardProps) => {
     };
 
     const handleTypedLetter = (letter: string) => {
-      if (getPoolWithoutTypedWord(gameState.tiles, typedWord).includes(letter)) {
+      const allTiles = getAllAvailableTiles(gameState);
+      if (getPoolWithoutTypedWord(allTiles, typedWord).includes(letter)) {
         setTypedWord(typedWord + letter);
       }
     };
@@ -88,7 +102,7 @@ const GameBoard = ({ gameState, gameId, playerName}: GameBoardProps) => {
 
     window.addEventListener('keydown', handleKeyDownEvent);
     return () => window.removeEventListener('keydown', handleKeyDownEvent);
-  }, [gameState.players, gameState.currPlayerIdx, gameState.tiles, gameId, playerName, typedWord]);
+  }, [gameId, gameState, playerName, typedWord]);
 
   return (
     <Page>
