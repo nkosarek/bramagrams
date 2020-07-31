@@ -45,4 +45,5 @@ export interface GameState {
   currPlayerIdx: number;
   status: GameStatuses;
   tiles: string[];
+  numTilesLeft: number;
 }

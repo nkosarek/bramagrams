@@ -71,7 +71,7 @@ io.on('connection', (socket) => {
   socket.on(ClientEvents.CONNECT_TO_GAME, (gameId: string) => {
     console.log("Received CONNECT_TO_GAME request with args: gameId=", gameId);
     updateGameStateWrapper(socket, gameId, () => {
-      const gameState = gamesController.getGame(gameId);
+      const { clientGameState: gameState } = gamesController.getGame(gameId);
       socket.join(gameId);
       console.log(`Connected to game ${gameId}`);
       return gameState;

@@ -1,32 +1,35 @@
 import { GameState, Player, PlayerWord, GameStatuses, PlayerStatuses } from './models';
 import Dictionary from './dictionary';
+import TILES from './data/tiles';
 
-const TILES = ['d', 'i', 's', 'h', 'w', 'a', 's', 'h', 'e', 'r', 'a', 'c', 't', 'd', 'i', 's', 'h', 'w', 'a', 's', 'h', 'e', 'r'];
+const DEV_TILES = ['d', 'i', 's', 'h', 'w', 'a', 's', 'h', 'e', 'r', 'a', 'c', 't', 'd', 'i', 's', 'h', 'w', 'a', 's', 'h', 'e', 'r'];
 let TILES_IDX = 0;
 
 const isRunningInDev = () => process.env.NODE_ENV === 'development';
 
-const newTile = (): string => {
-  if (isRunningInDev()) {
-    const char = TILES[TILES_IDX].toUpperCase();
-    TILES_IDX = (TILES_IDX + 1) % TILES.length;
-    return char;
-  }
-  return String.fromCharCode(Math.random() * 26 + 65);
-};
-
-const generateGameId = () => {
-  const min = 0x10000000;
-  const max = 0x100000000;
-  let id = '';
-  while (!id || id === 'Infinity' || id === 'NaN') {
-    id = (Math.floor(Math.random() * (max - min)) + min).toString(16);
-  }
-  return id;
-};
+interface ServerGameState {
+  clientGameState: GameState;
+  tilesLeft: string[];
+}
 
 export default class GamesController {
-  private games: { [gameId: string]: GameState} = {};
+  private games: { [gameId: string]: ServerGameState} = {};
+
+  private static generateGameId() {
+    const min = 0x10000000;
+    const max = 0x100000000;
+    let id = '';
+    while (!id || id === 'Infinity' || id === 'NaN') {
+      id = (Math.floor(Math.random() * (max - min)) + min).toString(16);
+    }
+    return id;
+  };
+
+  private static getDevTile() {
+    const char = DEV_TILES[TILES_IDX].toUpperCase();
+    TILES_IDX = (TILES_IDX + 1) % DEV_TILES.length;
+    return char;
+  }
 
   private getPlayer(game: GameState, name: string): Player | undefined {
     return game?.players.find(p => p.name === name);
@@ -36,6 +39,10 @@ export default class GamesController {
     return game.status === GameStatuses.WAITING_TO_START &&
       game.players.length > 1 &&
       game.players.every(player => player.status === PlayerStatuses.READY_TO_START);
+  }
+
+  private advanceCurrPlayer(game: GameState) {
+    game.currPlayerIdx = (game.currPlayerIdx + 1) % game.players.length;
   }
 
   private getWordDiff(word1: string, word2: string): string | null {
@@ -126,19 +133,23 @@ export default class GamesController {
       if (++count > 5) {
         return "";
       }
-      id = generateGameId();
+      id = GamesController.generateGameId();
     } while (this.games[id]);
     this.games[id] = {
-      players: [],
-      currPlayerIdx: 0,
-      status: GameStatuses.WAITING_TO_START,
-      tiles: [],
-    };
+      tilesLeft: [...TILES],
+      clientGameState: {
+        players: [],
+        currPlayerIdx: 0,
+        status: GameStatuses.WAITING_TO_START,
+        tiles: [],
+        numTilesLeft: TILES.length,
+      },
+    }
     return id;
   }
 
   addPlayer(gameId: string, name: string): GameState | undefined {
-    const game = this.getGame(gameId);
+    const { clientGameState: game } = this.getGame(gameId);
     if (!name || this.getPlayer(game, name) || game.players.length >= 2) {
       return;
     }
@@ -152,7 +163,7 @@ export default class GamesController {
   }
 
   renamePlayer(gameId: string, newName: string, oldName: string): GameState | undefined {
-    const game = this.getGame(gameId);
+    const { clientGameState: game } = this.getGame(gameId);
     const player = this.getPlayer(game, oldName);
     if (!player || !newName) {
       return;
@@ -162,7 +173,7 @@ export default class GamesController {
   }
 
   setPlayerReady(gameId: string, name: string): GameState | undefined {
-    const game = this.getGame(gameId);
+    const { clientGameState: game } = this.getGame(gameId);
     const player = this.getPlayer(game, name);
     if (!player) {
       return;
@@ -174,7 +185,7 @@ export default class GamesController {
   }
 
   startGame(gameId: string): GameState | undefined {
-    const game = this.getGame(gameId);
+    const { clientGameState: game } = this.getGame(gameId);
     if (this.gameCanStart(game)) {
       game.status = GameStatuses.IN_PROGRESS;
       return game;
@@ -182,10 +193,18 @@ export default class GamesController {
   }
 
   addTile(gameId: string, playerName: string): GameState | undefined {
-    const game = this.getGame(gameId);
-    if (isRunningInDev() || playerName === game.players[game.currPlayerIdx].name) {
-      game.tiles.push(newTile());
-      game.currPlayerIdx = (game.currPlayerIdx + 1) % game.players.length;
+    const { clientGameState: game, tilesLeft } = this.getGame(gameId);
+    if (isRunningInDev()) {
+      game.tiles.push(GamesController.getDevTile())
+      this.advanceCurrPlayer(game);
+      return game;
+    } else if (playerName === game.players[game.currPlayerIdx].name && game.numTilesLeft > 0) {
+      const tilesIdx = Math.floor(Math.random() * tilesLeft.length);
+      const tile = tilesLeft[tilesIdx];
+      game.tiles.push(tile);
+      tilesLeft.splice(tilesIdx, 1);
+      game.numTilesLeft = tilesLeft.length;
+      this.advanceCurrPlayer(game);
       return game;
     }
   }
@@ -196,7 +215,7 @@ export default class GamesController {
     newWord: string,
     wordsToClaim?: PlayerWord[]
   ): GameState | undefined {
-    const game = this.getGame(gameId);
+    const { clientGameState: game } = this.getGame(gameId);
     const player = this.getPlayer(game, playerName);
     if (!player || !newWord || newWord.length < 3) {
       return;
