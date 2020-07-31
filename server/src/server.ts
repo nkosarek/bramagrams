@@ -8,7 +8,6 @@ import GamesController from './game-controller';
 const port = process.env.PORT || 4001;
 
 const gamesController = new GamesController();
-const claimedNames: { [gameId: string]: Set<string> } = {}
 
 const app = express();
 const server = http.createServer(app);
@@ -25,18 +24,17 @@ app.get('/', function(req: express.Request, res: express.Response) {
 app.post('/games', (req: express.Request, res: express.Response) => {
   console.log("Received request to create game");
   const id = gamesController.createGame();
-  claimedNames[id] = new Set();
   if (!id) {
     res.status(500).send("ERROR: Failed to create a unique game ID\n");
     return;
   }
-  console.log(`Created game ${id}`);
+  console.log("Created game", id);
   res.status(201).send(id);
 });
 
 // Starts the server.
 server.listen(port, function() {
-  console.log(`Starting server on port ${port}`);
+  console.log("Starting server on port", port);
 });
 
 const updateGameStateWrapper = (
@@ -71,7 +69,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on(ClientEvents.CONNECT_TO_GAME, (gameId: string) => {
-    console.log(`Received CONNECT_TO_GAME request with args: gameId=${gameId}`);
+    console.log("Received CONNECT_TO_GAME request with args: gameId=", gameId);
     updateGameStateWrapper(socket, gameId, () => {
       const gameState = gamesController.getGame(gameId);
       socket.join(gameId);
@@ -81,7 +79,8 @@ io.on('connection', (socket) => {
   });
 
   socket.on(ClientEvents.JOIN_GAME, (gameId: string, playerName: string) => {
-    console.log(`Received JOIN_GAME request with args: gameId=${gameId} playerName=${playerName}`);
+    console.log("Received JOIN_GAME request with args: gameId=", gameId,
+      "playerName=", playerName);
     updateGameStateWrapper(socket, gameId, () => {
       const game = gamesController.addPlayer(gameId, playerName);
       if (game) {
@@ -92,7 +91,8 @@ io.on('connection', (socket) => {
   });
 
   socket.on(ClientEvents.CHANGE_NAME, (gameId: string, newName: string, oldName: string) => {
-    console.log(`Received CHANGE_NAME request with args: gameId=${gameId} newName=${newName} oldName=${oldName}`);
+    console.log("Received CHANGE_NAME request with args: gameId=", gameId,
+      "newName=", newName, "oldName=", oldName);
     updateGameStateWrapper(socket, gameId, () => {
       const game = gamesController.renamePlayer(gameId, newName, oldName);
       if (game) {
@@ -103,24 +103,24 @@ io.on('connection', (socket) => {
   });
 
   socket.on(ClientEvents.READY_TO_START, (gameId: string, player: string) => {
-    console.log(`Received READY_TO_START request with args: gameId=${gameId} player=${player}`);
+    console.log("Received READY_TO_START request with args: gameId=", gameId, "player=", player);
     updateGameStateWrapper(socket, gameId, () => gamesController.setPlayerReady(gameId, player));
   });
 
   socket.on(ClientEvents.START_GAME, (gameId: string) => {
-    console.log(`Received START_GAME request with args: gameId=${gameId}`);
+    console.log("Received START_GAME request with args: gameId=", gameId);
     updateGameStateWrapper(socket, gameId, () => gamesController.startGame(gameId));
   });
 
   socket.on(ClientEvents.ADD_TILE, (gameId: string, player: string) => {
-    console.log(`Received ADD_TILE request with args: gameId=${gameId} player=${player}`);
+    console.log("Received ADD_TILE request with args: gameId=", gameId, "player=", player);
     updateGameStateWrapper(socket, gameId, () => gamesController.addTile(gameId, player));
   });
 
   socket.on(ClientEvents.CLAIM_WORD,
     (gameId: string, player: string, newWord: string, wordsToClaim?: PlayerWord[]) => {
-      console.log(`Received CLAIM_WORD request with args: \
-        gameId=${gameId} player=${player} newWord=${newWord} wordsToClaim=${wordsToClaim}`);
+      console.log("Received CLAIM_WORD request with args: gameId=", gameId,
+        "player=", player, "newWord=", newWord, "wordsToClaim=", wordsToClaim);
       updateGameStateWrapper(socket, gameId, () => {
         const game = gamesController.claimWord(gameId, player, newWord, wordsToClaim);
         if (game) {

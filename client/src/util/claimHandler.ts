@@ -62,7 +62,7 @@ export default class ClaimHandler {
         continue;
       }
 
-      if (ClaimHandler.canBeConstructedFromPool(word, game.tiles)) {
+      if (ClaimHandler.canBeConstructedFromPool(newWordRemainder, game.tiles)) {
         claims.push({ wordsToClaim: wordsToClaim });
       }
       const wordsNotChecked = claimableWords.slice(i);
