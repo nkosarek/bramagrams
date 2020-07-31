@@ -49,8 +49,9 @@ const GameBoard = ({ gameState, gameId, playerName}: GameBoardProps) => {
       if (typedWord && typedWord.length >= 3) {
         const claimOptions = ClaimHandler.getAllPossibleClaims(gameState, typedWord);
         // Default to steal if it's possible
-        const { wordsToSteal } = claimOptions[claimOptions.length - 1];
-        api.claimWord(gameId, playerName, typedWord, wordsToSteal);
+        const claim = ClaimHandler.getClaimWithMostStealsAndWords(gameState, playerName, claimOptions);
+        if (!claim) return;
+        api.claimWord(gameId, playerName, typedWord, claim.wordsToClaim);
       }
     };
 

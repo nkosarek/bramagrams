@@ -35,8 +35,7 @@ const Home = () => {
   const handleNewGame = () => {
     setLoading(true);
     api.createGame()
-      .then(setGameId)
-      .finally(() => setLoading(false));
+      .then(setGameId);
   };
   const handleCancelJoin = () => setJoinDialogOpen(false);
   const handleJoinGame = (event: MouseEvent | FormEvent) => {

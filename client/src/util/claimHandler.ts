@@ -1,55 +1,126 @@
 import { GameState, PlayerWord } from "../server-models";
 
 export interface Claim {
-  wordsToSteal: PlayerWord[];
+  wordsToClaim: PlayerWord[];
 }
 
 export default class ClaimHandler {
-  private static getValidClaim = (
-    game: GameState,
-    newWord: string,
-    playerWordToSteal?: PlayerWord
-  ): Claim | null => {
-    const wordToSteal = playerWordToSteal
-      ? game.players[playerWordToSteal.playerIdx].words[playerWordToSteal.wordIdx]
-      : '';
-    if (newWord.length <= wordToSteal.length) {
+  private static getWordDiff(word1: string, word2: string) {
+    if (word1.length < word2.length) {
       return null;
     }
-    // Check that the word to steal is a subset of the new word
-    let newWordRemainder: string = newWord;
-    for (let i = 0; i < wordToSteal.length; ++i) {
-      const char = wordToSteal.charAt(i);
-      if (!newWordRemainder.includes(char)) {
+    let word1Remainder: string = word1;
+    for (let i = 0; i < word2.length; ++i) {
+      const char = word2.charAt(i);
+      if (!word1Remainder.includes(char)) {
         return null;
       }
-      newWordRemainder = newWordRemainder.replace(char, '');
+      word1Remainder = word1Remainder.replace(char, '');
     }
+    return word1Remainder;
+  }
 
-    // Check that the remainder of the new word can be constructed from the pool
-    const poolRemainder: string[] = [...game.tiles];
-    for (let i = 0; i < newWordRemainder.length; ++i) {
-      const poolIdx = poolRemainder.indexOf(newWordRemainder.charAt(i));
+  private static canBeConstructedFromPool(word: string, tilePool: string[]): boolean {
+    const poolRemainder: string[] = [...tilePool];
+    for (let i = 0; i < word.length; ++i) {
+      const poolIdx = poolRemainder.indexOf(word.charAt(i));
       if (poolIdx < 0) {
-        return null;
+        return false;
       }
       poolRemainder.splice(poolIdx, 1);
     }
-    return { wordsToSteal: playerWordToSteal ? [playerWordToSteal] : [] };
+    return true;
   }
 
-  // TODO: check for multiple words to steal
+  private static getClaims(
+    newWord: string,
+    claimableWords: PlayerWord[],
+    wordsAlreadyClaimed: PlayerWord[],
+    game: GameState,
+  ): Claim[] {
+    const claims: Claim[] = [];
+    for (let i = 0; i < claimableWords.length; ++i) {
+      const playerWord = claimableWords[i];
+      const word = playerWord
+        ? game.players[playerWord.playerIdx].words[playerWord.wordIdx]
+        : '';
+
+      const newWordRemainder = ClaimHandler.getWordDiff(newWord, word);
+      // Word claimed must be subset of newWord
+      if (newWordRemainder === null) {
+        continue;
+      }
+
+      const wordsToClaim = [...wordsAlreadyClaimed, playerWord];
+
+      // No more letters left in new word
+      if (!newWordRemainder) {
+        // Must add to word(s) claimed either via multi-word claim or from pool
+        if (wordsAlreadyClaimed.length) {
+          claims.push({ wordsToClaim: wordsToClaim });
+        }
+        continue;
+      }
+
+      if (ClaimHandler.canBeConstructedFromPool(word, game.tiles)) {
+        claims.push({ wordsToClaim: wordsToClaim });
+      }
+      const wordsNotChecked = claimableWords.slice(i);
+      claims.push(
+        ...ClaimHandler.getClaims(newWordRemainder, wordsNotChecked, wordsToClaim, game)
+      );
+    }
+    return claims;
+  }
+
+  private static getNumStealsInClaim(claim: Claim, playerIdx: number): number {
+    return claim.wordsToClaim.reduce((numSteals, playerWord) =>
+      playerWord.playerIdx !== playerIdx ? numSteals + 1 : numSteals, 0);
+  }
+
   static getAllPossibleClaims = (game: GameState, newWord: string): Claim[] => {
+    if (!newWord) return [];
+
     const allPlayerWords: PlayerWord[] = game.players.reduce((allWords, player, playerIdx) => {
       allWords.push(...player.words.map((word, wordIdx) => ({ playerIdx, wordIdx })));
       return allWords;
     }, [] as PlayerWord[]);
 
-    // Include claim with no steals
-    const claims = [ClaimHandler.getValidClaim(game, newWord)];
+    const claims: Claim[] = [];
+    if (ClaimHandler.canBeConstructedFromPool(newWord, game.tiles)) {
+      claims.push({ wordsToClaim: [] });
+    }
+    claims.push(...ClaimHandler.getClaims(newWord, allPlayerWords, [], game));
+    return claims;
+  }
 
-    claims.push(...allPlayerWords
-      .map(playerWordToSteal => ClaimHandler.getValidClaim(game, newWord, playerWordToSteal)));
-    return claims.filter((x: Claim | null): x is Claim => !!x);
+  static getClaimWithMostStealsAndWords (
+    game: GameState,
+    playerName: string,
+    claims: Claim[]
+  ): Claim | undefined {
+    if (!claims.length) return;
+    const playerIdx = game.players.findIndex(p => p.name === playerName);
+    let claimsWithMaxSteals: Claim[] = [];
+    let maxSteals = -1;
+    claims.forEach(claim => {
+      const numSteals = ClaimHandler.getNumStealsInClaim(claim, playerIdx);
+      if (numSteals > maxSteals) {
+        maxSteals = numSteals;
+        claimsWithMaxSteals = [claim];
+      } else if (numSteals === maxSteals) {
+        claimsWithMaxSteals.push(claim);
+      }
+    });
+
+    let finalClaim;
+    let maxWords = -1;
+    claimsWithMaxSteals.forEach(claim => {
+      if (claim.wordsToClaim.length > maxWords) {
+        maxWords = claim.wordsToClaim.length;
+        finalClaim = claim;
+      }
+    })
+    return finalClaim;
   }
 }
