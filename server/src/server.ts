@@ -59,7 +59,7 @@ const updateGameStateWrapper = (
     }
   } catch (err) {
     socket.emit(ServerEvents.GAME_DNE);
-    console.log("Game does not exist");
+    console.log(err);
   }
 }
 
@@ -118,11 +118,11 @@ io.on('connection', (socket) => {
   });
 
   socket.on(ClientEvents.CLAIM_WORD,
-    (gameId: string, player: string, newWord: string, wordsToSteal?: PlayerWord[]) => {
+    (gameId: string, player: string, newWord: string, wordsToClaim?: PlayerWord[]) => {
       console.log(`Received CLAIM_WORD request with args: \
-        gameId=${gameId} player=${player} newWord=${newWord} wordsToSteal=${wordsToSteal}`);
+        gameId=${gameId} player=${player} newWord=${newWord} wordsToClaim=${wordsToClaim}`);
       updateGameStateWrapper(socket, gameId, () => {
-        const game = gamesController.claimWord(gameId, player, newWord, wordsToSteal);
+        const game = gamesController.claimWord(gameId, player, newWord, wordsToClaim);
         if (game) {
           socket.emit(ServerEvents.WORD_CLAIMED, newWord);
         }

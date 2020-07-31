@@ -61,8 +61,8 @@ class Api {
     this.socket.emit(ClientEvents.ADD_TILE, gameId, player);
   }
 
-  claimWord(gameId: string, player: string, newWord: string, wordsToSteal?: PlayerWord[]) {
-    this.socket.emit(ClientEvents.CLAIM_WORD, gameId, player, newWord, wordsToSteal);
+  claimWord(gameId: string, player: string, newWord: string, wordsToClaim?: PlayerWord[]) {
+    this.socket.emit(ClientEvents.CLAIM_WORD, gameId, player, newWord, wordsToClaim);
   }
 };
 

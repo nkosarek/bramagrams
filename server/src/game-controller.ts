@@ -1,7 +1,7 @@
 import { GameState, Player, PlayerWord, GameStatuses, PlayerStatuses } from './models';
 import Dictionary from './dictionary';
 
-const TILES = ['d', 'i', 's', 'h', 'w', 'a', 's', 'h', 'w', 'a', 's', 'e', 'r'];
+const TILES = ['d', 'i', 's', 'h', 'w', 'a', 's', 'h', 'e', 'r', 'a', 'c', 't', 'd', 'i', 's', 'h', 'w', 'a', 's', 'h', 'e', 'r'];
 let TILES_IDX = 0;
 
 const isRunningInDev = () => process.env.NODE_ENV === 'development';
@@ -18,7 +18,11 @@ const newTile = (): string => {
 const generateGameId = () => {
   const min = 0x10000000;
   const max = 0x100000000;
-  return (Math.floor(Math.random() * (max - min)) + min).toString(16);
+  let id = '';
+  while (!id || id === 'Infinity' || id === 'NaN') {
+    id = (Math.floor(Math.random() * (max - min)) + min).toString(16);
+  }
+  return id;
 };
 
 export default class GamesController {
@@ -52,17 +56,23 @@ export default class GamesController {
   private getNewTilePool(
     game: GameState,
     newWord: string,
-    wordsToSteal: PlayerWord[]
+    wordsToClaim: PlayerWord[]
   ): string[] | undefined {
     let newWordRemainder: string | null = newWord;
-    for (const playerWord of wordsToSteal) {
+    for (const playerWord of wordsToClaim) {
       const word = game.players[playerWord.playerIdx]?.words[playerWord.wordIdx];
-      // There must be at least one tile from the pool used to create the new word
-      if (!word || word.length >= newWordRemainder.length) {
+      if (!word) {
+        console.log('Invalid word taken');
         return;
       }
       newWordRemainder = this.getWordDiff(newWordRemainder, word);
       if (newWordRemainder == null) {
+        console.log('Words taken are not a subset of the new word');
+        return;
+      }
+
+      if (!newWordRemainder && wordsToClaim.length < 2) {
+        console.log('No tiles added to existing word')
         return;
       }
     }
@@ -71,11 +81,30 @@ export default class GamesController {
     for (let i = 0; i < newWordRemainder.length; ++i) {
       const poolIdx = poolRemainder.indexOf(newWordRemainder.charAt(i));
       if (poolIdx < 0) {
+        console.log(`Remainder ('${newWordRemainder}') cannot be constructed with pool`);
         return;
       }
       poolRemainder.splice(poolIdx, 1);
     }
     return poolRemainder;
+  }
+
+  private removeClaimedWords(game: GameState, claimedWords?: PlayerWord[]) {
+    if (!claimedWords) return;
+
+    const wordsToRemoveByPlayer = claimedWords.reduce((array, word) => {
+      if (array[word.playerIdx] != null) {
+        array[word.playerIdx].push(word.wordIdx);
+      } else {
+        array[word.playerIdx] = [word.wordIdx];
+      }
+      return array;
+    }, new Array(game.players.length) as number[][]);
+
+    wordsToRemoveByPlayer.forEach((wordsToRemove, playerIdx) => {
+      const player = game.players[playerIdx];
+      player.words = player.words.filter((w, i) => !wordsToRemove.includes(i));
+    });
   }
 
   gameExists(gameId: string) {
@@ -165,14 +194,14 @@ export default class GamesController {
     gameId: string,
     playerName: string,
     newWord: string,
-    wordsToSteal?: PlayerWord[]
+    wordsToClaim?: PlayerWord[]
   ): GameState | undefined {
     const game = this.getGame(gameId);
     const player = this.getPlayer(game, playerName);
     if (!player || !newWord || newWord.length < 3) {
       return;
     }
-    const newPool = this.getNewTilePool(game, newWord, wordsToSteal || []);
+    const newPool = this.getNewTilePool(game, newWord, wordsToClaim || []);
     if (!newPool) {
       return;
     }
@@ -180,8 +209,7 @@ export default class GamesController {
       return;
     }
     game.tiles = newPool;
-    wordsToSteal?.forEach(playerWord =>
-      game.players[playerWord.playerIdx]?.words.splice(playerWord.wordIdx, 1))
+    this.removeClaimedWords(game, wordsToClaim);
     player.words.push(newWord);
     return game;
   }
