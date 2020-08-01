@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, Button } from '@material-ui/core';
-import { GameState, PlayerStatuses, GameStatuses } from '../../server-models';
+import { GameState, Player, PlayerStatuses, GameStatuses } from '../../server-models';
 import Page from '../shared/Page';
 import TilePool from './TilePool';
 import PlayerHand from './PlayerHand';
@@ -56,6 +56,17 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
       onEndGameButtonClicked = () => api.notReadyToStart(gameId, playerName);
       break;
   }
+
+  const isCurrPlayer = (playerIdx: number) =>
+    gameState.status === GameStatuses.IN_PROGRESS &&
+    !!gameState.numTilesLeft &&
+    playerIdx === gameState.currPlayerIdx;
+
+  const playerIsWaiting = (player: Player) =>
+    [PlayerStatuses.ENDED, PlayerStatuses.NOT_READY_TO_START].includes(player.status);
+
+  const playerIsReady = (player: Player) =>
+    [PlayerStatuses.READY_TO_END, PlayerStatuses.READY_TO_START].includes(player.status);
 
   useEffect(() => {
     api.initWordClaimedSubscription(() => setTypedWord(""));
@@ -162,7 +173,10 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
             <PlayerHand
               name={player.name}
               words={player.words}
-              yourTurn={index === gameState.currPlayerIdx}
+              isYou={player.name === playerName}
+              isCurrPlayer={isCurrPlayer(index)}
+              isWaiting={playerIsWaiting(player)}
+              isReady={playerIsReady(player)}
               dark={gameState.status === GameStatuses.ENDED}
             />
           </Box>
