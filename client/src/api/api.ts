@@ -2,7 +2,7 @@ import axios, { AxiosInstance } from 'axios';
 import socketIOClient from 'socket.io-client';
 import { GameState, PlayerWord, ClientEvents, ServerEvents } from '../server-models';
 
-const SERVER_URL = 'http://localhost:4001';
+const SERVER_URL = 'http://localhost:5000';
 
 class Api {
   private socket: SocketIOClient.Socket;

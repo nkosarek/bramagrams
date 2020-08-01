@@ -1,7 +1,7 @@
 import express from 'express';
 import http from 'http';
 import socketIO from 'socket.io';
-import cors from 'cors';
+import path from 'path';
 import { ServerEvents, ClientEvents, GameState, PlayerWord } from './models';
 import GamesController from './game-controller';
 
@@ -13,12 +13,12 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
 
-app.use(cors({ origin: 'http://localhost:3000' }))
+app.use(express.static(path.join(__dirname, "..", "..", "client", "build")))
 app.set('port', port);
 
 // Routing
-app.get('/', function(req: express.Request, res: express.Response) {
-  res.send("Please go to bramagrams.com");
+app.get('*', function(req: express.Request, res: express.Response) {
+  res.sendFile(path.join(__dirname, "..", "..", "client", "build", "index.html"));
 });
 
 app.post('/games', (req: express.Request, res: express.Response) => {
