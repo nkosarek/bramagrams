@@ -6,9 +6,10 @@ interface PlayerHandProps {
   name: string;
   words: string[];
   yourTurn: boolean;
+  dark?: boolean;
 }
 
-const PlayerHand = ({ name, words, yourTurn }: PlayerHandProps) => {
+const PlayerHand = ({ name, words, yourTurn, dark }: PlayerHandProps) => {
   return (
     <Box display="flex" flexDirection="column" alignItems="center">
       <Typography variant="h4" color={yourTurn ? "secondary" : undefined}>
@@ -23,7 +24,7 @@ const PlayerHand = ({ name, words, yourTurn }: PlayerHandProps) => {
       >
         {words.map((word, i) => (
           <Box m={2} key={i}>
-            <Word word={word} />
+            <Word word={word} dark={dark} />
           </Box>
         ))}
       </Box>

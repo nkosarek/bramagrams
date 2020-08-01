@@ -53,6 +53,10 @@ class Api {
     this.socket.emit(ClientEvents.READY_TO_START, gameId, player);
   }
 
+  notReadyToStart(gameId: string, player: string) {
+    this.socket.emit(ClientEvents.NOT_READY_TO_START, gameId, player);
+  }
+
   startGame(gameId: string) {
     this.socket.emit(ClientEvents.START_GAME, gameId);
   }
@@ -63,6 +67,14 @@ class Api {
 
   claimWord(gameId: string, player: string, newWord: string, wordsToClaim?: PlayerWord[]) {
     this.socket.emit(ClientEvents.CLAIM_WORD, gameId, player, newWord, wordsToClaim);
+  }
+
+  readyToEnd(gameId: string, player: string) {
+    this.socket.emit(ClientEvents.READY_TO_END, gameId, player);
+  }
+
+  notReadyToEnd(gameId: string, player: string) {
+    this.socket.emit(ClientEvents.NOT_READY_TO_END, gameId, player);
   }
 };
 

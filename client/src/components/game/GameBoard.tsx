@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Box } from '@material-ui/core';
-import { GameState } from '../../server-models';
+import { Box, Typography, Button } from '@material-ui/core';
+import { GameState, PlayerStatuses, GameStatuses } from '../../server-models';
 import Page from '../shared/Page';
 import TilePool from './TilePool';
 import PlayerHand from './PlayerHand';
@@ -30,8 +30,32 @@ interface GameBoardProps {
   playerName: string;
 }
 
-const GameBoard = ({ gameState, gameId, playerName}: GameBoardProps) => {
+const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
   const [typedWord, setTypedWord] = useState("");
+
+  const playerState = gameState.players.find(p => p.name === playerName);
+
+  let endGameButtonLabel = 'Rematch';
+  let onEndGameButtonClicked = () => {};
+  switch(playerState?.status) {
+    case PlayerStatuses.PLAYING:
+      endGameButtonLabel = 'Done';
+      onEndGameButtonClicked = () => api.readyToEnd(gameId, playerName);
+      break;
+    case PlayerStatuses.READY_TO_END:
+      endGameButtonLabel = 'No wait';
+      onEndGameButtonClicked = () => api.notReadyToEnd(gameId, playerName);
+      break;
+    case PlayerStatuses.ENDED:
+    case PlayerStatuses.NOT_READY_TO_START:
+      endGameButtonLabel = 'Rematch';
+      onEndGameButtonClicked = () => api.readyToStart(gameId, playerName);
+      break;
+    case PlayerStatuses.READY_TO_START:
+      endGameButtonLabel = 'Don\'t Rematch';
+      onEndGameButtonClicked = () => api.notReadyToStart(gameId, playerName);
+      break;
+  }
 
   useEffect(() => {
     api.initWordClaimedSubscription(() => setTypedWord(""));
@@ -63,6 +87,9 @@ const GameBoard = ({ gameState, gameId, playerName}: GameBoardProps) => {
     };
 
     const handleTypedLetter = (letter: string) => {
+      if (gameState.status === GameStatuses.ENDED) {
+        return;
+      }
       const allTiles = getAllAvailableTiles(gameState);
       if (getPoolWithoutTypedWord(allTiles, typedWord).includes(letter)) {
         setTypedWord(typedWord + letter);
@@ -108,8 +135,24 @@ const GameBoard = ({ gameState, gameId, playerName}: GameBoardProps) => {
   return (
     <Page>
       <Box flexGrow={1} px="10%" py={2} display="flex" flexDirection="column" alignItems="center">
+        <Box mb={2}>
+          {gameState.numTilesLeft ? (
+            <Typography variant="h5">Tiles Left: {gameState.numTilesLeft}</Typography>
+          ) : (
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={onEndGameButtonClicked}
+            >
+              {endGameButtonLabel}
+            </Button>
+          )}
+        </Box>
         <Box flexGrow={1}>
-          <TilePool letters={gameState.tiles || []} />
+          <TilePool
+            letters={gameState.tiles || []}
+            dark={gameState.status === GameStatuses.ENDED}
+          />
         </Box>
         <Word word={typedWord} dark />
       </Box>
@@ -120,6 +163,7 @@ const GameBoard = ({ gameState, gameId, playerName}: GameBoardProps) => {
               name={player.name}
               words={player.words}
               yourTurn={index === gameState.currPlayerIdx}
+              dark={gameState.status === GameStatuses.ENDED}
             />
           </Box>
         ))}

@@ -2,9 +2,6 @@ import { GameState, Player, PlayerWord, GameStatuses, PlayerStatuses } from './m
 import Dictionary from './dictionary';
 import TILES from './data/tiles';
 
-const DEV_TILES = ['d', 'i', 's', 'h', 'w', 'a', 's', 'h', 'e', 'r', 'a', 'c', 't', 'd', 'i', 's', 'h', 'w', 'a', 's', 'h', 'e', 'r'];
-let TILES_IDX = 0;
-
 const isRunningInDev = () => process.env.NODE_ENV === 'development';
 
 interface ServerGameState {
@@ -25,18 +22,12 @@ export default class GamesController {
     return id;
   };
 
-  private static getDevTile() {
-    const char = DEV_TILES[TILES_IDX].toUpperCase();
-    TILES_IDX = (TILES_IDX + 1) % DEV_TILES.length;
-    return char;
-  }
-
   private getPlayer(game: GameState, name: string): Player | undefined {
     return game?.players.find(p => p.name === name);
   }
 
   private gameCanStart(game: GameState): boolean {
-    return game.status === GameStatuses.WAITING_TO_START &&
+    return [GameStatuses.WAITING_TO_START, GameStatuses.ENDED].includes(game.status) &&
       game.players.length > 1 &&
       game.players.every(player => player.status === PlayerStatuses.READY_TO_START);
   }
@@ -114,6 +105,27 @@ export default class GamesController {
     });
   }
 
+  private checkForGameEnd(game: GameState) {
+    if (game.players.every(player => player.status === PlayerStatuses.READY_TO_END)) {
+      game.status = GameStatuses.ENDED;
+      game.players.forEach(player => player.status = PlayerStatuses.ENDED);
+    }
+  }
+
+  private restartGame(serverGameState: ServerGameState): GameState {
+    serverGameState.tilesLeft = [...TILES];
+    const { clientGameState: game } = serverGameState;
+    game.currPlayerIdx = 0;
+    game.status = GameStatuses.IN_PROGRESS;
+    game.tiles = [];
+    game.numTilesLeft = TILES.length;
+    game.players.forEach(p => {
+      p.words = [];
+      p.status = PlayerStatuses.PLAYING;
+    });
+    return game;
+  }
+
   gameExists(gameId: string) {
     return !!this.games[gameId];
   }
@@ -131,7 +143,7 @@ export default class GamesController {
     let count: number = 0;
     do {
       if (++count > 5) {
-        return "";
+        return '';
       }
       id = GamesController.generateGameId();
     } while (this.games[id]);
@@ -153,10 +165,10 @@ export default class GamesController {
     if (!name || this.getPlayer(game, name) || game.players.length >= 2) {
       return;
     }
-    // TODO: after multiple players supported, allow players to join mid game (different status)
+    // TODO: after multiple players supported, allow players to join mid game (different status?)
     game.players.push({
       name,
-      status: PlayerStatuses.NOT_READY,
+      status: PlayerStatuses.NOT_READY_TO_START,
       words: [],
     });
     return game;
@@ -172,14 +184,29 @@ export default class GamesController {
     return game;
   }
 
-  setPlayerReady(gameId: string, name: string): GameState | undefined {
+  setPlayerReadyToStart(gameId: string, name: string): GameState | undefined {
+    const serverGameState = this.getGame(gameId);
+    let { clientGameState: game } = serverGameState;
+    const player = this.getPlayer(game, name);
+    if (!player ||
+        ![PlayerStatuses.NOT_READY_TO_START, PlayerStatuses.ENDED].includes(player.status)) {
+      return;
+    }
+    player.status = PlayerStatuses.READY_TO_START;
+    if (game.status === GameStatuses.ENDED && this.gameCanStart(game)) {
+      return this.restartGame(serverGameState);
+    }
+    return game;
+  }
+
+  setPlayerNotReadyToStart(gameId: string, name: string): GameState | undefined {
     const { clientGameState: game } = this.getGame(gameId);
     const player = this.getPlayer(game, name);
     if (!player) {
       return;
     }
-    if (player.status === PlayerStatuses.NOT_READY) {
-      player.status = PlayerStatuses.READY_TO_START;
+    if (player.status === PlayerStatuses.READY_TO_START) {
+      player.status = PlayerStatuses.NOT_READY_TO_START;
       return game;
     }
   }
@@ -188,17 +215,15 @@ export default class GamesController {
     const { clientGameState: game } = this.getGame(gameId);
     if (this.gameCanStart(game)) {
       game.status = GameStatuses.IN_PROGRESS;
+      game.players.forEach(player => player.status = PlayerStatuses.PLAYING);
       return game;
     }
   }
 
   addTile(gameId: string, playerName: string): GameState | undefined {
     const { clientGameState: game, tilesLeft } = this.getGame(gameId);
-    if (isRunningInDev()) {
-      game.tiles.push(GamesController.getDevTile())
-      this.advanceCurrPlayer(game);
-      return game;
-    } else if (playerName === game.players[game.currPlayerIdx].name && game.numTilesLeft > 0) {
+    if ((isRunningInDev() || playerName === game.players[game.currPlayerIdx].name) &&
+        game.numTilesLeft > 0) {
       const tilesIdx = Math.floor(Math.random() * tilesLeft.length);
       const tile = tilesLeft[tilesIdx];
       game.tiles.push(tile);
@@ -230,6 +255,27 @@ export default class GamesController {
     game.tiles = newPool;
     this.removeClaimedWords(game, wordsToClaim);
     player.words.push(newWord);
+    return game;
+  }
+
+  setPlayerReadyToEnd(gameId: string, playerName: string): GameState | undefined {
+    const { clientGameState: game } = this.getGame(gameId);
+    const player = this.getPlayer(game, playerName);
+    if (!player || game.numTilesLeft || player.status !== PlayerStatuses.PLAYING) {
+      return;
+    }
+    player.status = PlayerStatuses.READY_TO_END;
+    this.checkForGameEnd(game)
+    return game;
+  }
+
+  setPlayerNotReadyToEnd(gameId: string, playerName: string): GameState | undefined {
+    const { clientGameState: game } = this.getGame(gameId);
+    const player = this.getPlayer(game, playerName);
+    if (!player || player.status !== PlayerStatuses.READY_TO_END) {
+      return;
+    }
+    player.status = PlayerStatuses.PLAYING;
     return game;
   }
 }

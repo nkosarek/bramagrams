@@ -104,7 +104,15 @@ io.on('connection', (socket) => {
 
   socket.on(ClientEvents.READY_TO_START, (gameId: string, player: string) => {
     console.log("Received READY_TO_START request with args: gameId=", gameId, "player=", player);
-    updateGameStateWrapper(socket, gameId, () => gamesController.setPlayerReady(gameId, player));
+    updateGameStateWrapper(socket, gameId, () =>
+      gamesController.setPlayerReadyToStart(gameId, player));
+  });
+
+  socket.on(ClientEvents.NOT_READY_TO_START, (gameId: string, player: string) => {
+    console.log("Received NOT_READY_TO_START request with args: gameId=", gameId,
+      "player=", player);
+    updateGameStateWrapper(socket, gameId, () =>
+      gamesController.setPlayerNotReadyToStart(gameId, player));
   });
 
   socket.on(ClientEvents.START_GAME, (gameId: string) => {
@@ -128,5 +136,18 @@ io.on('connection', (socket) => {
         }
         return game;
       });
+  });
+
+  socket.on(ClientEvents.READY_TO_END, (gameId: string, player: string) => {
+    console.log("Received READY_TO_END request with args: gameId=", gameId, "player=", player);
+    updateGameStateWrapper(socket, gameId, () =>
+      gamesController.setPlayerReadyToEnd(gameId, player));
+  });
+
+  socket.on(ClientEvents.NOT_READY_TO_END, (gameId: string, player: string) => {
+    console.log("Received NOT_READY_TO_END request with args: gameId=", gameId,
+      "player=", player);
+    updateGameStateWrapper(socket, gameId, () =>
+      gamesController.setPlayerNotReadyToEnd(gameId, player));
   });
 });

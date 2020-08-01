@@ -27,4 +27,7 @@ const TILES = [
   'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E',
 ];
 
+export const DEV_TILES = ['D', 'I', 'S', 'H', 'W', 'A', 'S', 'H', 'E', 'R',
+  'A', 'C', 'T', 'D', 'I', 'S', 'H', 'W', 'A', 'S', 'H', 'E', 'R'];
+
 export default TILES;
