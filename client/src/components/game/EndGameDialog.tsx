@@ -6,8 +6,15 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  DialogContentText
+  DialogContentText,
+  makeStyles,
 } from '@material-ui/core';
+
+const useStyles = makeStyles((theme) => ({
+  dialog: {
+    backgroundColor: theme.palette.primary.light,
+  },
+}));
 
 interface EndGameDialogProps {
   players: Player[];
@@ -17,6 +24,8 @@ interface EndGameDialogProps {
 }
 
 const EndGameDialog = ({ players, open, onClose, onRematch }: EndGameDialogProps) => {
+  const classes = useStyles();
+
   let dialogTitle;
   let winners: string[] = [];
   let maxWords = -1;
@@ -48,6 +57,7 @@ const EndGameDialog = ({ players, open, onClose, onRematch }: EndGameDialogProps
     <Dialog
       open={open}
       onClose={onClose}
+      PaperProps={{ className: classes.dialog }}
     >
       <DialogTitle>{dialogTitle}</DialogTitle>
       {sheWonAgain && (
