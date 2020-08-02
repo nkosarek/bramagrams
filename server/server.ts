@@ -13,12 +13,12 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
 
-app.use(express.static(path.join(__dirname, "..", "..", "client", "build")))
+app.use(express.static(path.join(__dirname, "..", "client", "build")))
 app.set('port', port);
 
 // Routing
 app.get('*', function(req: express.Request, res: express.Response) {
-  res.sendFile(path.join(__dirname, "..", "..", "client", "build", "index.html"));
+  res.sendFile(path.join(__dirname, "..", "client", "build", "index.html"));
 });
 
 app.post('/games', (req: express.Request, res: express.Response) => {

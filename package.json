@@ -1,5 +1,5 @@
 {
-  "name": "bramagrams-server",
+  "name": "bramagrams",
   "version": "1.0.0",
   "repository": "https://github.com/nkosarek/bramagrams",
   "author": "nkosarek",
@@ -15,15 +15,14 @@
     "@types/node": "^14.0.23",
     "@types/socket.io": "^2.1.8",
     "nodemon": "^2.0.4",
-    "npm-run-all": "^4.1.5",
     "ts-node": "^8.10.2",
     "typescript": "^3.9.7"
   },
   "scripts": {
+    "postinstall": "cd client && yarn install && yarn build",
     "build": "tsc",
     "dev": "NODE_ENV=development nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/server.ts",
     "prod": "NODE_ENV=production yarn start",
-    "server": "node ./dist/server",
-    "start": "npm-run-all build server"
+    "start": "node ./dist/server"
   }
 }
