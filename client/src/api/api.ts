@@ -2,13 +2,17 @@ import axios, { AxiosInstance } from 'axios';
 import socketIOClient from 'socket.io-client';
 import { GameState, PlayerWord, ClientEvents, ServerEvents } from '../server-models';
 
+const DEV_SERVER_URL = 'http://localhost:5000';
+
 class Api {
   private socket: SocketIOClient.Socket;
   private client: AxiosInstance;
 
   constructor() {
-    this.socket = socketIOClient();
+    const isDev = process.env.NODE_ENV === 'development';
+    this.socket = isDev ? socketIOClient(DEV_SERVER_URL) : socketIOClient();
     this.client = axios.create({
+      baseURL: isDev ? DEV_SERVER_URL : undefined,
       timeout: 1000,
     });
   }

@@ -1,12 +1,12 @@
 import { GameState, Player, PlayerWord, GameStatuses, PlayerStatuses } from './models';
 import Dictionary from './dictionary';
 import TILES from './data/tiles';
-
-const isRunningInDev = () => process.env.NODE_ENV === 'development';
+import { isRunningInDev } from './server';
 
 interface ServerGameState {
   clientGameState: GameState;
   tilesLeft: string[];
+  lastAccessed: number;
 }
 
 export default class GamesController {
@@ -21,6 +21,15 @@ export default class GamesController {
     }
     return id;
   };
+
+  private cleanupAbandonedGames() {
+    const gamesToDelete: string[] = [];
+    const oneDayAgo = new Date().setDate(new Date().getDate() - 1);
+    Object.keys(this.games).forEach(gameId =>
+      this.games[gameId].lastAccessed < oneDayAgo && gamesToDelete.push(gameId));
+    console.log('Deleting abandoned games:', gamesToDelete);
+    gamesToDelete.forEach(gameId => delete this.games[gameId]);
+  }
 
   private getPlayer(game: GameState, name: string): Player | undefined {
     return game?.players.find(p => p.name === name);
@@ -126,21 +135,19 @@ export default class GamesController {
     return game;
   }
 
-  gameExists(gameId: string) {
-    return !!this.games[gameId];
-  }
-
   getGame(gameId: string) {
     const game = this.games[gameId];
     if (!game) {
       throw 'Game does not exist';
     }
+    game.lastAccessed = Date.now();
     return game;
   }
 
   createGame(): string {
     let id: string;
     let count: number = 0;
+    this.cleanupAbandonedGames();
     do {
       if (++count > 5) {
         return '';
@@ -149,6 +156,7 @@ export default class GamesController {
     } while (this.games[id]);
     this.games[id] = {
       tilesLeft: [...TILES],
+      lastAccessed: Date.now(),
       clientGameState: {
         players: [],
         currPlayerIdx: 0,

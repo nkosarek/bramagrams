@@ -2,8 +2,11 @@ import express from 'express';
 import http from 'http';
 import socketIO from 'socket.io';
 import path from 'path';
+import cors from 'cors';
 import { ServerEvents, ClientEvents, GameState, PlayerWord } from './models';
 import GamesController from './game-controller';
+
+export const isRunningInDev = () => process.env.NODE_ENV === 'development';
 
 const port = process.env.PORT || 5000;
 
@@ -13,6 +16,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
 
+isRunningInDev() && app.use(cors({ origin: 'http://localhost:3000' }));
 app.use(express.static(path.join(__dirname, "..", "client", "build")))
 app.set('port', port);
 
