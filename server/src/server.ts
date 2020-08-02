@@ -5,7 +5,7 @@ import path from 'path';
 import { ServerEvents, ClientEvents, GameState, PlayerWord } from './models';
 import GamesController from './game-controller';
 
-const port = process.env.PORT || 4001;
+const port = process.env.PORT || 5000;
 
 const gamesController = new GamesController();
 

@@ -51,7 +51,7 @@ const EndGameDialog = ({ players, open, onClose, onRematch }: EndGameDialogProps
     }, '');
   };
 
-  const sheWonAgain = dialogTitle.toLowerCase() === 'emily wins!';
+  const sheWonAgain = winners.length === 1 && winners[0].toLowerCase() === 'emily';
 
   return (
     <Dialog
