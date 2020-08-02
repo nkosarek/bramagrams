@@ -2,16 +2,13 @@ import axios, { AxiosInstance } from 'axios';
 import socketIOClient from 'socket.io-client';
 import { GameState, PlayerWord, ClientEvents, ServerEvents } from '../server-models';
 
-const SERVER_URL = 'http://localhost:5000';
-
 class Api {
   private socket: SocketIOClient.Socket;
   private client: AxiosInstance;
 
-  constructor(baseURL: string) {
-    this.socket = socketIOClient(SERVER_URL);
+  constructor() {
+    this.socket = socketIOClient();
     this.client = axios.create({
-      baseURL,
       timeout: 1000,
     });
   }
@@ -78,5 +75,5 @@ class Api {
   }
 };
 
-const api = new Api(SERVER_URL);
+const api = new Api();
 export default api;
