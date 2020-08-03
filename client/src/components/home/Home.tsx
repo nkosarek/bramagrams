@@ -1,21 +1,18 @@
-import React, { useState, FormEvent } from 'react';
+import React, { useState } from 'react';
 import {
   Backdrop,
   Box,
   Button,
   ButtonGroup,
   CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  TextField,
   Typography,
   makeStyles,
 } from '@material-ui/core';
 import { Redirect } from 'react-router-dom';
 import api from '../../api/api';
 import Page from '../shared/Page';
+import JoinGameDialog from './JoinGameDialog';
+import InstructionsDialog from './InstructionsDialog';
 
 const useStyles = makeStyles((theme) => ({
   backdrop: {
@@ -26,7 +23,7 @@ const useStyles = makeStyles((theme) => ({
 
 const Home = () => {
   const [joinDialogOpen, setJoinDialogOpen] = useState(false);
-  const [gameIdToJoin, setGameIdToJoin] = useState("");
+  const [instructionsDialogOpen, setInstructionsDialogOpen] = useState(false);
   const [gameId, setGameId] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -34,12 +31,10 @@ const Home = () => {
 
   const handleNewGame = () => {
     setLoading(true);
-    api.createGame()
-      .then(setGameId);
+    api.createGame().then(setGameId);
   };
   const handleCancelJoin = () => setJoinDialogOpen(false);
-  const handleJoinGame = (event: MouseEvent | FormEvent) => {
-    event.preventDefault();
+  const handleJoinGame = (gameIdToJoin: string) => {
     setJoinDialogOpen(false);
     setGameId(gameIdToJoin);
   }
@@ -56,7 +51,9 @@ const Home = () => {
         paddingBottom="2rem"
       >
         <Typography variant="h2" align="center" color="secondary">
-          Bramagrams
+          <Box fontWeight="fontWeightBold">
+            Bramagrams
+          </Box>
         </Typography>
       </Box>
       <Box
@@ -67,54 +64,27 @@ const Home = () => {
         bgcolor="secondary.main"
         paddingTop="2rem"
       >
-        <ButtonGroup orientation="vertical">
+        <ButtonGroup orientation="vertical" variant="text">
           <Button onClick={() => handleNewGame()}>
             New Game
           </Button>
           <Button onClick={() => setJoinDialogOpen(true)}>
             Join Game
           </Button>
+          <Button onClick={() => setInstructionsDialogOpen(true)}>
+            Instructions
+          </Button>
         </ButtonGroup>
-        <Dialog
-          open={joinDialogOpen}
-          onClose={handleCancelJoin}
-        >
-          <form onSubmit={handleJoinGame}>
-            <DialogTitle>Join Game</DialogTitle>
-            <DialogContent>
-              <Typography variant="body1" gutterBottom>
-                Paste the link of the game you want to join into the address bar
-              </Typography>
-              <Box ml={2}><Typography variant="body1" gutterBottom>or</Typography></Box>
-              <Typography variant="body1" gutterBottom>
-                Enter the game's ID and click JOIN.
-              </Typography>
-              <TextField
-                value={gameIdToJoin}
-                onChange={(event) => setGameIdToJoin(event.target.value)}
-                fullWidth
-                autoFocus
-                placeholder="ex: f005ba11"
-                size="small"
-                variant="outlined"
-              />
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleCancelJoin}>
-                Cancel
-              </Button>
-              <Button
-                disabled={!gameIdToJoin}
-                onClick={handleJoinGame}
-                color="primary"
-                type="submit"
-              >
-                Join
-              </Button>
-            </DialogActions>
-          </form>
-        </Dialog>
       </Box>
+      <JoinGameDialog
+        open={joinDialogOpen}
+        onCancel={handleCancelJoin}
+        onJoin={handleJoinGame}
+      />
+      <InstructionsDialog
+        open={instructionsDialogOpen}
+        onClose={() => setInstructionsDialogOpen(false)}
+      />
       <Backdrop className={classes.backdrop} open={loading}>
         <CircularProgress color="secondary" />
       </Backdrop>

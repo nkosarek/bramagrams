@@ -2,19 +2,12 @@ import React from 'react';
 import { Player } from '../../server-models';
 import {
   Button,
-  Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   DialogContentText,
-  makeStyles,
 } from '@material-ui/core';
-
-const useStyles = makeStyles((theme) => ({
-  dialog: {
-    backgroundColor: theme.palette.primary.light,
-  },
-}));
+import StyledDialog from '../shared/StyledDialog';
 
 interface EndGameDialogProps {
   players: Player[];
@@ -24,8 +17,6 @@ interface EndGameDialogProps {
 }
 
 const EndGameDialog = ({ players, open, onClose, onRematch }: EndGameDialogProps) => {
-  const classes = useStyles();
-
   let dialogTitle;
   let winners: string[] = [];
   let maxWords = -1;
@@ -54,10 +45,9 @@ const EndGameDialog = ({ players, open, onClose, onRematch }: EndGameDialogProps
   const sheWonAgain = winners.length === 1 && winners[0].toLowerCase() === 'emily';
 
   return (
-    <Dialog
+    <StyledDialog
       open={open}
       onClose={onClose}
-      PaperProps={{ className: classes.dialog }}
     >
       <DialogTitle>{dialogTitle}</DialogTitle>
       {sheWonAgain && (
@@ -69,7 +59,7 @@ const EndGameDialog = ({ players, open, onClose, onRematch }: EndGameDialogProps
         <Button onClick={onClose}>Close</Button>
         <Button onClick={onRematch}>Rematch</Button>
       </DialogActions>
-    </Dialog>
+    </StyledDialog>
   );
 };
 
