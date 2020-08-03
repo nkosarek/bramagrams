@@ -83,7 +83,11 @@ const Home = () => {
             <DialogTitle>Join Game</DialogTitle>
             <DialogContent>
               <Typography variant="body1" gutterBottom>
-                Enter the ID of the game you want to join.
+                Paste the link of the game you want to join into the address bar
+              </Typography>
+              <Box ml={2}><Typography variant="body1" gutterBottom>or</Typography></Box>
+              <Typography variant="body1" gutterBottom>
+                Enter the game's ID and click JOIN.
               </Typography>
               <TextField
                 value={gameIdToJoin}
