@@ -32,7 +32,7 @@ Once all players have set their names and clicked the **READY** button to signal
 
 #### Basics
 
-Each player will take turns "flipping" tiles over to add them to the pool at the top.
+Each player will take turns "flipping" tiles over to add them to the pool at the top by hitting the space bar.
 
 Once a word with at least 3 letters can be constructed using the tiles in the pool, players can type that word and hit the Enter key to claim it.
 

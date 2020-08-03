@@ -113,7 +113,8 @@ const InstructionsDialog = ({ open, onClose }: InstructionsDialogProps) => {
           </Header>
           <Box ml={3}>
             <Body>
-              Each player will take turns "flipping" tiles over to add them to the pool at the top.
+              Each player will take turns "flipping" tiles over to add them to the pool at the top
+              by hitting the space bar.
             </Body>
             <Body>
               Once a word with at least 3 letters can be constructed using the tiles
