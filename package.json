@@ -19,10 +19,10 @@
     "typescript": "^3.9.7"
   },
   "scripts": {
-    "postinstall": "yarn build-client",
-    "build": "tsc",
+    "postinstall": "cd client && yarn install",
+    "build": "yarn build-client && tsc",
     "start": "NODE_ENV=production node ./dist/server",
-    "build-client": "cd client && yarn install && yarn build",
+    "build-client": "cd client && yarn build && cd ..",
     "dev": "NODE_ENV=development nodemon --watch 'server/**/*.ts' --exec 'ts-node' server/server.ts"
   }
 }
