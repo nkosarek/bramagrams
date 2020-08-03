@@ -93,7 +93,11 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
     const handleBackspace = (event: KeyboardEvent) => {
       event.preventDefault();
       if (typedWord) {
-        setTypedWord(typedWord.slice(0, -1));
+        if (event.metaKey || event.ctrlKey) {
+          setTypedWord('');
+        } else {
+          setTypedWord(typedWord.slice(0, -1));
+        }
       }
     };
 
@@ -109,6 +113,7 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
 
     const handleKeyDownEvent = (event: KeyboardEvent) => {
       if (event.key != null) {
+        console.log(event.metaKey, event.ctrlKey, event.key);
         const upperCaseKey = event.key.toUpperCase();
         switch (event.key) {
           case ' ':
