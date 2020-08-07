@@ -11,7 +11,7 @@
     "postinstall": "tsc -b -v shared && cd client && yarn install && cd ../server && yarn install",
     "build": "tsc -b -v server && cd client && yarn build",
     "start": "NODE_ENV=production node server",
-    "clean": "rm -rf client/build && rm -rf server/dist && rm -rf shared/dist"
+    "clean": "rm -rf client/build client/node_modules server/dist server/node_modules shared/dist"
   },
   "engines": {
     "yarn": "1.x",
