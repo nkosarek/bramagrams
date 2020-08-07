@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, Button } from '@material-ui/core';
-import { GameState, Player, PlayerStatuses, GameStatuses } from '../../server-models';
+import { GameState, Player, PlayerStatuses, GameStatuses } from 'bramagrams-shared';
 import Page from '../shared/Page';
 import TilePool from './TilePool';
 import PlayerHand from './PlayerHand';

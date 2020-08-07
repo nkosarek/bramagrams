@@ -21,7 +21,7 @@ app.use(express.static(path.join(__dirname, "..", "..", "client", "build")))
 app.set('port', port);
 
 // Routing
-app.get('*', function(req: express.Request, res: express.Response) {
+app.get('*', (req: express.Request, res: express.Response) => {
   res.sendFile(path.join(__dirname, "..", "..", "client", "build", "index.html"));
 });
 
@@ -37,7 +37,7 @@ app.post('/games', (req: express.Request, res: express.Response) => {
 });
 
 // Starts the server.
-server.listen(port, function() {
+server.listen(port, () => {
   console.log("Starting server on port", port);
 });
 

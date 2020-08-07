@@ -1,5 +1,5 @@
 import React from 'react';
-import { Player } from '../../server-models';
+import { Player } from 'bramagrams-shared';
 import {
   Button,
   DialogActions,

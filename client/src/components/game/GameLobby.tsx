@@ -3,7 +3,7 @@ import { Box, Button, ButtonGroup, TextField, Typography } from '@material-ui/co
 import { Check, MoreHoriz, Person } from '@material-ui/icons';
 import Page from '../shared/Page';
 import api from '../../api/api';
-import { Player, PlayerStatuses } from '../../server-models';
+import { Player, PlayerStatuses } from 'bramagrams-shared';
 
 interface GameLobbyProps {
   gameId: string;

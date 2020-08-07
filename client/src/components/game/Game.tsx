@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom'
 import { CircularProgress, Typography } from '@material-ui/core';
 import Cookies from 'universal-cookie';
 import MessagePage from '../shared/MessagePage';
-import { GameState, GameStatuses, PlayerStatuses } from '../../server-models';
+import { GameState, GameStatuses, PlayerStatuses } from 'bramagrams-shared';
 import api from '../../api/api';
 import GameLobby from './GameLobby';
 import GameBoard from './GameBoard';

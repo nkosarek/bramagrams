@@ -1,17 +1,21 @@
 {
   "name": "bramagrams",
   "version": "1.0.0",
-  "main": "index.js",
+  "repository": "https://github.com/nkosarek/bramagrams",
+  "author": "nkosarek",
+  "license": "MIT",
+  "dependencies": {
+    "typescript": "^3.9.7"
+  },
   "scripts": {
     "postinstall": "tsc -b -v shared && cd client && yarn install && cd ../server && yarn install",
     "build": "tsc -b -v server && cd client && yarn build",
     "start": "NODE_ENV=production node server",
     "clean": "rm -rf client/build && rm -rf server/dist && rm -rf shared/dist"
   },
-  "repository": "https://github.com/nkosarek/bramagrams",
-  "author": "nkosarek",
-  "license": "MIT",
-  "dependencies": {
-    "typescript": "^3.9.7"
+  "engines": {
+    "yarn": "1.x",
+    "npm": "6.x",
+    "node": "14.x"
   }
 }
