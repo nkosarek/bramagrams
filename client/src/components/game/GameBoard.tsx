@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, Button } from '@material-ui/core';
-import { GameState, Player, PlayerStatuses, GameStatuses } from 'bramagrams-shared';
+import { GameState, Player, PlayerStatuses, GameStatuses, Dictionary } from 'bramagrams-shared';
 import Page from '../shared/Page';
 import TilePool from './TilePool';
 import PlayerHand from './PlayerHand';
@@ -171,7 +171,7 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
             dark={gameState.status === GameStatuses.ENDED}
           />
         </Box>
-        <Word word={typedWord} dark />
+        <Word word={typedWord} dark={!Dictionary.isValidWord(typedWord)} />
       </Box>
       <Box minHeight="70%" px={3} display="flex">
         {gameState.players.map((player, index) => (
