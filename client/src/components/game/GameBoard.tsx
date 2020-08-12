@@ -73,7 +73,8 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
   }, [gameId]);
 
   useEffect(() => {
-    const handleSpacebar = () => {
+    const handleSpacebar = (event: KeyboardEvent) => {
+      event.preventDefault();
       if (process.env.NODE_ENV === "development" ||
           gameState.players[gameState.currPlayerIdx].name === playerName) {
         api.addTile(gameId, playerName);
@@ -97,7 +98,7 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
         if (event.metaKey || event.ctrlKey) {
           setTypedWord('');
         } else {
-          setTypedWord(typedWord.slice(0, -1));
+          setTypedWord(word => word.slice(0, -1));
         }
       }
     };
@@ -108,7 +109,7 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
       }
       const allTiles = getAllAvailableTiles(gameState);
       if (getPoolWithoutTypedWord(allTiles, typedWord).includes(letter)) {
-        setTypedWord(typedWord + letter);
+        setTypedWord(word => word + letter);
       }
     };
 
@@ -118,7 +119,7 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
         const upperCaseKey = event.key.toUpperCase();
         switch (event.key) {
           case ' ':
-            return handleSpacebar();
+            return handleSpacebar(event);
           case 'Enter':
             return handleEnter(event);
           case 'Backspace':
@@ -132,7 +133,7 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
       } else {
         switch (event.keyCode) {
           case 32:
-            return handleSpacebar();
+            return handleSpacebar(event);
           case 13:
             return handleEnter(event);
           case 8:
