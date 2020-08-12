@@ -115,7 +115,6 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
 
     const handleKeyDownEvent = (event: KeyboardEvent) => {
       if (event.key != null) {
-        console.log(event.metaKey, event.ctrlKey, event.key);
         const upperCaseKey = event.key.toUpperCase();
         switch (event.key) {
           case ' ':
