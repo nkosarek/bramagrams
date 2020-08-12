@@ -80,7 +80,8 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
       }
     };
 
-    const handleEnter = () => {
+    const handleEnter = (event: KeyboardEvent) => {
+      event.preventDefault();
       if (typedWord && typedWord.length >= 3) {
         const claimOptions = ClaimHandler.getAllPossibleClaims(gameState, typedWord);
         // Default to steal if it's possible
@@ -119,7 +120,7 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
           case ' ':
             return handleSpacebar();
           case 'Enter':
-            return handleEnter();
+            return handleEnter(event);
           case 'Backspace':
             return handleBackspace(event);
           default:
@@ -133,7 +134,7 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
           case 32:
             return handleSpacebar();
           case 13:
-            return handleEnter();
+            return handleEnter(event);
           case 8:
             return handleBackspace(event);
           default:
