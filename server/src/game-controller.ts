@@ -1,6 +1,12 @@
-import { GameState, Player, PlayerWord, GameStatuses, PlayerStatuses } from './models';
-import Dictionary from './dictionary';
-import TILES from './data/tiles';
+import {
+  Dictionary,
+  TILES,
+  GameState,
+  GameStatuses,
+  Player,
+  PlayerWord,
+  PlayerStatuses,
+} from 'bramagrams-shared';
 import { isRunningInDev } from './server';
 
 interface ServerGameState {

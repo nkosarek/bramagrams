@@ -1,4 +1,4 @@
-import { GameState, PlayerWord } from "../server-models";
+import { GameState, PlayerWord } from "bramagrams-shared";
 
 export interface Claim {
   wordsToClaim: PlayerWord[];

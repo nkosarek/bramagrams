@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import socketIOClient from 'socket.io-client';
-import { GameState, PlayerWord, ClientEvents, ServerEvents } from '../server-models';
+import { GameState, PlayerWord, ClientEvents, ServerEvents } from 'bramagrams-shared';
 
 const DEV_SERVER_URL = 'http://localhost:5000';
 

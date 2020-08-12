@@ -3,7 +3,7 @@ import http from 'http';
 import socketIO from 'socket.io';
 import path from 'path';
 import cors from 'cors';
-import { ServerEvents, ClientEvents, GameState, PlayerWord } from './models';
+import { ServerEvents, ClientEvents, GameState, PlayerWord } from 'bramagrams-shared';
 import GamesController from './game-controller';
 
 export const isRunningInDev = () => process.env.NODE_ENV === 'development';
@@ -17,12 +17,12 @@ const server = http.createServer(app);
 const io = socketIO(server);
 
 isRunningInDev() && app.use(cors({ origin: 'http://localhost:3000' }));
-app.use(express.static(path.join(__dirname, "..", "client", "build")))
+app.use(express.static(path.join(__dirname, "..", "..", "client", "build")))
 app.set('port', port);
 
 // Routing
-app.get('*', function(req: express.Request, res: express.Response) {
-  res.sendFile(path.join(__dirname, "..", "client", "build", "index.html"));
+app.get('*', (req: express.Request, res: express.Response) => {
+  res.sendFile(path.join(__dirname, "..", "..", "client", "build", "index.html"));
 });
 
 app.post('/games', (req: express.Request, res: express.Response) => {
@@ -37,7 +37,7 @@ app.post('/games', (req: express.Request, res: express.Response) => {
 });
 
 // Starts the server.
-server.listen(port, function() {
+server.listen(port, () => {
   console.log("Starting server on port", port);
 });
 
