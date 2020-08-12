@@ -72,7 +72,7 @@ const Home = () => {
             Join Game
           </Button>
           <Button onClick={() => setInstructionsDialogOpen(true)}>
-            Instructions
+            How To Play
           </Button>
         </ButtonGroup>
       </Box>

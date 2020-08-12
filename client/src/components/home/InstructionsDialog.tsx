@@ -81,14 +81,11 @@ const InstructionsDialog = ({ open, onClose }: InstructionsDialogProps) => {
             <Close />
           </IconButton>
           <Typography variant="h6">
-            Instructions
+            How To Play
           </Typography>
         </Toolbar>
       </AppBar>
       <Box ml={3} mt={3}>
-        <Header variant="h4">
-          How To Play
-        </Header>
         <Box ml={2}>
           <Header>
             Starting
