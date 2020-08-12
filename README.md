@@ -60,14 +60,17 @@ Players can then choose to play a rematch if they all click the **REMATCH** butt
 
 #### Repo Structure
 
-The server source code is located in the `server` directory. Its entrypoint is `server.ts` (or `./dist/server.js` after compilation). The server's `package.json` is located in the root directory.
+The server source code is located in the `./server/src` directory. Its entrypoint is `server.ts` (or `./dist/server.js` after compilation). The server's `package.json` is located in `./server`.
 
 The client source code is located in the `./client/src` directory. It was initialized using the `create-react-app` utility. The client's `package.json` is located in `./client`.
+
+Shared source code is located in the `./shared/src` directory. This package is automatically built when `yarn install` is run from the root directory. Both the server and client depend on this code.
 
 #### Running
 
 To build and run the production build, run the following command:
 ```sh
+yarn clean && \
 yarn install && \
 yarn build && \
 yarn start
@@ -75,13 +78,16 @@ yarn start
 
 Run the following commands to start up the server and client separately in a development environment with file watchers so they will be updated as files are updated. The server will run on port 5000 and the client will run on port 3000.
 
+**NOTE:** Before running the following commands, the `shared` packaged must be built and installed. To do this, run `yarn install` from the root directory.
+
 Server:
-```
+```sh
+cd server && \
 yarn dev
 ```
 
 Client:
-```
+```sh
 cd client && \
 yarn start
 ```
