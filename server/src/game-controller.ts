@@ -9,6 +9,8 @@ import {
 } from 'bramagrams-shared';
 import { isRunningInDev } from './server';
 
+const MAX_PLAYERS = 4;
+
 interface ServerGameState {
   clientGameState: GameState;
   tilesLeft: string[];
@@ -41,14 +43,34 @@ export default class GamesController {
     return game?.players.find(p => p.name === name);
   }
 
+  private getNumPlayingPlayers(game: GameState): number {
+    const playingStatus = game.status === GameStatuses.WAITING_TO_START
+      ? PlayerStatuses.READY_TO_START
+      : PlayerStatuses.PLAYING;
+    return game.players.filter(p => p.status === playingStatus).length;
+  }
+
   private gameCanStart(game: GameState): boolean {
-    return [GameStatuses.WAITING_TO_START, GameStatuses.ENDED].includes(game.status) &&
-      game.players.length > 1 &&
-      game.players.every(player => player.status === PlayerStatuses.READY_TO_START);
+    return game.status === GameStatuses.WAITING_TO_START &&
+      game.players.filter(player => player.status === PlayerStatuses.READY_TO_START).length > 1;
+  }
+
+  private addNewTileToPool(game: GameState, tilesLeft: string[]) {
+    const tilesIdx = Math.floor(Math.random() * tilesLeft.length);
+    const tile = tilesLeft[tilesIdx];
+    game.tiles.push(tile);
+    tilesLeft.splice(tilesIdx, 1);
+    game.numTilesLeft = tilesLeft.length;
   }
 
   private advanceCurrPlayer(game: GameState) {
-    game.currPlayerIdx = (game.currPlayerIdx + 1) % game.players.length;
+    const advance = (idx: number) => (idx + 1) % game.players.length;
+    const isSpectating = (idx: number) => game.players[idx].status === PlayerStatuses.SPECTATING;
+    let newCurrPlayerIdx = advance(game.currPlayerIdx);
+    while (isSpectating(newCurrPlayerIdx)) {
+      newCurrPlayerIdx = advance(newCurrPlayerIdx);
+    }
+    game.currPlayerIdx = newCurrPlayerIdx;
   }
 
   private getWordDiff(word1: string, word2: string): string | null {
@@ -176,13 +198,17 @@ export default class GamesController {
 
   addPlayer(gameId: string, name: string): GameState | undefined {
     const { clientGameState: game } = this.getGame(gameId);
-    if (!name || this.getPlayer(game, name) || game.players.length >= 2) {
+    if (!name || this.getPlayer(game, name)) {
       return;
     }
     // TODO: after multiple players supported, allow players to join mid game (different status?)
+    const status =
+      game.status === GameStatuses.WAITING_TO_START && this.getNumPlayingPlayers(game) < MAX_PLAYERS
+        ? PlayerStatuses.READY_TO_START
+        : PlayerStatuses.SPECTATING;
     game.players.push({
       name,
-      status: PlayerStatuses.NOT_READY_TO_START,
+      status,
       words: [],
     });
     return game;
@@ -198,54 +224,57 @@ export default class GamesController {
     return game;
   }
 
-  setPlayerReadyToStart(gameId: string, name: string): GameState | undefined {
-    const serverGameState = this.getGame(gameId);
-    let { clientGameState: game } = serverGameState;
+  setPlayerSpectating(gameId: string, name: string): GameState | undefined {
+    let { clientGameState: game } = this.getGame(gameId);
     const player = this.getPlayer(game, name);
-    if (!player ||
-        ![PlayerStatuses.NOT_READY_TO_START, PlayerStatuses.ENDED].includes(player.status)) {
+    if (!player || player.status !== PlayerStatuses.READY_TO_START) {
       return;
     }
-    player.status = PlayerStatuses.READY_TO_START;
-    if (game.status === GameStatuses.ENDED && this.gameCanStart(game)) {
-      return this.restartGame(serverGameState);
-    }
+    player.status = PlayerStatuses.SPECTATING;
     return game;
   }
 
-  setPlayerNotReadyToStart(gameId: string, name: string): GameState | undefined {
-    const { clientGameState: game } = this.getGame(gameId);
+  setPlayerReadyToStart(gameId: string, name: string): GameState | undefined {
+    const serverGameState = this.getGame(gameId);
+    const { clientGameState: game } = serverGameState;
     const player = this.getPlayer(game, name);
-    if (!player) {
+    if (!player ||
+        game.status !== GameStatuses.WAITING_TO_START ||
+        player.status !== PlayerStatuses.SPECTATING ||
+        this.getNumPlayingPlayers(game) >= MAX_PLAYERS) {
       return;
     }
-    if (player.status === PlayerStatuses.READY_TO_START) {
-      player.status = PlayerStatuses.NOT_READY_TO_START;
-      return game;
+    player.status = PlayerStatuses.READY_TO_START;
+    return game;
+  }
+
+  rematch(gameId: string): GameState | undefined {
+    const serverGameState = this.getGame(gameId);
+    const { clientGameState: game } = serverGameState;
+    if (game.status === GameStatuses.ENDED) {
+      return this.restartGame(serverGameState);
     }
   }
 
   startGame(gameId: string): GameState | undefined {
     const { clientGameState: game } = this.getGame(gameId);
-    if (this.gameCanStart(game)) {
-      game.status = GameStatuses.IN_PROGRESS;
-      game.players.forEach(player => player.status = PlayerStatuses.PLAYING);
-      return game;
+    if (!this.gameCanStart(game)) {
+      return;
     }
+    game.status = GameStatuses.IN_PROGRESS;
+    game.players.forEach(player => player.status = PlayerStatuses.PLAYING);
+    return game;
   }
 
   addTile(gameId: string, playerName: string): GameState | undefined {
     const { clientGameState: game, tilesLeft } = this.getGame(gameId);
-    if ((isRunningInDev() || playerName === game.players[game.currPlayerIdx].name) &&
-        game.numTilesLeft > 0) {
-      const tilesIdx = Math.floor(Math.random() * tilesLeft.length);
-      const tile = tilesLeft[tilesIdx];
-      game.tiles.push(tile);
-      tilesLeft.splice(tilesIdx, 1);
-      game.numTilesLeft = tilesLeft.length;
-      this.advanceCurrPlayer(game);
-      return game;
+    if (game.numTilesLeft === 0 ||
+        (!isRunningInDev() && playerName !== game.players[game.currPlayerIdx].name)) {
+      return;
     }
+    this.addNewTileToPool(game, tilesLeft);
+    this.advanceCurrPlayer(game);
+    return game;
   }
 
   claimWord(
@@ -256,7 +285,9 @@ export default class GamesController {
   ): GameState | undefined {
     const { clientGameState: game } = this.getGame(gameId);
     const player = this.getPlayer(game, playerName);
-    if (!player || !newWord || newWord.length < 3) {
+    const playerIsSpectating = player?.status === PlayerStatuses.SPECTATING;
+    if (!player || !newWord || newWord.length < 3 ||
+        (playerIsSpectating && this.getNumPlayingPlayers(game) >= MAX_PLAYERS)) {
       return;
     }
     const newPool = this.getNewTilePool(game, newWord, wordsToClaim || []);
@@ -269,6 +300,9 @@ export default class GamesController {
     game.tiles = newPool;
     this.removeClaimedWords(game, wordsToClaim);
     player.words.push(newWord);
+    if (playerIsSpectating) {
+      player.status = PlayerStatuses.PLAYING;
+    }
     return game;
   }
 

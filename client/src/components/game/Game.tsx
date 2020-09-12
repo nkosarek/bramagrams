@@ -13,6 +13,10 @@ export const PLAYER_NAME_COOKIE = 'bramagrams-player-name';
 
 const cookies = new Cookies();
 
+interface UrlParams {
+  gameId: string;
+}
+
 interface GameCookie {
   gameId: string;
   name: string;
@@ -28,7 +32,7 @@ const getPlayer = (gameState: GameState, name: string) =>
   gameState.players.find(p => p.name === name);
 
 const Game = () => {
-  const { gameId } = useParams();
+  const { gameId } = useParams<UrlParams>();
   const [gameDne, setGameDne] = useState(false);
   const [gameState, setGameState] = useState<GameState | undefined>();
   const [playerName, setPlayerName] = useState("");
