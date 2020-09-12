@@ -47,13 +47,8 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
       onEndGameButtonClicked = () => api.notReadyToEnd(gameId, playerName);
       break;
     case PlayerStatuses.ENDED:
-    case PlayerStatuses.NOT_READY_TO_START:
       endGameButtonLabel = 'Rematch';
-      onEndGameButtonClicked = () => api.readyToStart(gameId, playerName);
-      break;
-    case PlayerStatuses.READY_TO_START:
-      endGameButtonLabel = 'Don\'t Rematch';
-      onEndGameButtonClicked = () => api.notReadyToStart(gameId, playerName);
+      onEndGameButtonClicked = () => api.rematch(gameId);
       break;
   }
 
@@ -62,11 +57,8 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
     !!gameState.numTilesLeft &&
     playerIdx === gameState.currPlayerIdx;
 
-  const playerIsWaiting = (player: Player) =>
-    [PlayerStatuses.ENDED, PlayerStatuses.NOT_READY_TO_START].includes(player.status);
-
-  const playerIsReady = (player: Player) =>
-    [PlayerStatuses.READY_TO_END, PlayerStatuses.READY_TO_START].includes(player.status);
+  const playerIsWaiting = (player: Player) => player.status === PlayerStatuses.ENDED;
+  const playerIsReady = (player: Player) => player.status === PlayerStatuses.READY_TO_END;
 
   useEffect(() => {
     api.initWordClaimedSubscription(() => setTypedWord(""));

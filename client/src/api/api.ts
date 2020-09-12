@@ -50,12 +50,12 @@ class Api {
     this.socket.emit(ClientEvents.CHANGE_NAME, gameId, newName, oldName);
   }
 
-  readyToStart(gameId: string, player: string) {
-    this.socket.emit(ClientEvents.READY_TO_START, gameId, player);
+  becomeSpectator(gameId: string, player: string) {
+    this.socket.emit(ClientEvents.BECOME_SPECTATOR, gameId, player);
   }
 
-  notReadyToStart(gameId: string, player: string) {
-    this.socket.emit(ClientEvents.NOT_READY_TO_START, gameId, player);
+  readyToStart(gameId: string, player: string) {
+    this.socket.emit(ClientEvents.READY_TO_START, gameId, player);
   }
 
   startGame(gameId: string) {
@@ -76,6 +76,10 @@ class Api {
 
   notReadyToEnd(gameId: string, player: string) {
     this.socket.emit(ClientEvents.NOT_READY_TO_END, gameId, player);
+  }
+
+  rematch(gameId: string) {
+    this.socket.emit(ClientEvents.REMATCH, gameId);
   }
 };
 

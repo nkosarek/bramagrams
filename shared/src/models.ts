@@ -1,8 +1,10 @@
+export const MAX_PLAYERS = 3;
+
 export enum ClientEvents {
   CONNECT_TO_GAME = 'connectToGame',
   JOIN_GAME = 'joinGame',
   CHANGE_NAME = 'changeName',
-  SPECTATING = 'spectating',
+  BECOME_SPECTATOR = 'spectating',
   READY_TO_START = 'readyToStart',
   START_GAME = 'startGame',
   ADD_TILE = 'addTile',

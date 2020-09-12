@@ -41,9 +41,6 @@ const Game = () => {
   const handleGameUpdate = useRef<(game: GameState) => void>((game) => {});
 
   const players = gameState?.players || [];
-  const canStart = gameState?.status === GameStatuses.WAITING_TO_START &&
-    players.length > 1 &&
-    players.every(player => player.status === PlayerStatuses.READY_TO_START);
 
   useEffect(() => {
     handleGameUpdate.current = (gameState: GameState) => {
@@ -104,7 +101,6 @@ const Game = () => {
       gameId={gameId}
       playerName={playerName}
       players={players}
-      canStart={canStart}
       onNameClaimed={handleNameClaimed}
     />
   ) : (

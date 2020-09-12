@@ -6,10 +6,9 @@ import {
   Player,
   PlayerWord,
   PlayerStatuses,
+  MAX_PLAYERS,
 } from 'bramagrams-shared';
 import { isRunningInDev } from './server';
-
-const MAX_PLAYERS = 4;
 
 interface ServerGameState {
   clientGameState: GameState;

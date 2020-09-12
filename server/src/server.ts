@@ -106,8 +106,8 @@ io.on('connection', (socket) => {
     });
   });
 
-  socket.on(ClientEvents.SPECTATING, (gameId: string, player: string) => {
-    console.log("Received SPECTATING request with args: gameId=", gameId, "player=", player);
+  socket.on(ClientEvents.BECOME_SPECTATOR, (gameId: string, player: string) => {
+    console.log("Received BECOME_SPECTATOR request with args: gameId=", gameId, "player=", player);
     updateGameStateWrapper(socket, gameId, () =>
       gamesController.setPlayerSpectating(gameId, player));
   });

@@ -1,25 +1,38 @@
 import React, { useState, useEffect, FormEvent } from 'react';
 import { Box, Button, ButtonGroup, TextField, Typography } from '@material-ui/core';
-import { Check, MoreHoriz, Person } from '@material-ui/icons';
+import { MoreHoriz, Person, Visibility } from '@material-ui/icons';
 import Page from '../shared/Page';
 import api from '../../api/api';
-import { Player, PlayerStatuses } from 'bramagrams-shared';
+import { MAX_PLAYERS, Player, PlayerStatuses } from 'bramagrams-shared';
+
+const getNumPlayingPlayers = (players: Player[]) => {
+  return players.filter(p => p.status === PlayerStatuses.READY_TO_START).length;
+};
 
 interface GameLobbyProps {
   gameId: string;
   playerName: string;
   players: Player[];
-  canStart: boolean;
   onNameClaimed: (name: string) => void;
 };
 
-const GameLobby = ({ gameId, playerName, players, canStart, onNameClaimed }: GameLobbyProps) => {
+const GameLobby = ({ gameId, playerName, players, onNameClaimed }: GameLobbyProps) => {
   const [requestedName, setRequestedName] = useState(playerName);
   const playerState = players.find(player => player.name === playerName);
   const [editingName, setEditingName] = useState(!playerState);
   const [hasEdited, setHasEdited] = useState(false);
 
   const hasNameError = requestedName !== playerName && players.map(p => p.name).includes(requestedName);
+
+  const statusChangeButtonLabel = playerState?.status === PlayerStatuses.READY_TO_START
+    ? "Spectate"
+    : "Join";
+  const statusChangeButtonDisabled = !playerState ||
+    (playerState.status === PlayerStatuses.SPECTATING && getNumPlayingPlayers(players) >= MAX_PLAYERS);
+
+  const startDisabled = !playerState ||
+    playerState.status === PlayerStatuses.SPECTATING ||
+    getNumPlayingPlayers(players) < 2;
 
   const handleNameEdited = (name: string) => {
     !hasEdited && setHasEdited(true);
@@ -38,8 +51,12 @@ const GameLobby = ({ gameId, playerName, players, canStart, onNameClaimed }: Gam
     }
   };
 
-  const handleReady = () => {
-    api.readyToStart(gameId, playerName);
+  const handleStatusChange = () => {
+    if (playerState?.status === PlayerStatuses.SPECTATING) {
+      api.readyToStart(gameId, playerName);
+    } else if (playerState?.status === PlayerStatuses.READY_TO_START) {
+      api.becomeSpectator(gameId, playerName);
+    }
   };
 
   const handleStart = () => {
@@ -68,9 +85,10 @@ const GameLobby = ({ gameId, playerName, players, canStart, onNameClaimed }: Gam
             <Box key={index} display="flex" flexDirection="column" alignItems="center" mx={1}>
               <Typography variant="h6" color="secondary">{player.name}</Typography>
               <Box display="flex">
-                <Person />
                 {player.status === PlayerStatuses.READY_TO_START ? (
-                  <Check />
+                  <Person />
+                ) : player.status === PlayerStatuses.SPECTATING ? (
+                  <Visibility />
                 ) : (
                   <MoreHoriz />
                 )}
@@ -125,14 +143,14 @@ const GameLobby = ({ gameId, playerName, players, canStart, onNameClaimed }: Gam
               Edit Name
             </Button>
             <Button
-              disabled={!playerState || playerState.status === PlayerStatuses.READY_TO_START}
-              onClick={() => handleReady()}
+              disabled={statusChangeButtonDisabled}
+              onClick={() => handleStatusChange()}
               color="secondary"
             >
-              Ready
+              {statusChangeButtonLabel}
             </Button>
             <Button
-              disabled={!canStart}
+              disabled={startDisabled}
               onClick={() => handleStart()}
               color="secondary"
             >
