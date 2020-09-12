@@ -1,5 +1,5 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Box, Button, ButtonGroup, TextField, Typography } from '@material-ui/core';
+import { Box, Button, ButtonGroup, Divider, TextField, Typography } from '@material-ui/core';
 import { MoreHoriz, Person, Visibility } from '@material-ui/icons';
 import Page from '../shared/Page';
 import api from '../../api/api';
@@ -82,16 +82,19 @@ const GameLobby = ({ gameId, playerName, players, onNameClaimed }: GameLobbyProp
       <Box flexGrow={1} display="flex" flexDirection="column" alignItems="center" justifyContent="center">
         <Box display="flex" mb={10}>
           {players.map((player, index) => (
-            <Box key={index} display="flex" flexDirection="column" alignItems="center" mx={1}>
-              <Typography variant="h6" color="secondary">{player.name}</Typography>
-              <Box display="flex">
-                {player.status === PlayerStatuses.READY_TO_START ? (
-                  <Person />
-                ) : player.status === PlayerStatuses.SPECTATING ? (
-                  <Visibility />
-                ) : (
-                  <MoreHoriz />
-                )}
+            <Box key={player.name} display="flex">
+              {index > 0 && <Divider orientation="vertical" variant="middle" />}
+              <Box display="flex" flexDirection="column" alignItems="center" mx={1}>
+                <Typography variant="h6" color="secondary">{player.name}</Typography>
+                <Box display="flex">
+                  {player.status === PlayerStatuses.READY_TO_START ? (
+                    <Person />
+                  ) : player.status === PlayerStatuses.SPECTATING ? (
+                    <Visibility />
+                  ) : (
+                    <MoreHoriz />
+                  )}
+                </Box>
               </Box>
             </Box>
           ))}

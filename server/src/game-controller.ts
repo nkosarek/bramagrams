@@ -261,7 +261,11 @@ export default class GamesController {
       return;
     }
     game.status = GameStatuses.IN_PROGRESS;
-    game.players.forEach(player => player.status = PlayerStatuses.PLAYING);
+    game.players.forEach(player => {
+      if (player.status === PlayerStatuses.READY_TO_START) {
+        player.status = PlayerStatuses.PLAYING;
+      }
+    });
     return game;
   }
 

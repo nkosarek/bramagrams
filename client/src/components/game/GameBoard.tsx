@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Button } from '@material-ui/core';
+import { Box, Typography, Button, Paper, makeStyles } from '@material-ui/core';
 import { GameState, Player, PlayerStatuses, GameStatuses, Dictionary } from 'bramagrams-shared';
 import Page from '../shared/Page';
 import TilePool from './TilePool';
@@ -7,6 +7,7 @@ import PlayerHand from './PlayerHand';
 import api from '../../api/api';
 import Word from './Word';
 import ClaimHandler from '../../util/claimHandler';
+import SpectatorsList from './SpectatorsList';
 
 const getAllAvailableTiles = (gameState: GameState) => {
   let poolAndWords = [...gameState.tiles];
@@ -24,6 +25,16 @@ const getPoolWithoutTypedWord = (pool: string[], word: string): string[] => {
   return adjustedPool;
 };
 
+const useStyles = makeStyles((theme) => ({
+  topCornerBox: {
+    width: "20%",
+  },
+  spectatorsListPaper: {
+    margin: theme.spacing(1),
+    backgroundColor: theme.palette.primary.dark,
+  },
+}));
+
 interface GameBoardProps {
   gameState: GameState;
   gameId: string;
@@ -33,7 +44,11 @@ interface GameBoardProps {
 const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
   const [typedWord, setTypedWord] = useState("");
 
+  const classes = useStyles();
+
   const playerState = gameState.players.find(p => p.name === playerName);
+  const playingPlayers = gameState.players.filter(p => p.status !== PlayerStatuses.SPECTATING);
+  const spectatingPlayers = gameState.players.filter(p => p.status === PlayerStatuses.SPECTATING);
 
   let endGameButtonLabel = 'Rematch';
   let onEndGameButtonClicked = () => {};
@@ -143,31 +158,52 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
 
   return (
     <Page>
-      <Box flexGrow={1} px="10%" py={2} display="flex" flexDirection="column" alignItems="center">
-        <Box mb={2}>
-          {gameState.numTilesLeft ? (
-            <Typography variant="h5">Tiles Left: {gameState.numTilesLeft}</Typography>
-          ) : (
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={onEndGameButtonClicked}
-            >
-              {endGameButtonLabel}
-            </Button>
-          )}
+      <Box maxHeight="30%" display="flex" alignItems="flex-start">
+        <Box p={1} className={classes.topCornerBox}>
+          <Button
+            variant="outlined"
+            color="secondary"
+            href="/"
+          >
+            Home
+          </Button>
         </Box>
-        <Box flexGrow={1}>
-          <TilePool
-            letters={gameState.tiles || []}
-            dark={gameState.status === GameStatuses.ENDED}
-          />
+        <Box flexGrow={1} width="90%" py={2} display="flex" flexDirection="column" alignItems="center">
+          <Box mb={2}>
+            {gameState.numTilesLeft || !playerState || playerState.status === PlayerStatuses.SPECTATING ? (
+              <Typography variant="h5">Tiles Left: {gameState.numTilesLeft}</Typography>
+            ) : (
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={onEndGameButtonClicked}
+              >
+                {endGameButtonLabel}
+              </Button>
+            )}
+          </Box>
+          <Box flexGrow={1} display="flex">
+            <TilePool
+              letters={gameState.tiles || []}
+              dark={gameState.status === GameStatuses.ENDED}
+            />
+          </Box>
+          <Word word={typedWord} dark={!Dictionary.isValidWord(typedWord)} />
         </Box>
-        <Word word={typedWord} dark={!Dictionary.isValidWord(typedWord)} />
+        {spectatingPlayers.length ? (
+          <Paper
+            elevation={3}
+            className={`${classes.spectatorsListPaper} ${classes.topCornerBox}`}
+          >
+            <SpectatorsList spectators={spectatingPlayers} playerName={playerName} />
+          </Paper>
+        ) : (
+          <Box className={classes.topCornerBox}></Box>
+        )}
       </Box>
       <Box minHeight="70%" px={3} display="flex">
-        {gameState.players.map((player, index) => (
-          <Box key={index} width={1 / gameState.players.length}>
+        {playingPlayers.map((player, index) => (
+          <Box key={index} width={1 / playingPlayers.length}>
             <PlayerHand
               name={player.name}
               words={player.words}
