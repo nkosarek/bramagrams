@@ -87,6 +87,7 @@ const Game = () => {
   }, [gameId]);
 
   return gameDne ? (
+    // TODO: add home button to this
     <MessagePage>
       <Typography variant="h4" color="secondary">
         Game ID '{gameId}' does not exist!

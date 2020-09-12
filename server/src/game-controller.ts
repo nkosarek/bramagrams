@@ -142,9 +142,14 @@ export default class GamesController {
   }
 
   private checkForGameEnd(game: GameState) {
-    if (game.players.every(player => player.status === PlayerStatuses.READY_TO_END)) {
+    if (game.players.every(player =>
+        [PlayerStatuses.READY_TO_END, PlayerStatuses.SPECTATING].includes(player.status))) {
       game.status = GameStatuses.ENDED;
-      game.players.forEach(player => player.status = PlayerStatuses.ENDED);
+      game.players.forEach(player => {
+        if (player.status === PlayerStatuses.PLAYING) {
+          player.status = PlayerStatuses.ENDED;
+        }
+      });
     }
   }
 
@@ -157,7 +162,9 @@ export default class GamesController {
     game.numTilesLeft = TILES.length;
     game.players.forEach(p => {
       p.words = [];
-      p.status = PlayerStatuses.PLAYING;
+      if (p.status !== PlayerStatuses.SPECTATING) {
+        p.status = PlayerStatuses.PLAYING;
+      }
     });
     return game;
   }

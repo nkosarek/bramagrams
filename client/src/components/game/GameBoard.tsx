@@ -50,6 +50,10 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
   const playingPlayers = gameState.players.filter(p => p.status !== PlayerStatuses.SPECTATING);
   const spectatingPlayers = gameState.players.filter(p => p.status === PlayerStatuses.SPECTATING);
 
+  const showTilesLeft = gameState.numTilesLeft || !playerState ||
+    (playerState.status === PlayerStatuses.SPECTATING && gameState.status !== GameStatuses.ENDED);
+
+  // TODO: Make an EndGameButtons component - add New Game button next to Rematch
   let endGameButtonLabel = 'Rematch';
   let onEndGameButtonClicked = () => {};
   switch(playerState?.status) {
@@ -61,6 +65,7 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
       endGameButtonLabel = 'No wait';
       onEndGameButtonClicked = () => api.notReadyToEnd(gameId, playerName);
       break;
+    case PlayerStatuses.SPECTATING:
     case PlayerStatuses.ENDED:
       endGameButtonLabel = 'Rematch';
       onEndGameButtonClicked = () => api.rematch(gameId);
@@ -170,7 +175,7 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
         </Box>
         <Box flexGrow={1} width="90%" py={2} display="flex" flexDirection="column" alignItems="center">
           <Box mb={2}>
-            {gameState.numTilesLeft || !playerState || playerState.status === PlayerStatuses.SPECTATING ? (
+            {showTilesLeft ? (
               <Typography variant="h5">Tiles Left: {gameState.numTilesLeft}</Typography>
             ) : (
               <Button
