@@ -62,6 +62,8 @@ const Game = () => {
           (!player || [PlayerStatuses.ENDED, PlayerStatuses.SPECTATING].includes(player?.status)) &&
           !endGameDialogOpen) {
         setEndGameDialogOpen(true);
+      } else if (gameState.status !== GameStatuses.ENDED && endGameDialogOpen) {
+        setEndGameDialogOpen(false);
       }
     };
   });
