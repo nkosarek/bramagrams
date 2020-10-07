@@ -8,6 +8,7 @@ import api from '../../api/api';
 import Word from './Word';
 import ClaimHandler from '../../util/claimHandler';
 import SpectatorsList from './SpectatorsList';
+import EndGameButtons from './EndGameButtons';
 
 const getAllAvailableTiles = (gameState: GameState) => {
   let poolAndWords = [...gameState.tiles];
@@ -50,27 +51,8 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
   const playingPlayers = gameState.players.filter(p => p.status !== PlayerStatuses.SPECTATING);
   const spectatingPlayers = gameState.players.filter(p => p.status === PlayerStatuses.SPECTATING);
 
-  const showTilesLeft = gameState.numTilesLeft || !playerState ||
-    playerState.status === PlayerStatuses.SPECTATING;
-
-  // TODO: Make an EndGameButtons component - add New Game button next to Rematch
-  let endGameButtonLabel = 'Rematch';
-  let onEndGameButtonClicked = () => {};
-  switch(playerState?.status) {
-    case PlayerStatuses.PLAYING:
-      endGameButtonLabel = 'Done';
-      onEndGameButtonClicked = () => api.readyToEnd(gameId, playerName);
-      break;
-    case PlayerStatuses.READY_TO_END:
-      endGameButtonLabel = 'No wait';
-      onEndGameButtonClicked = () => api.notReadyToEnd(gameId, playerName);
-      break;
-    case PlayerStatuses.SPECTATING:
-    case PlayerStatuses.ENDED:
-      endGameButtonLabel = 'Rematch';
-      onEndGameButtonClicked = () => api.rematch(gameId);
-      break;
-  }
+  const showEndGameButtons = !gameState.numTilesLeft && !!playerState &&
+    playerState.status !== PlayerStatuses.SPECTATING;
 
   const isCurrPlayer = (playerIdx: number) =>
     gameState.status === GameStatuses.IN_PROGRESS &&
@@ -174,16 +156,10 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
         </Box>
         <Box flexGrow={1} width="90%" py={2} display="flex" flexDirection="column" alignItems="center">
           <Box mb={2}>
-            {showTilesLeft ? (
-              <Typography variant="h5">Tiles Left: {gameState.numTilesLeft}</Typography>
+            {showEndGameButtons ? (
+              <EndGameButtons gameId={gameId} playerName={playerName} playerState={playerState} />
             ) : (
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={onEndGameButtonClicked}
-              >
-                {endGameButtonLabel}
-              </Button>
+              <Typography variant="h5">Tiles Left: {gameState.numTilesLeft}</Typography>
             )}
           </Box>
           <Box flexGrow={1} display="flex">
