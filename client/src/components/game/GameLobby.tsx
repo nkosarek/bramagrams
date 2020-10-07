@@ -78,7 +78,7 @@ const GameLobby = ({ gameId, playerName, players, onNameClaimed }: GameLobbyProp
   }, [onNameClaimed]);
 
   return (
-    <Page>
+    <Page showHomeButton>
       <Box flexGrow={1} display="flex" flexDirection="column" alignItems="center" justifyContent="center">
         <Box display="flex" mb={10}>
           {players.map((player, index) => (
