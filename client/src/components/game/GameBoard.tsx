@@ -26,6 +26,11 @@ const getPoolWithoutTypedWord = (pool: string[], word: string): string[] => {
   return adjustedPool;
 };
 
+const rotateArray = (newStart: number, array: any[]) => {
+  if (newStart < 0) return array;
+  return array.slice(newStart).concat(array.slice(0, newStart));
+}
+
 const useStyles = makeStyles((theme) => ({
   topCornerBox: {
     width: "20%",
@@ -48,9 +53,13 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
   const classes = useStyles();
 
   const playerState = gameState.players.find(p => p.name === playerName);
-  // Save each player's original index into the players list before filtering out spectators
-  const playingPlayers = gameState.players.map((player, idx) => ({ player, idx }))
+
+  // Save each player's original index into the players list before filtering out spectators and reordering
+  let playingPlayers = gameState.players.map((player, idx) => ({ player, idx }))
     .filter(p => p.player.status !== PlayerStatuses.SPECTATING);
+  const thisPlayerIdx = playingPlayers.findIndex(p => p.player.name === playerName);
+  playingPlayers = rotateArray(thisPlayerIdx, playingPlayers);
+
   const spectatingPlayers = gameState.players.filter(p => p.status === PlayerStatuses.SPECTATING);
 
   const showEndGameButtons = !gameState.numTilesLeft && !!playerState &&
