@@ -12,6 +12,7 @@ export enum ClientEvents {
   READY_TO_END = 'readyToEnd',
   NOT_READY_TO_END = 'notReadyToEnd',
   REMATCH = 'rematch',
+  BACK_TO_LOBBY = 'backToLobby',
 }
 
 export enum ServerEvents {

@@ -81,6 +81,10 @@ class Api {
   rematch(gameId: string) {
     this.socket.emit(ClientEvents.REMATCH, gameId);
   }
+
+  backToLobby(gameId: string) {
+    this.socket.emit(ClientEvents.BACK_TO_LOBBY, gameId);
+  }
 };
 
 const api = new Api();

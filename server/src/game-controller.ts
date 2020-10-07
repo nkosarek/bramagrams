@@ -153,17 +153,18 @@ export default class GamesController {
     }
   }
 
-  private restartGame(serverGameState: ServerGameState): GameState {
+  private restartGame(serverGameState: ServerGameState, toLobby: boolean = false): GameState {
     serverGameState.tilesLeft = [...TILES];
     const { clientGameState: game } = serverGameState;
     game.currPlayerIdx = 0;
-    game.status = GameStatuses.IN_PROGRESS;
+    game.status = toLobby ? GameStatuses.WAITING_TO_START : GameStatuses.IN_PROGRESS;
     game.tiles = [];
     game.numTilesLeft = TILES.length;
+    const newPlayingPlayerStatus = toLobby ? PlayerStatuses.SPECTATING : PlayerStatuses.PLAYING;
     game.players.forEach(p => {
       p.words = [];
       if (p.status !== PlayerStatuses.SPECTATING) {
-        p.status = PlayerStatuses.PLAYING;
+        p.status = newPlayingPlayerStatus;
       }
     });
     return game;
@@ -335,5 +336,13 @@ export default class GamesController {
     }
     player.status = PlayerStatuses.PLAYING;
     return game;
+  }
+
+  backToLobby(gameId: string): GameState | undefined {
+    const serverGameState = this.getGame(gameId);
+    const { clientGameState: game } = serverGameState;
+    if (game.status === GameStatuses.ENDED) {
+      return this.restartGame(serverGameState, true);
+    }
   }
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Player, PlayerStatuses } from 'bramagrams-shared';
 import api from '../../api/api';
-import { Button } from '@material-ui/core';
+import { Button, ButtonGroup } from '@material-ui/core';
 
 interface EndGameButtonsProps {
   gameId: string;
@@ -10,7 +10,7 @@ interface EndGameButtonsProps {
 }
 
 const EndGameButtons = ({ gameId, playerName, playerState }: EndGameButtonsProps) => {
-  // TODO: Add New Game button next to Rematch
+  let showBackToLobbyButton = false;
   let endGameButtonLabel = 'Rematch';
   let onEndGameButtonClicked = () => {};
   switch(playerState?.status) {
@@ -26,17 +26,32 @@ const EndGameButtons = ({ gameId, playerName, playerState }: EndGameButtonsProps
     case PlayerStatuses.ENDED:
       endGameButtonLabel = 'Rematch';
       onEndGameButtonClicked = () => api.rematch(gameId);
+      showBackToLobbyButton = true;
       break;
   }
 
+  const onBackToLobbyButtonClicked = () => api.backToLobby(gameId);
+
   return (
-    <Button
-      variant="contained"
-      color="secondary"
-      onClick={onEndGameButtonClicked}
-    >
-      {endGameButtonLabel}
-    </Button>
+    <ButtonGroup>
+      <Button
+        variant="contained"
+        color="secondary"
+        disabled={!playerState || playerState.status === PlayerStatuses.SPECTATING}
+        onClick={onEndGameButtonClicked}
+      >
+        {endGameButtonLabel}
+      </Button>
+      {showBackToLobbyButton && (
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={onBackToLobbyButtonClicked}
+        >
+          Change Players
+        </Button>
+      )}
+    </ButtonGroup>
   );
 };
 

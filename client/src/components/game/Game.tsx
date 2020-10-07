@@ -28,8 +28,8 @@ const updateCookie = (gameId: string, name: string) => {
   cookies.set(PLAYER_NAME_COOKIE, cookie, { path: '/' });
 };
 
-const getPlayer = (gameState: GameState, name: string) =>
-  gameState.players.find(p => p.name === name);
+const getPlayer = (gameState: GameState | undefined, name: string) =>
+  gameState?.players.find(p => p.name === name);
 
 const Game = () => {
   const { gameId } = useParams<UrlParams>();
@@ -41,6 +41,7 @@ const Game = () => {
   const handleGameUpdate = useRef<(game: GameState) => void>((game) => {});
 
   const players = gameState?.players || [];
+  const playerState = getPlayer(gameState, playerName);
 
   useEffect(() => {
     handleGameUpdate.current = (gameState: GameState) => {
@@ -58,7 +59,7 @@ const Game = () => {
       }
       const player = getPlayer(gameState, name);
       if (gameState.status === GameStatuses.ENDED &&
-          player?.status === PlayerStatuses.ENDED &&
+          (!player || [PlayerStatuses.ENDED, PlayerStatuses.SPECTATING].includes(player?.status)) &&
           !endGameDialogOpen) {
         setEndGameDialogOpen(true);
       }
@@ -71,7 +72,12 @@ const Game = () => {
 
   const onRematch = () => {
     onEndGameDialogClosed();
-    api.readyToStart(gameId, playerName);
+    api.rematch(gameId);
+  }
+
+  const onBackToLobby = () => {
+    onEndGameDialogClosed();
+    api.backToLobby(gameId);
   }
 
   const handleNameClaimed = useCallback((name: string) => {
@@ -110,8 +116,10 @@ const Game = () => {
       <EndGameDialog
         open={endGameDialogOpen}
         players={players}
+        disableRematch={!playerState || playerState.status === PlayerStatuses.SPECTATING}
         onClose={onEndGameDialogClosed}
         onRematch={onRematch}
+        onBackToLobby={onBackToLobby}
       />
     </>
   );

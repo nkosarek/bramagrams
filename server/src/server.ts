@@ -158,4 +158,9 @@ io.on('connection', (socket) => {
     console.log("Received REMATCH request with args: gameId=", gameId);
     updateGameStateWrapper(socket, gameId, () => gamesController.rematch(gameId));
   });
+
+  socket.on(ClientEvents.BACK_TO_LOBBY, (gameId: string) => {
+    console.log("Received BACK_TO_LOBBY request with args: gameId=", gameId);
+    updateGameStateWrapper(socket, gameId, () => gamesController.backToLobby(gameId));
+  });
 });

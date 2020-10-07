@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Typography } from '@material-ui/core';
-import { ArrowDropDown, Check, MoreHoriz } from '@material-ui/icons';
+import { ArrowDropDown, Check } from '@material-ui/icons';
 import Word from './Word';
 
 interface PlayerHandProps {

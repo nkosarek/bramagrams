@@ -52,7 +52,9 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
   const spectatingPlayers = gameState.players.filter(p => p.status === PlayerStatuses.SPECTATING);
 
   const showEndGameButtons = !gameState.numTilesLeft && !!playerState &&
-    playerState.status !== PlayerStatuses.SPECTATING;
+    (playerState.status !== PlayerStatuses.SPECTATING || gameState.status === GameStatuses.ENDED);
+
+  console.log(gameState.currPlayerIdx);
 
   const isCurrPlayer = (playerIdx: number) =>
     gameState.status === GameStatuses.IN_PROGRESS &&
