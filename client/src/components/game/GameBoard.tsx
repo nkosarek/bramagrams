@@ -192,7 +192,7 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
           <Box className={classes.topCornerBox}></Box>
         )}
       </Box>
-      <Box flexGrow={1} maxHeight="70%" display="flex" px={3} pb={3}>
+      <Box flexGrow={1} maxHeight="90%" display="flex" px={3} pb={3}>
         {playingPlayers.map(({ player, idx }) => (
           <Box key={idx} width={1 / playingPlayers.length}>
             <PlayerHand
