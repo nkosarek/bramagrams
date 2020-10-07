@@ -6,6 +6,7 @@ const useStyles = makeStyles((theme) => ({
   paper: {
     display: "flex",
     justifyContent: "center",
+    paddingBottom: '0.1rem',
   },
   largeTile: {
     height: "2.2rem",
@@ -37,7 +38,8 @@ const Tile = ({ letter, dark = false, small = false }: TileProps) => {
       className={`
         ${classes.paper}
         ${small ? classes.smallTile : classes.largeTile}
-        ${dark ? classes.darkTile : classes.lightTile}`}
+        ${dark ? classes.darkTile : classes.lightTile}
+      `}
     >
       <Typography variant={small ? "h5" : "h4"}>{letter}</Typography>
     </Paper>

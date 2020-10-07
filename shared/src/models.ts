@@ -1,4 +1,4 @@
-export const MAX_PLAYERS = 3;
+export const MAX_PLAYERS = 4;
 
 export enum ClientEvents {
   CONNECT_TO_GAME = 'connectToGame',
