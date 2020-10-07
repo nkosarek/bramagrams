@@ -65,8 +65,6 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
   const showEndGameButtons = !gameState.numTilesLeft && !!playerState &&
     (playerState.status !== PlayerStatuses.SPECTATING || gameState.status === GameStatuses.ENDED);
 
-  console.log(gameState.currPlayerIdx);
-
   const isCurrPlayer = (playerIdx: number) =>
     gameState.status === GameStatuses.IN_PROGRESS &&
     !!gameState.numTilesLeft &&
@@ -157,7 +155,7 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
 
   return (
     <Page>
-      <Box maxHeight="30%" display="flex" alignItems="flex-start">
+      <Box flexGrow={1} maxHeight="30%" display="flex" alignItems="flex-start">
         <Box p={1} className={classes.topCornerBox}>
           <Button
             variant="outlined"
@@ -194,7 +192,7 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
           <Box className={classes.topCornerBox}></Box>
         )}
       </Box>
-      <Box minHeight="70%" px={3} display="flex">
+      <Box minHeight="70%" px={3} pb={3} display="flex">
         {playingPlayers.map(({ player, idx }) => (
           <Box key={idx} width={1 / playingPlayers.length}>
             <PlayerHand
