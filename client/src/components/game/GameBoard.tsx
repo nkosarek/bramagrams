@@ -51,7 +51,7 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
   const spectatingPlayers = gameState.players.filter(p => p.status === PlayerStatuses.SPECTATING);
 
   const showTilesLeft = gameState.numTilesLeft || !playerState ||
-    (playerState.status === PlayerStatuses.SPECTATING && gameState.status !== GameStatuses.ENDED);
+    playerState.status === PlayerStatuses.SPECTATING;
 
   // TODO: Make an EndGameButtons component - add New Game button next to Rematch
   let endGameButtonLabel = 'Rematch';
@@ -77,7 +77,6 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
     !!gameState.numTilesLeft &&
     playerIdx === gameState.currPlayerIdx;
 
-  const playerIsWaiting = (player: Player) => player.status === PlayerStatuses.ENDED;
   const playerIsReady = (player: Player) => player.status === PlayerStatuses.READY_TO_END;
 
   useEffect(() => {
@@ -214,7 +213,6 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
               words={player.words}
               isYou={player.name === playerName}
               isCurrPlayer={isCurrPlayer(index)}
-              isWaiting={playerIsWaiting(player)}
               isReady={playerIsReady(player)}
               dark={gameState.status === GameStatuses.ENDED}
             />

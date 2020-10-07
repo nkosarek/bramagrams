@@ -18,15 +18,12 @@ const PlayerHand = ({
   words,
   isYou,
   isCurrPlayer,
-  isWaiting,
   isReady,
   dark,
 }: PlayerHandProps) => (
   <Box display="flex" flexDirection="column" alignItems="center">
     {isCurrPlayer ? (
-      <ArrowDropDown fontSize="large" color="action" />
-    ) : isWaiting ? (
-      <MoreHoriz fontSize="large" />
+      <ArrowDropDown fontSize="large" />
     ) : isReady ? (
       <Check fontSize="large" />
     ) : (

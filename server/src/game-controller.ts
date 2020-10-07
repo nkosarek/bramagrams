@@ -146,7 +146,7 @@ export default class GamesController {
         [PlayerStatuses.READY_TO_END, PlayerStatuses.SPECTATING].includes(player.status))) {
       game.status = GameStatuses.ENDED;
       game.players.forEach(player => {
-        if (player.status === PlayerStatuses.PLAYING) {
+        if (player.status !== PlayerStatuses.SPECTATING) {
           player.status = PlayerStatuses.ENDED;
         }
       });

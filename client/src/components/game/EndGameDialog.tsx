@@ -1,5 +1,5 @@
 import React from 'react';
-import { Player } from 'bramagrams-shared';
+import { Player, PlayerStatuses } from 'bramagrams-shared';
 import {
   Button,
   DialogActions,
@@ -21,7 +21,9 @@ const EndGameDialog = ({ players, open, onClose, onRematch }: EndGameDialogProps
   let winners: string[] = [];
   let maxWords = -1;
   players.forEach(player => {
-    if (player.words.length > maxWords) {
+    if (player.status === PlayerStatuses.SPECTATING) {
+      return;
+    } else if (player.words.length > maxWords) {
       winners = [player.name];
       maxWords = player.words.length;
     } else if (player.words.length === maxWords) {
