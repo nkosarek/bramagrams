@@ -202,6 +202,7 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
               isCurrPlayer={isCurrPlayer(idx)}
               isReady={playerIsReady(player)}
               dark={gameState.status === GameStatuses.ENDED}
+              small={playingPlayers.length > 2}
             />
           </Box>
         ))}

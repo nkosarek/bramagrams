@@ -11,6 +11,7 @@ interface PlayerHandProps {
   isWaiting?: boolean;
   isReady?: boolean;
   dark?: boolean;
+  small?: boolean;
 }
 
 const PlayerHand = ({
@@ -20,6 +21,7 @@ const PlayerHand = ({
   isCurrPlayer,
   isReady,
   dark,
+  small,
 }: PlayerHandProps) => (
   <Box display="flex" flexDirection="column" alignItems="center">
     {isCurrPlayer ? (
@@ -41,8 +43,8 @@ const PlayerHand = ({
       alignContent="flex-start"
     >
       {words.map((word, i) => (
-        <Box m={2} key={i}>
-          <Word word={word} dark={dark} />
+        <Box m={small ? 1.5 : 2} key={i}>
+          <Word word={word} dark={dark} small={small} />
         </Box>
       ))}
     </Box>
