@@ -20,6 +20,15 @@ const useStyles = makeStyles((theme) => ({
     position: 'relative',
     backgroundColor: theme.palette.secondary.light,
   },
+  scrollableSection: {
+    scrollbarColor: `${theme.palette.secondary.light} ${theme.palette.primary.dark}`,
+    '&::-webkit-scrollbar-track': {
+      background: theme.palette.primary.dark,
+    },
+    '&::-webkit-scrollbar-thumb': {
+      border: `3px solid ${theme.palette.primary.dark}`,
+    },
+  },
   header: {
     color: theme.palette.secondary.light,
   },
@@ -85,7 +94,7 @@ const InstructionsDialog = ({ open, onClose }: InstructionsDialogProps) => {
           </Typography>
         </Toolbar>
       </AppBar>
-      <Box ml={3} mt={3}>
+      <Box ml={3} pt={3} overflow="auto" className={classes.scrollableSection}>
         <Box ml={2}>
           <Header>
             Starting

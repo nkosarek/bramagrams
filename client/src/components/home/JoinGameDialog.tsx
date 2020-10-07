@@ -57,7 +57,7 @@ const JoinGameDialog = ({ open, onCancel, onJoin }: JoinGameDialogProps) => {
           <Button
             disabled={!gameId}
             onClick={handleJoinGame}
-            color="primary"
+            color="secondary"
             type="submit"
           >
             Join

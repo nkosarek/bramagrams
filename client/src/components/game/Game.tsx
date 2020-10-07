@@ -13,6 +13,10 @@ export const PLAYER_NAME_COOKIE = 'bramagrams-player-name';
 
 const cookies = new Cookies();
 
+interface UrlParams {
+  gameId: string;
+}
+
 interface GameCookie {
   gameId: string;
   name: string;
@@ -24,11 +28,11 @@ const updateCookie = (gameId: string, name: string) => {
   cookies.set(PLAYER_NAME_COOKIE, cookie, { path: '/' });
 };
 
-const getPlayer = (gameState: GameState, name: string) =>
-  gameState.players.find(p => p.name === name);
+const getPlayer = (gameState: GameState | undefined, name: string) =>
+  gameState?.players.find(p => p.name === name);
 
 const Game = () => {
-  const { gameId } = useParams();
+  const { gameId } = useParams<UrlParams>();
   const [gameDne, setGameDne] = useState(false);
   const [gameState, setGameState] = useState<GameState | undefined>();
   const [playerName, setPlayerName] = useState("");
@@ -37,9 +41,7 @@ const Game = () => {
   const handleGameUpdate = useRef<(game: GameState) => void>((game) => {});
 
   const players = gameState?.players || [];
-  const canStart = gameState?.status === GameStatuses.WAITING_TO_START &&
-    players.length > 1 &&
-    players.every(player => player.status === PlayerStatuses.READY_TO_START);
+  const playerState = getPlayer(gameState, playerName);
 
   useEffect(() => {
     handleGameUpdate.current = (gameState: GameState) => {
@@ -57,9 +59,11 @@ const Game = () => {
       }
       const player = getPlayer(gameState, name);
       if (gameState.status === GameStatuses.ENDED &&
-          player?.status === PlayerStatuses.ENDED &&
+          (!player || [PlayerStatuses.ENDED, PlayerStatuses.SPECTATING].includes(player?.status)) &&
           !endGameDialogOpen) {
         setEndGameDialogOpen(true);
+      } else if (gameState.status !== GameStatuses.ENDED && endGameDialogOpen) {
+        setEndGameDialogOpen(false);
       }
     };
   });
@@ -70,7 +74,12 @@ const Game = () => {
 
   const onRematch = () => {
     onEndGameDialogClosed();
-    api.readyToStart(gameId, playerName);
+    api.rematch(gameId);
+  }
+
+  const onBackToLobby = () => {
+    onEndGameDialogClosed();
+    api.backToLobby(gameId);
   }
 
   const handleNameClaimed = useCallback((name: string) => {
@@ -86,7 +95,7 @@ const Game = () => {
   }, [gameId]);
 
   return gameDne ? (
-    <MessagePage>
+    <MessagePage showHomeButton>
       <Typography variant="h4" color="secondary">
         Game ID '{gameId}' does not exist!
       </Typography>
@@ -100,7 +109,6 @@ const Game = () => {
       gameId={gameId}
       playerName={playerName}
       players={players}
-      canStart={canStart}
       onNameClaimed={handleNameClaimed}
     />
   ) : (
@@ -109,8 +117,10 @@ const Game = () => {
       <EndGameDialog
         open={endGameDialogOpen}
         players={players}
+        disableRematch={!playerState || playerState.status === PlayerStatuses.SPECTATING}
         onClose={onEndGameDialogClosed}
         onRematch={onRematch}
+        onBackToLobby={onBackToLobby}
       />
     </>
   );

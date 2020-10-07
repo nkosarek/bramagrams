@@ -1,5 +1,5 @@
 import React from 'react';
-import { Player } from 'bramagrams-shared';
+import { Player, PlayerStatuses } from 'bramagrams-shared';
 import {
   Button,
   DialogActions,
@@ -12,16 +12,27 @@ import StyledDialog from '../shared/StyledDialog';
 interface EndGameDialogProps {
   players: Player[];
   open: boolean;
+  disableRematch: boolean;
   onClose: () => void;
   onRematch: () => void;
+  onBackToLobby: () => void;
 }
 
-const EndGameDialog = ({ players, open, onClose, onRematch }: EndGameDialogProps) => {
+const EndGameDialog = ({
+  players,
+  open,
+  disableRematch,
+  onClose,
+  onRematch,
+  onBackToLobby
+}: EndGameDialogProps) => {
   let dialogTitle;
   let winners: string[] = [];
   let maxWords = -1;
   players.forEach(player => {
-    if (player.words.length > maxWords) {
+    if (player.status === PlayerStatuses.SPECTATING) {
+      return;
+    } else if (player.words.length > maxWords) {
       winners = [player.name];
       maxWords = player.words.length;
     } else if (player.words.length === maxWords) {
@@ -44,20 +55,28 @@ const EndGameDialog = ({ players, open, onClose, onRematch }: EndGameDialogProps
 
   const sheWonAgain = winners.length === 1 && winners[0].toLowerCase() === 'emily';
 
+  const dialogBody = `You can ${
+    !disableRematch ? 'rematch with the current set of players or ' : ''
+  }go back to the game lobby to change players.`;
+
   return (
     <StyledDialog
       open={open}
       onClose={onClose}
     >
       <DialogTitle>{dialogTitle}</DialogTitle>
-      {sheWonAgain && (
         <DialogContent>
-          <DialogContentText>Of course she did. She always does...</DialogContentText>
+          {sheWonAgain && (
+            <DialogContentText>Of course she did. She always does...</DialogContentText>
+          )}
+          <DialogContentText>
+            {dialogBody}
+          </DialogContentText>
         </DialogContent>
-      )}
       <DialogActions>
         <Button onClick={onClose}>Close</Button>
-        <Button onClick={onRematch}>Rematch</Button>
+        <Button disabled={disableRematch} onClick={onRematch}>Rematch</Button>
+        <Button onClick={onBackToLobby}>Change Players</Button>
       </DialogActions>
     </StyledDialog>
   );

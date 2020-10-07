@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Typography } from '@material-ui/core';
-import { ArrowDropDown, Check, MoreHoriz } from '@material-ui/icons';
+import { ArrowDropDown, Check } from '@material-ui/icons';
 import Word from './Word';
 
 interface PlayerHandProps {
@@ -11,6 +11,7 @@ interface PlayerHandProps {
   isWaiting?: boolean;
   isReady?: boolean;
   dark?: boolean;
+  small?: boolean;
 }
 
 const PlayerHand = ({
@@ -18,15 +19,13 @@ const PlayerHand = ({
   words,
   isYou,
   isCurrPlayer,
-  isWaiting,
   isReady,
   dark,
+  small,
 }: PlayerHandProps) => (
   <Box display="flex" flexDirection="column" alignItems="center">
     {isCurrPlayer ? (
-      <ArrowDropDown fontSize="large" color="action" />
-    ) : isWaiting ? (
-      <MoreHoriz fontSize="large" />
+      <ArrowDropDown fontSize="large" />
     ) : isReady ? (
       <Check fontSize="large" />
     ) : (
@@ -44,8 +43,8 @@ const PlayerHand = ({
       alignContent="flex-start"
     >
       {words.map((word, i) => (
-        <Box m={2} key={i}>
-          <Word word={word} dark={dark} />
+        <Box m={small ? 1.5 : 2} key={i}>
+          <Word word={word} dark={dark} small={small} />
         </Box>
       ))}
     </Box>

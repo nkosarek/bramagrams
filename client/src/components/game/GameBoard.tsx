@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Button } from '@material-ui/core';
+import { Box, Typography, Button, Paper, makeStyles } from '@material-ui/core';
 import { GameState, Player, PlayerStatuses, GameStatuses, Dictionary } from 'bramagrams-shared';
 import Page from '../shared/Page';
 import TilePool from './TilePool';
@@ -7,6 +7,8 @@ import PlayerHand from './PlayerHand';
 import api from '../../api/api';
 import Word from './Word';
 import ClaimHandler from '../../util/claimHandler';
+import SpectatorsList from './SpectatorsList';
+import EndGameButtons from './EndGameButtons';
 
 const getAllAvailableTiles = (gameState: GameState) => {
   let poolAndWords = [...gameState.tiles];
@@ -24,6 +26,21 @@ const getPoolWithoutTypedWord = (pool: string[], word: string): string[] => {
   return adjustedPool;
 };
 
+const rotateArray = (newStart: number, array: any[]) => {
+  if (newStart < 0) return array;
+  return array.slice(newStart).concat(array.slice(0, newStart));
+}
+
+const useStyles = makeStyles((theme) => ({
+  topCornerBox: {
+    width: "20%",
+  },
+  spectatorsListPaper: {
+    margin: theme.spacing(1),
+    backgroundColor: theme.palette.primary.dark,
+  },
+}));
+
 interface GameBoardProps {
   gameState: GameState;
   gameId: string;
@@ -33,40 +50,27 @@ interface GameBoardProps {
 const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
   const [typedWord, setTypedWord] = useState("");
 
+  const classes = useStyles();
+
   const playerState = gameState.players.find(p => p.name === playerName);
 
-  let endGameButtonLabel = 'Rematch';
-  let onEndGameButtonClicked = () => {};
-  switch(playerState?.status) {
-    case PlayerStatuses.PLAYING:
-      endGameButtonLabel = 'Done';
-      onEndGameButtonClicked = () => api.readyToEnd(gameId, playerName);
-      break;
-    case PlayerStatuses.READY_TO_END:
-      endGameButtonLabel = 'No wait';
-      onEndGameButtonClicked = () => api.notReadyToEnd(gameId, playerName);
-      break;
-    case PlayerStatuses.ENDED:
-    case PlayerStatuses.NOT_READY_TO_START:
-      endGameButtonLabel = 'Rematch';
-      onEndGameButtonClicked = () => api.readyToStart(gameId, playerName);
-      break;
-    case PlayerStatuses.READY_TO_START:
-      endGameButtonLabel = 'Don\'t Rematch';
-      onEndGameButtonClicked = () => api.notReadyToStart(gameId, playerName);
-      break;
-  }
+  // Save each player's original index into the players list before filtering out spectators and reordering
+  let playingPlayers = gameState.players.map((player, idx) => ({ player, idx }))
+    .filter(p => p.player.status !== PlayerStatuses.SPECTATING);
+  const thisPlayerIdx = playingPlayers.findIndex(p => p.player.name === playerName);
+  playingPlayers = rotateArray(thisPlayerIdx, playingPlayers);
+
+  const spectatingPlayers = gameState.players.filter(p => p.status === PlayerStatuses.SPECTATING);
+
+  const showEndGameButtons = !gameState.numTilesLeft && !!playerState &&
+    (playerState.status !== PlayerStatuses.SPECTATING || gameState.status === GameStatuses.ENDED);
 
   const isCurrPlayer = (playerIdx: number) =>
     gameState.status === GameStatuses.IN_PROGRESS &&
     !!gameState.numTilesLeft &&
     playerIdx === gameState.currPlayerIdx;
 
-  const playerIsWaiting = (player: Player) =>
-    [PlayerStatuses.ENDED, PlayerStatuses.NOT_READY_TO_START].includes(player.status);
-
-  const playerIsReady = (player: Player) =>
-    [PlayerStatuses.READY_TO_END, PlayerStatuses.READY_TO_START].includes(player.status);
+  const playerIsReady = (player: Player) => player.status === PlayerStatuses.READY_TO_END;
 
   useEffect(() => {
     api.initWordClaimedSubscription(() => setTypedWord(""));
@@ -151,39 +155,54 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
 
   return (
     <Page>
-      <Box flexGrow={1} px="10%" py={2} display="flex" flexDirection="column" alignItems="center">
-        <Box mb={2}>
-          {gameState.numTilesLeft ? (
-            <Typography variant="h5">Tiles Left: {gameState.numTilesLeft}</Typography>
-          ) : (
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={onEndGameButtonClicked}
-            >
-              {endGameButtonLabel}
-            </Button>
-          )}
+      <Box display="flex" alignItems="flex-start">
+        <Box p={1} className={classes.topCornerBox}>
+          <Button
+            variant="outlined"
+            color="secondary"
+            href="/"
+          >
+            Home
+          </Button>
         </Box>
-        <Box flexGrow={1}>
-          <TilePool
-            letters={gameState.tiles || []}
-            dark={gameState.status === GameStatuses.ENDED}
-          />
+        <Box flexGrow={1} width="90%" py={2} display="flex" flexDirection="column" alignItems="center">
+          <Box mb={2}>
+            {showEndGameButtons ? (
+              <EndGameButtons gameId={gameId} playerName={playerName} playerState={playerState} />
+            ) : (
+              <Typography variant="h5">Tiles Left: {gameState.numTilesLeft}</Typography>
+            )}
+          </Box>
+          <Box flexGrow={1} display="flex">
+            <TilePool
+              letters={gameState.tiles || []}
+              dark={gameState.status === GameStatuses.ENDED}
+            />
+          </Box>
+          <Word word={typedWord} dark={!Dictionary.isValidWord(typedWord)} />
         </Box>
-        <Word word={typedWord} dark={!Dictionary.isValidWord(typedWord)} />
+        {spectatingPlayers.length ? (
+          <Paper
+            elevation={3}
+            className={`${classes.spectatorsListPaper} ${classes.topCornerBox}`}
+          >
+            <SpectatorsList spectators={spectatingPlayers} playerName={playerName} />
+          </Paper>
+        ) : (
+          <Box className={classes.topCornerBox}></Box>
+        )}
       </Box>
-      <Box minHeight="70%" px={3} display="flex">
-        {gameState.players.map((player, index) => (
-          <Box key={index} width={1 / gameState.players.length}>
+      <Box flexGrow={1} maxHeight="90%" display="flex" px={3} pb={3}>
+        {playingPlayers.map(({ player, idx }) => (
+          <Box key={idx} width={1 / playingPlayers.length}>
             <PlayerHand
               name={player.name}
               words={player.words}
               isYou={player.name === playerName}
-              isCurrPlayer={isCurrPlayer(index)}
-              isWaiting={playerIsWaiting(player)}
+              isCurrPlayer={isCurrPlayer(idx)}
               isReady={playerIsReady(player)}
               dark={gameState.status === GameStatuses.ENDED}
+              small={playingPlayers.length > 2}
             />
           </Box>
         ))}

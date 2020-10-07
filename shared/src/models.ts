@@ -1,14 +1,18 @@
+export const MAX_PLAYERS = 4;
+
 export enum ClientEvents {
   CONNECT_TO_GAME = 'connectToGame',
   JOIN_GAME = 'joinGame',
   CHANGE_NAME = 'changeName',
+  BECOME_SPECTATOR = 'spectating',
   READY_TO_START = 'readyToStart',
-  NOT_READY_TO_START = 'notReadyToStart',
   START_GAME = 'startGame',
   ADD_TILE = 'addTile',
   CLAIM_WORD = 'claimWord',
   READY_TO_END = 'readyToEnd',
   NOT_READY_TO_END = 'notReadyToEnd',
+  REMATCH = 'rematch',
+  BACK_TO_LOBBY = 'backToLobby',
 }
 
 export enum ServerEvents {
@@ -19,7 +23,7 @@ export enum ServerEvents {
 }
 
 export enum PlayerStatuses {
-  NOT_READY_TO_START,
+  // TODO: rename READY_TO_START -> WAITING_TO_START
   READY_TO_START,
   PLAYING,
   READY_TO_END,

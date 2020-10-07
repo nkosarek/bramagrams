@@ -106,17 +106,16 @@ io.on('connection', (socket) => {
     });
   });
 
+  socket.on(ClientEvents.BECOME_SPECTATOR, (gameId: string, player: string) => {
+    console.log("Received BECOME_SPECTATOR request with args: gameId=", gameId, "player=", player);
+    updateGameStateWrapper(socket, gameId, () =>
+      gamesController.setPlayerSpectating(gameId, player));
+  });
+
   socket.on(ClientEvents.READY_TO_START, (gameId: string, player: string) => {
     console.log("Received READY_TO_START request with args: gameId=", gameId, "player=", player);
     updateGameStateWrapper(socket, gameId, () =>
       gamesController.setPlayerReadyToStart(gameId, player));
-  });
-
-  socket.on(ClientEvents.NOT_READY_TO_START, (gameId: string, player: string) => {
-    console.log("Received NOT_READY_TO_START request with args: gameId=", gameId,
-      "player=", player);
-    updateGameStateWrapper(socket, gameId, () =>
-      gamesController.setPlayerNotReadyToStart(gameId, player));
   });
 
   socket.on(ClientEvents.START_GAME, (gameId: string) => {
@@ -153,5 +152,15 @@ io.on('connection', (socket) => {
       "player=", player);
     updateGameStateWrapper(socket, gameId, () =>
       gamesController.setPlayerNotReadyToEnd(gameId, player));
+  });
+
+  socket.on(ClientEvents.REMATCH, (gameId: string) => {
+    console.log("Received REMATCH request with args: gameId=", gameId);
+    updateGameStateWrapper(socket, gameId, () => gamesController.rematch(gameId));
+  });
+
+  socket.on(ClientEvents.BACK_TO_LOBBY, (gameId: string) => {
+    console.log("Received BACK_TO_LOBBY request with args: gameId=", gameId);
+    updateGameStateWrapper(socket, gameId, () => gamesController.backToLobby(gameId));
   });
 });
