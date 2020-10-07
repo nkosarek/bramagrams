@@ -48,7 +48,9 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
   const classes = useStyles();
 
   const playerState = gameState.players.find(p => p.name === playerName);
-  const playingPlayers = gameState.players.filter(p => p.status !== PlayerStatuses.SPECTATING);
+  // Save each player's original index into the players list before filtering out spectators
+  const playingPlayers = gameState.players.map((player, idx) => ({ player, idx }))
+    .filter(p => p.player.status !== PlayerStatuses.SPECTATING);
   const spectatingPlayers = gameState.players.filter(p => p.status === PlayerStatuses.SPECTATING);
 
   const showEndGameButtons = !gameState.numTilesLeft && !!playerState &&
@@ -184,13 +186,13 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
         )}
       </Box>
       <Box minHeight="70%" px={3} display="flex">
-        {playingPlayers.map((player, index) => (
-          <Box key={index} width={1 / playingPlayers.length}>
+        {playingPlayers.map(({ player, idx }) => (
+          <Box key={idx} width={1 / playingPlayers.length}>
             <PlayerHand
               name={player.name}
               words={player.words}
               isYou={player.name === playerName}
-              isCurrPlayer={isCurrPlayer(index)}
+              isCurrPlayer={isCurrPlayer(idx)}
               isReady={playerIsReady(player)}
               dark={gameState.status === GameStatuses.ENDED}
             />
