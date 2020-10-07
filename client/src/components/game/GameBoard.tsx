@@ -155,7 +155,7 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
 
   return (
     <Page>
-      <Box flexGrow={1} maxHeight="30%" display="flex" alignItems="flex-start">
+      <Box display="flex" alignItems="flex-start">
         <Box p={1} className={classes.topCornerBox}>
           <Button
             variant="outlined"
@@ -192,7 +192,7 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
           <Box className={classes.topCornerBox}></Box>
         )}
       </Box>
-      <Box minHeight="70%" px={3} pb={3} display="flex">
+      <Box flexGrow={1} maxHeight="70%" display="flex" px={3} pb={3}>
         {playingPlayers.map(({ player, idx }) => (
           <Box key={idx} width={1 / playingPlayers.length}>
             <PlayerHand

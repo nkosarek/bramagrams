@@ -37,7 +37,7 @@ const SpectatorsList = ({ spectators, playerName }: SpectatorsListProps) => {
         <Box pr={2}>
           <Visibility color="secondary" />
         </Box>
-        <Typography variant="h5" color="secondary">
+        <Typography variant="h6" color="secondary">
           Spectators
         </Typography>
       </Box>
