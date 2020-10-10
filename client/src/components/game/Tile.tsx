@@ -16,6 +16,9 @@ const useStyles = makeStyles((theme) => ({
     height: "1.65rem",
     width: "1.65rem",
   },
+  placeholderTile: {
+    backgroundColor: theme.palette.primary.main,
+  },
   lightTile: {
     backgroundColor: theme.palette.secondary.light,
   },
@@ -25,20 +28,20 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 interface TileProps {
-  letter: string;
+  letter?: string;
   dark?: boolean;
   small?: boolean;
 }
 
-const Tile = ({ letter, dark = false, small = false }: TileProps) => {
+const Tile = ({ letter, dark, small }: TileProps) => {
   const classes = useStyles();
   return (
     <Paper
-      elevation={3}
+      elevation={letter ? 3 : 0}
       className={`
         ${classes.paper}
         ${small ? classes.smallTile : classes.largeTile}
-        ${dark ? classes.darkTile : classes.lightTile}
+        ${!letter ? classes.placeholderTile : dark ? classes.darkTile : classes.lightTile}
       `}
     >
       <Typography variant={small ? "h5" : "h4"}>{letter}</Typography>

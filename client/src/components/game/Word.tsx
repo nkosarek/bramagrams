@@ -3,19 +3,26 @@ import { Box } from '@material-ui/core';
 import Tile from './Tile';
 
 interface WordProps {
-  word: string,
+  word?: string,
   dark?: boolean,
   small?: boolean;
 }
 
-const Word = ({ word, dark = false, small = false }: WordProps) => (
-  <Box display="flex">
-    {word.split('').map((letter, index) => (
-      <Box m={small ? 0.3 : 0.5} key={index}>
+const Word = ({ word, dark, small }: WordProps) => {
+  const addMargin = (index: string | number | undefined, children: React.ReactChild) => (
+    <Box key={index} m={small ? 0.3 : 0.5}>
+      {children}
+    </Box>
+  );
+  return (
+    <Box display="flex">
+      {!word ? addMargin(undefined,
+        <Tile />
+      ) : word.split('').map((letter, index) => addMargin(index,
         <Tile letter={letter} dark={dark} small={small} />
-      </Box>
-    ))}
-  </Box>
-);
+      ))}
+    </Box>
+  );
+}
 
 export default Word;

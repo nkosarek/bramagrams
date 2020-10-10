@@ -173,7 +173,7 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
               <Typography variant="h5">Tiles Left: {gameState.numTilesLeft}</Typography>
             )}
           </Box>
-          <Box flexGrow={1} display="flex">
+          <Box flexGrow={1} display="flex" pb={3}>
             <TilePool
               letters={gameState.tiles || []}
               dark={gameState.status === GameStatuses.ENDED}
@@ -192,7 +192,7 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
           <Box className={classes.topCornerBox}></Box>
         )}
       </Box>
-      <Box flexGrow={1} maxHeight="80%" display="flex" px={3} pb={3}>
+      <Box flexGrow={1} display="flex" px={3} pb={3}>
         {playingPlayers.map(({ player, idx }) => (
           <Box key={idx} width={1 / playingPlayers.length}>
             <PlayerHand
