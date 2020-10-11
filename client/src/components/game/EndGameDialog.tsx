@@ -1,5 +1,5 @@
 import React from 'react';
-import { Player, PlayerStatuses } from 'bramagrams-shared';
+import { Player } from 'bramagrams-shared';
 import {
   Button,
   DialogActions,
@@ -8,6 +8,7 @@ import {
   DialogContentText,
 } from '@material-ui/core';
 import StyledDialog from '../shared/StyledDialog';
+import WinnerHandler from '../../util/winnerHandler';
 
 interface EndGameDialogProps {
   players: Player[];
@@ -26,34 +27,7 @@ const EndGameDialog = ({
   onRematch,
   onBackToLobby
 }: EndGameDialogProps) => {
-  let dialogTitle;
-  let winners: string[] = [];
-  let maxWords = -1;
-  players.forEach(player => {
-    if (player.status === PlayerStatuses.SPECTATING) {
-      return;
-    } else if (player.words.length > maxWords) {
-      winners = [player.name];
-      maxWords = player.words.length;
-    } else if (player.words.length === maxWords) {
-      winners.push(player.name);
-    }
-  });
-  if (winners.length === 1) {
-    dialogTitle = `${winners[0]} wins!`;
-  } else {
-    dialogTitle = winners.reduce((msg, winner, i) => {
-      if (!i) {
-        return msg + winner;
-      } else if (i === winners.length - 1) {
-        return msg + `${winners.length > 2 ? ',' : ''} and ${winner} tied!`;
-      } else {
-        return msg + `, ${winner}`;
-      }
-    }, '');
-  };
-
-  const sheWonAgain = winners.length === 1 && winners[0].toLowerCase() === 'emily';
+  const handler = new WinnerHandler(players);
 
   const dialogBody = `You can ${
     !disableRematch ? 'rematch with the current set of players or ' : ''
@@ -64,10 +38,10 @@ const EndGameDialog = ({
       open={open}
       onClose={onClose}
     >
-      <DialogTitle>{dialogTitle}</DialogTitle>
+      <DialogTitle>{handler.winnersString}</DialogTitle>
         <DialogContent>
-          {sheWonAgain && (
-            <DialogContentText>Of course she did. She always does...</DialogContentText>
+          {handler.winnersSubtext && (
+            <DialogContentText>{handler.winnersSubtext}</DialogContentText>
           )}
           <DialogContentText>
             {dialogBody}
