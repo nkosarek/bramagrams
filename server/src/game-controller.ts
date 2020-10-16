@@ -38,6 +38,13 @@ export default class GamesController {
     gamesToDelete.forEach(gameId => delete this.games[gameId]);
   }
 
+  private resetCurrPlayerIdx(game: GameState) {
+    game.currPlayerIdx = 0;
+    if (game.players[game.currPlayerIdx].status === PlayerStatuses.SPECTATING) {
+      this.advanceCurrPlayer(game);
+    }
+  }
+
   private getPlayer(game: GameState, name: string): Player | undefined {
     return game?.players.find(p => p.name === name);
   }
@@ -156,7 +163,7 @@ export default class GamesController {
   private restartGame(serverGameState: ServerGameState, toLobby: boolean = false): GameState {
     serverGameState.tilesLeft = [...TILES];
     const { clientGameState: game } = serverGameState;
-    game.currPlayerIdx = 0;
+    this.resetCurrPlayerIdx(game);
     game.status = toLobby ? GameStatuses.WAITING_TO_START : GameStatuses.IN_PROGRESS;
     game.tiles = [];
     game.numTilesLeft = TILES.length;
@@ -274,6 +281,7 @@ export default class GamesController {
         player.status = PlayerStatuses.PLAYING;
       }
     });
+    this.resetCurrPlayerIdx(game);
     return game;
   }
 
