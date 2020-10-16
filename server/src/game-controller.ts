@@ -142,7 +142,7 @@ export default class GamesController {
   }
 
   private checkForGameEnd(game: GameState) {
-    if (game.players.every(player =>
+    if ((game.numTilesLeft === 0 && !game.tiles.length) || game.players.every(player =>
         [PlayerStatuses.READY_TO_END, PlayerStatuses.SPECTATING].includes(player.status))) {
       game.status = GameStatuses.ENDED;
       game.players.forEach(player => {
@@ -314,6 +314,7 @@ export default class GamesController {
     if (playerIsSpectating) {
       player.status = PlayerStatuses.PLAYING;
     }
+    this.checkForGameEnd(game);
     return game;
   }
 
