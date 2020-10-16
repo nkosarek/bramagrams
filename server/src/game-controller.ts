@@ -205,6 +205,7 @@ export default class GamesController {
         status: GameStatuses.WAITING_TO_START,
         tiles: [],
         numTilesLeft: TILES.length,
+        totalTiles: TILES.length,
       },
     }
     return id;

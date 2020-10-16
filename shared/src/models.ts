@@ -55,4 +55,5 @@ export interface GameState {
   status: GameStatuses;
   tiles: string[];
   numTilesLeft: number;
+  totalTiles: number;
 }

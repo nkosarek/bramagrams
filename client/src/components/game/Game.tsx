@@ -37,6 +37,7 @@ const Game = () => {
   const [gameState, setGameState] = useState<GameState | undefined>();
   const [playerName, setPlayerName] = useState("");
   const [endGameDialogOpen, setEndGameDialogOpen] = useState(false);
+  const [connectedToGame, setConnectedToGame] = useState(false);
 
   const handleGameUpdate = useRef<(game: GameState) => void>((game) => {});
 
@@ -65,6 +66,7 @@ const Game = () => {
       } else if (gameState.status !== GameStatuses.ENDED && endGameDialogOpen) {
         setEndGameDialogOpen(false);
       }
+      setConnectedToGame(true);
     };
   });
 
@@ -100,7 +102,7 @@ const Game = () => {
         Game ID '{gameId}' does not exist!
       </Typography>
     </MessagePage>
-  ) : !gameState ? (
+  ) : !gameState || !connectedToGame ? (
     <MessagePage>
       <CircularProgress />
     </MessagePage>

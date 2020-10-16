@@ -9,6 +9,7 @@ import Word from './Word';
 import ClaimHandler from '../../util/claimHandler';
 import SpectatorsList from './SpectatorsList';
 import EndGameButtons from './EndGameButtons';
+import GameStartToast, { initToastAcked } from './GameStartToast';
 
 const getAllAvailableTiles = (gameState: GameState) => {
   let poolAndWords = [...gameState.tiles];
@@ -49,16 +50,18 @@ interface GameBoardProps {
 
 const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
   const [typedWord, setTypedWord] = useState("");
+  const [toastAcked, setToastAcked] = useState(initToastAcked(gameState, playerName));
 
   const classes = useStyles();
 
-  const playerState = gameState.players.find(p => p.name === playerName);
+  const playerIdx = gameState.players.findIndex(p => p.name === playerName);
+  const playerState = gameState.players[playerIdx];
 
   // Save each player's original index into the players list before filtering out spectators and reordering
   let playingPlayers = gameState.players.map((player, idx) => ({ player, idx }))
     .filter(p => p.player.status !== PlayerStatuses.SPECTATING);
-  const thisPlayerIdx = playingPlayers.findIndex(p => p.player.name === playerName);
-  playingPlayers = rotateArray(thisPlayerIdx, playingPlayers);
+  const thisPlayingPlayerIdx = playingPlayers.findIndex(p => p.player.name === playerName);
+  playingPlayers = rotateArray(thisPlayingPlayerIdx, playingPlayers);
 
   const spectatingPlayers = gameState.players.filter(p => p.status === PlayerStatuses.SPECTATING);
 
@@ -81,6 +84,7 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
       event.preventDefault();
       if (process.env.NODE_ENV === "development" ||
           gameState.players[gameState.currPlayerIdx].name === playerName) {
+        setToastAcked(true);
         api.addTile(gameId, playerName);
       }
     };
@@ -155,6 +159,10 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
 
   return (
     <Page>
+      <GameStartToast
+        open={gameState.currPlayerIdx === playerIdx && !toastAcked}
+        onClose={() => setToastAcked(true)}
+      />
       <Box display="flex" alignItems="flex-start">
         <Box p={1} className={classes.topCornerBox}>
           <Button
