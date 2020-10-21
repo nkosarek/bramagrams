@@ -7,7 +7,7 @@ import {
 } from '@material-ui/core';
 import { TypographyProps } from '@material-ui/core/Typography/Typography';
 import { ButtonProps } from '@material-ui/core/Button/Button';
-import { FileCopy, Visibility } from '@material-ui/icons';
+import { FileCopy } from '@material-ui/icons';
 import { MAX_PLAYERS } from 'bramagrams-shared';
 
 const useStyles = makeStyles((theme) => ({
