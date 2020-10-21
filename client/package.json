@@ -19,6 +19,7 @@
     "axios": "^0.19.2",
     "bramagrams-shared": "file:../shared",
     "react": "^16.13.1",
+    "react-copy-to-clipboard": "^5.0.2",
     "react-dom": "^16.13.1",
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.1",
@@ -46,5 +47,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@types/react-copy-to-clipboard": "^4.3.0"
   }
 }

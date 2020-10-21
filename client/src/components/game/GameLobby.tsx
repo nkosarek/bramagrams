@@ -4,6 +4,7 @@ import { MoreHoriz, Person, Visibility } from '@material-ui/icons';
 import Page from '../shared/Page';
 import api from '../../api/api';
 import { MAX_PLAYERS, Player, PlayerStatuses } from 'bramagrams-shared';
+import CopyGameLinkButton from './CopyGameLinkButton';
 
 const getNumPlayingPlayers = (players: Player[]) => {
   return players.filter(p => p.status === PlayerStatuses.READY_TO_START).length;
@@ -24,7 +25,7 @@ const GameLobby = ({ gameId, playerName, players, onNameClaimed }: GameLobbyProp
 
   const hasNameError = requestedName !== playerName && players.map(p => p.name).includes(requestedName);
 
-  const statusChangeButtonLabel = playerState?.status === PlayerStatuses.READY_TO_START
+  const statusChangeButtonLabel = !playerState || playerState.status === PlayerStatuses.READY_TO_START
     ? "Spectate"
     : "Join";
   const statusChangeButtonDisabled = !playerState ||
@@ -136,7 +137,7 @@ const GameLobby = ({ gameId, playerName, players, onNameClaimed }: GameLobbyProp
         ) : (
           <Typography variant="h4" color="secondary">{playerName}</Typography>
         )}
-        <Box mt={3}>
+        <Box mt={3} mb={5}>
           <ButtonGroup variant="text">
             <Button
               disabled={editingName}
@@ -161,6 +162,7 @@ const GameLobby = ({ gameId, playerName, players, onNameClaimed }: GameLobbyProp
             </Button>
           </ButtonGroup>
         </Box>
+        <CopyGameLinkButton gameLink={window.location.href}/>
       </Box>
     </Page>
   );
