@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Button, Paper, makeStyles } from '@material-ui/core';
+import { Box, Button, ButtonGroup, Paper, Typography, makeStyles } from '@material-ui/core';
 import { GameState, Player, PlayerStatuses, GameStatuses, Dictionary } from 'bramagrams-shared';
 import Page from '../shared/Page';
 import TilePool from './TilePool';
@@ -10,6 +10,7 @@ import ClaimHandler from '../../util/claimHandler';
 import SpectatorsList from './SpectatorsList';
 import EndGameButtons from './EndGameButtons';
 import GameStartToast, { initToastAcked } from './GameStartToast';
+import HowToPlayButtonAndDialog from '../shared/HowToPlayButtonAndDialog';
 
 const getAllAvailableTiles = (gameState: GameState) => {
   let poolAndWords = [...gameState.tiles];
@@ -165,13 +166,10 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
       />
       <Box display="flex" alignItems="flex-start">
         <Box p={1} className={classes.topCornerBox}>
-          <Button
-            variant="outlined"
-            color="secondary"
-            href="/"
-          >
-            Home
-          </Button>
+          <ButtonGroup variant="outlined" color="secondary">
+            <Button href="/">Home</Button>
+            <HowToPlayButtonAndDialog />
+          </ButtonGroup>
         </Box>
         <Box flexGrow={1} width="90%" py={2} display="flex" flexDirection="column" alignItems="center">
           <Box mb={2}>
