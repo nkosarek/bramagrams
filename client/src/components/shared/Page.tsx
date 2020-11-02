@@ -1,12 +1,14 @@
 import React from 'react';
-import { Box, Button } from '@material-ui/core';
+import { Box, Button, ButtonGroup } from '@material-ui/core';
+import HowToPlayButtonAndDialog from './HowToPlayButtonAndDialog';
 
 interface PageProps {
   showHomeButton?: boolean;
+  showHowToPlayButton?: boolean;
   children: React.ReactNode;
 }
 
-const Page = ({ showHomeButton, children }: PageProps) => (
+const Page = ({ showHomeButton, showHowToPlayButton, children }: PageProps) => (
   <Box
     height="100vh"
     overflow="auto"
@@ -15,15 +17,12 @@ const Page = ({ showHomeButton, children }: PageProps) => (
     justifyContent="space-between"
     bgcolor="primary.main"
   >
-    {showHomeButton && (
+    {(showHomeButton || showHowToPlayButton) && (
       <Box display="flex" p={1}>
-        <Button
-          variant="outlined"
-          color="secondary"
-          href="/"
-        >
-          Home
-        </Button>
+        <ButtonGroup variant="outlined" color="secondary">
+          {showHomeButton && <Button href="/">Home</Button>}
+          {showHowToPlayButton && <HowToPlayButtonAndDialog />}
+        </ButtonGroup>
       </Box>
     )}
     {children}

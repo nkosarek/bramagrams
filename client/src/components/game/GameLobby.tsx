@@ -1,6 +1,6 @@
 import React, { useState, useEffect, FormEvent } from 'react';
 import { Box, Button, ButtonGroup, Divider, TextField, Typography } from '@material-ui/core';
-import { MoreHoriz, Person, Visibility } from '@material-ui/icons';
+import { Person, Visibility } from '@material-ui/icons';
 import Page from '../shared/Page';
 import api from '../../api/api';
 import { MAX_PLAYERS, Player, PlayerStatuses } from 'bramagrams-shared';
@@ -79,7 +79,7 @@ const GameLobby = ({ gameId, playerName, players, onNameClaimed }: GameLobbyProp
   }, [onNameClaimed]);
 
   return (
-    <Page showHomeButton>
+    <Page showHomeButton showHowToPlayButton>
       <Box flexGrow={1} display="flex" flexDirection="column" alignItems="center" justifyContent="center">
         <Box display="flex" mb={10}>
           {players.map((player, index) => (
