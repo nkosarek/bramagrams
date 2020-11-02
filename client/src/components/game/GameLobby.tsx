@@ -7,7 +7,7 @@ import { MAX_PLAYERS, Player, PlayerStatuses } from 'bramagrams-shared';
 import CopyGameLinkButton from './CopyGameLinkButton';
 
 const getNumPlayingPlayers = (players: Player[]) => {
-  return players.filter(p => p.status === PlayerStatuses.READY_TO_START).length;
+  return players.filter(p => p.status !== PlayerStatuses.SPECTATING).length;
 };
 
 interface GameLobbyProps {
@@ -88,12 +88,10 @@ const GameLobby = ({ gameId, playerName, players, onNameClaimed }: GameLobbyProp
               <Box display="flex" flexDirection="column" alignItems="center" mx={1}>
                 <Typography variant="h6" color="secondary">{player.name}</Typography>
                 <Box display="flex">
-                  {player.status === PlayerStatuses.READY_TO_START ? (
-                    <Person />
-                  ) : player.status === PlayerStatuses.SPECTATING ? (
+                  {player.status === PlayerStatuses.SPECTATING ? (
                     <Visibility />
                   ) : (
-                    <MoreHoriz />
+                    <Person />
                   )}
                 </Box>
               </Box>

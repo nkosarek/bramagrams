@@ -167,7 +167,7 @@ export default class GamesController {
     game.status = toLobby ? GameStatuses.WAITING_TO_START : GameStatuses.IN_PROGRESS;
     game.tiles = [];
     game.numTilesLeft = TILES.length;
-    const newPlayingPlayerStatus = toLobby ? PlayerStatuses.SPECTATING : PlayerStatuses.PLAYING;
+    const newPlayingPlayerStatus = toLobby ? PlayerStatuses.READY_TO_START : PlayerStatuses.PLAYING;
     game.players.forEach(p => {
       p.words = [];
       if (p.status !== PlayerStatuses.SPECTATING) {
