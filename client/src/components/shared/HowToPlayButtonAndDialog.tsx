@@ -3,7 +3,13 @@ import { Button, ButtonProps } from '@material-ui/core';
 import HowToPlay from './HowToPlay';
 import StyledDialog from './StyledDialog';
 
-const HowToPlayButtonAndDialog = (buttonProps: ButtonProps) => {
+interface HowToPlayButtonAndDialogProps {
+  hideGameLobby?: boolean;
+}
+
+const HowToPlayButtonAndDialog = ({
+  hideGameLobby, ...buttonProps
+}: HowToPlayButtonAndDialogProps & ButtonProps) => {
   const [open, setOpen] = useState(false);
 
   return (
@@ -21,7 +27,7 @@ const HowToPlayButtonAndDialog = (buttonProps: ButtonProps) => {
         open={open}
         onClose={() => setOpen(false)}
       >
-        <HowToPlay hideGameLobby />
+        <HowToPlay hideGameLobby={hideGameLobby} />
       </StyledDialog>
     </>
   );

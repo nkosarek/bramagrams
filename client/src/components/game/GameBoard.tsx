@@ -168,7 +168,7 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
         <Box p={1} className={classes.topCornerBox}>
           <ButtonGroup variant="outlined" color="secondary">
             <Button href="/">Home</Button>
-            <HowToPlayButtonAndDialog />
+            <HowToPlayButtonAndDialog hideGameLobby />
           </ButtonGroup>
         </Box>
         <Box flexGrow={1} width="90%" py={2} display="flex" flexDirection="column" alignItems="center">
