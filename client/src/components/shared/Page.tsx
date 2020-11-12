@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Box, Button, ButtonGroup } from '@material-ui/core';
 import HowToPlayButtonAndDialog from './HowToPlayButtonAndDialog';
 
@@ -20,7 +21,7 @@ const Page = ({ showHomeButton, showHowToPlayButton, children }: PageProps) => (
     {(showHomeButton || showHowToPlayButton) && (
       <Box display="flex" p={1}>
         <ButtonGroup variant="outlined" color="secondary">
-          {showHomeButton && <Button href="/">Home</Button>}
+          {showHomeButton && <Button component={Link} to="/">Home</Button>}
           {showHowToPlayButton && <HowToPlayButtonAndDialog />}
         </ButtonGroup>
       </Box>

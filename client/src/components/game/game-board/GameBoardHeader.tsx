@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Box, Button, ButtonGroup, makeStyles, Paper, Typography } from '@material-ui/core';
 import { GameState, GameStatuses, PlayerStatuses } from 'bramagrams-shared';
 import HowToPlayButtonAndDialog from '../../shared/HowToPlayButtonAndDialog';
@@ -47,7 +48,7 @@ const GameBoardHeader = ({ gameState, gameId, playerName, disableHandlers }: Gam
       <Box display="flex" alignItems="flex-start">
         <Box p={1} className={classes.topCornerBox}>
           <ButtonGroup variant="outlined" color="secondary">
-            <Button href="/">Home</Button>
+            <Button component={Link} to="/">Home</Button>
             <HowToPlayButtonAndDialog hideGameLobby />
           </ButtonGroup>
         </Box>
