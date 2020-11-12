@@ -8,65 +8,23 @@ This application is deployed to Heroku and can be accessed via the following URL
 
 [https://bramagrams-v2.herokuapp.com/]()
 
-#### Table of Contents
+How to play instructions can be viewed on the home page of the deployed application and are rendered via the [HowToPlay component](client/src/components/shared/HowToPlay.tsx).
 
-* [How To Play](#how-to-play)
-  - [Starting](#starting)
-  - [Basics](#basics)
-  - [Stealing](#stealing)
-  - [Endgame](#endgame)
-* [Development](#development)
-  - [Dependencies](#dependencies)
-  - [Repo Structure](#repo-structure)
-  - [Running](#running)
-
-## How To Play
-
-#### Starting
-
-After a game is created from the home page, the player that created it will be sent to the lobby.
-
-In the game lobby, players can set their name and wait for other players to join.
-
-Once all players have set their names and clicked the **READY** button to signal they are ready to start, the **START GAME** button can be clicked to begin playing.
-
-#### Basics
-
-Each player will take turns "flipping" tiles over to add them to the pool at the top by hitting the space bar.
-
-Once a word with at least 3 letters can be constructed using the tiles in the pool, players can type that word and hit the Enter key to claim it.
-
-When a word is claimed by a player, it will move to that player's hand below their name. But be careful! The word can still be stolen by other players.
-
-#### Stealing
-
-Any word that has been claimed can be stolen by any player - including the player who originally claimed it.
-
-However, to steal a word, players must _add_ tiles to that word, either by taking additional tiles from the pool, or by stealing multiple words at once.
-
-#### Endgame
-
-Once all of the tiles have been "flipped" and added to the pool, the game will not officially end until all players have acknowledged that they are done searching for words by clicking the **DONE** button.
-
-Players can then choose to play a rematch if they all click the **REMATCH** button.
-
-## Development
-
-#### Dependencies
+## Dependencies
 
 * Node v14.x
 * NPM v6.x
 * Yarn v1.x
 
-#### Repo Structure
+## Repo Structure
 
-The server source code is located in the `./server/src` directory. Its entrypoint is `server.ts` (or `./dist/server.js` after compilation). The server's `package.json` is located in `./server`.
+The server source code is located in the `./server/src` directory. Its entrypoint is `server.ts` (or `./dist/server.js` after compilation).
 
-The client source code is located in the `./client/src` directory. It was initialized using the `create-react-app` utility. The client's `package.json` is located in `./client`.
+The client source code is located in the `./client/src` directory. It was initialized using the `create-react-app` utility.
 
 Shared source code is located in the `./shared/src` directory. This package is automatically built when `yarn install` is run from the root directory. Both the server and client depend on this code.
 
-#### Running
+## Execution
 
 To build and run the production build, run the following command:
 ```sh
