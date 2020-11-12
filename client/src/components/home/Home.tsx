@@ -12,7 +12,7 @@ import { Redirect } from 'react-router-dom';
 import api from '../../api/api';
 import Page from '../shared/Page';
 import JoinGameDialog from './JoinGameDialog';
-import InstructionsDialog from './InstructionsDialog';
+import HowToPlayDialog from './HowToPlayDialog';
 
 const useStyles = makeStyles((theme) => ({
   backdrop: {
@@ -23,7 +23,7 @@ const useStyles = makeStyles((theme) => ({
 
 const Home = () => {
   const [joinDialogOpen, setJoinDialogOpen] = useState(false);
-  const [instructionsDialogOpen, setInstructionsDialogOpen] = useState(false);
+  const [howToPlayDialogOpen, setHowToPlayDialogOpen] = useState(false);
   const [gameId, setGameId] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -71,7 +71,7 @@ const Home = () => {
           <Button onClick={() => setJoinDialogOpen(true)}>
             Join Game
           </Button>
-          <Button onClick={() => setInstructionsDialogOpen(true)}>
+          <Button onClick={() => setHowToPlayDialogOpen(true)}>
             How To Play
           </Button>
         </ButtonGroup>
@@ -81,9 +81,9 @@ const Home = () => {
         onCancel={handleCancelJoin}
         onJoin={handleJoinGame}
       />
-      <InstructionsDialog
-        open={instructionsDialogOpen}
-        onClose={() => setInstructionsDialogOpen(false)}
+      <HowToPlayDialog
+        open={howToPlayDialogOpen}
+        onClose={() => setHowToPlayDialogOpen(false)}
       />
       <Backdrop className={classes.backdrop} open={loading}>
         <CircularProgress color="secondary" />

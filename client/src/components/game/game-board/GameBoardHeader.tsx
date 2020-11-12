@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Button, ButtonGroup, makeStyles, Paper, Typography } from '@material-ui/core';
 import { GameState, GameStatuses, PlayerStatuses } from 'bramagrams-shared';
-import HowToPlayButtonAndDialog from '../shared/HowToPlayButtonAndDialog';
+import HowToPlayButtonAndDialog from '../../shared/HowToPlayButtonAndDialog';
 import EndGameButtons from './EndGameButtons';
 import TilePool from './TilePool';
 import SpectatorsList from './SpectatorsList';

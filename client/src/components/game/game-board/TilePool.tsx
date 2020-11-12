@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box } from '@material-ui/core';
-import Tile from './Tile';
+import Tile from '../../shared/Tile';
 
 interface TilePoolProps {
   letters: string[];

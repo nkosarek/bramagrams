@@ -1,6 +1,6 @@
 import React from 'react';
 import { Player, PlayerStatuses } from 'bramagrams-shared';
-import api from '../../api/api';
+import api from '../../../api/api';
 import { Button, ButtonGroup } from '@material-ui/core';
 
 interface EndGameButtonsProps {

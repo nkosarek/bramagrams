@@ -10,9 +10,6 @@ const useStyles = makeStyles((theme) => ({
   playerText: {
     color: theme.palette.secondary.main,
   },
-  list: {
-    // maxHeight: "100%",
-  },
   listBox: {
     scrollbarColor: `${theme.palette.secondary.light} ${theme.palette.primary.dark}`,
     '&::-webkit-scrollbar-track': {

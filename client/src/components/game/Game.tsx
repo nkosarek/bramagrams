@@ -5,8 +5,8 @@ import Cookies from 'universal-cookie';
 import MessagePage from '../shared/MessagePage';
 import { GameState, GameStatuses, PlayerStatuses } from 'bramagrams-shared';
 import api from '../../api/api';
-import GameLobby from './GameLobby';
-import GameBoard from './GameBoard';
+import GameLobby from './game-lobby/GameLobby';
+import GameBoard from './game-board/GameBoard';
 import EndGameDialog from './EndGameDialog';
 import EnterNameDialog from './EnterNameDialog';
 

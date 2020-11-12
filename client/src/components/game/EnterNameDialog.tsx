@@ -3,7 +3,7 @@ import { Player } from 'bramagrams-shared';
 import React, { FormEvent, useEffect, useState } from 'react';
 import api from '../../api/api';
 import StyledDialog from '../shared/StyledDialog';
-import NameInput from './NameInput';
+import NameInput from '../shared/NameInput';
 
 interface EnterNameDialogProps {
   open: boolean;

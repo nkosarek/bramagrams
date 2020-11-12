@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Typography } from '@material-ui/core';
 import { ArrowDropDown, Check } from '@material-ui/icons';
-import Word from './Word';
+import Word from '../../shared/Word';
 
 interface PlayerHandProps {
   name: string;

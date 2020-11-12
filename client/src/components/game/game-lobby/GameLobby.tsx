@@ -1,11 +1,11 @@
 import React, { useState, useEffect, FormEvent } from 'react';
 import { Box, Button, ButtonGroup, Divider, Typography } from '@material-ui/core';
 import { Person, Visibility } from '@material-ui/icons';
-import Page from '../shared/Page';
-import api from '../../api/api';
+import Page from '../../shared/Page';
+import api from '../../../api/api';
 import { MAX_PLAYERS, Player, PlayerStatuses } from 'bramagrams-shared';
 import CopyGameLinkButton from './CopyGameLinkButton';
-import NameInput from './NameInput';
+import NameInput from '../../shared/NameInput';
 
 const getNumPlayingPlayers = (players: Player[]) => {
   return players.filter(p => p.status !== PlayerStatuses.SPECTATING).length;

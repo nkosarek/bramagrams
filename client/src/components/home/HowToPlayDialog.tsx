@@ -26,12 +26,12 @@ const Transition = React.forwardRef(function Transition(
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-interface InstructionsDialogProps {
+interface HowToPlayDialogProps {
   open: boolean,
   onClose: () => void,
 }
 
-const InstructionsDialog = ({ open, onClose }: InstructionsDialogProps) => {
+const HowToPlayDialog = ({ open, onClose }: HowToPlayDialogProps) => {
   const classes = useStyles();
 
   return (
@@ -57,4 +57,4 @@ const InstructionsDialog = ({ open, onClose }: InstructionsDialogProps) => {
   );
 };
 
-export default InstructionsDialog;
+export default HowToPlayDialog;

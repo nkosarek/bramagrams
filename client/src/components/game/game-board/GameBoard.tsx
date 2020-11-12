@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box } from '@material-ui/core';
 import { GameState, Player, PlayerStatuses, GameStatuses } from 'bramagrams-shared';
-import Page from '../shared/Page';
+import Page from '../../shared/Page';
 import PlayerHand from './PlayerHand';
 import GameBoardHeader from './GameBoardHeader';
 

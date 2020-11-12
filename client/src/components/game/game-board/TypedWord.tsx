@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Dictionary, GameState, GameStatuses } from 'bramagrams-shared';
-import api from '../../api/api';
-import ClaimHandler from '../../util/claimHandler';
-import Word from './Word';
+import api from '../../../api/api';
+import ClaimHandler from '../../../util/claimHandler';
+import Word from '../../shared/Word';
 
 const getAllAvailableTiles = (gameState: GameState) => {
   let poolAndWords = [...gameState.tiles];
