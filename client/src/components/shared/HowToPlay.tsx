@@ -60,7 +60,7 @@ const HowToPlay = ({ hideGameLobby }: HowToPlayProps) => {
   const classes = useStyles();
   return (
     <Box overflow="auto" className={classes.scrollableSection}>
-      <Box ml={5} py={3} mr={3}>
+      <Box mx={5} py={3}>
         {!hideGameLobby && (
           <>
             <Header>
