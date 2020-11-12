@@ -1,10 +1,11 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import { Box, Button, ButtonGroup, Divider, TextField, Typography } from '@material-ui/core';
+import { Box, Button, ButtonGroup, Divider, Typography } from '@material-ui/core';
 import { Person, Visibility } from '@material-ui/icons';
 import Page from '../shared/Page';
 import api from '../../api/api';
 import { MAX_PLAYERS, Player, PlayerStatuses } from 'bramagrams-shared';
 import CopyGameLinkButton from './CopyGameLinkButton';
+import NameInput from './NameInput';
 
 const getNumPlayingPlayers = (players: Player[]) => {
   return players.filter(p => p.status !== PlayerStatuses.SPECTATING).length;
@@ -101,15 +102,10 @@ const GameLobby = ({ gameId, playerName, players, onNameClaimed }: GameLobbyProp
         {editingName ? (
           <form onSubmit={handleNameSubmitted}>
             <Box display="flex" flexDirection="column">
-              <TextField
-                color="secondary"
-                label="Enter Your Name"
-                variant="outlined"
-                autoFocus
-                value={requestedName}
-                onChange={(event) => handleNameEdited(event.target.value)}
-                error={hasNameError}
-                helperText={hasNameError && "Name has already been claimed"}
+              <NameInput
+                name={requestedName}
+                nameAlreadyClaimed={hasNameError}
+                onChange={newName => handleNameEdited(newName)}
               />
               <Box display="flex" justifyContent="space-evenly">
                 <Button

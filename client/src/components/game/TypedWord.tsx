@@ -24,10 +24,11 @@ interface TypedWordProps {
   gameState: GameState;
   gameId: string;
   playerName: string;
-  onTileFlip: () => void
+  disableHandlers: boolean;
+  onTileFlip: () => void;
 }
 
-const TypedWord = ({ gameState, gameId, playerName, onTileFlip }: TypedWordProps) => {
+const TypedWord = ({ gameState, gameId, playerName, disableHandlers, onTileFlip }: TypedWordProps) => {
   const [typedWord, setTypedWord] = useState("");
 
   useEffect(() => {
@@ -35,6 +36,8 @@ const TypedWord = ({ gameState, gameId, playerName, onTileFlip }: TypedWordProps
   }, [gameId]);
 
   useEffect(() => {
+    if (disableHandlers) return;
+
     const handleSpacebar = (event: KeyboardEvent) => {
       event.preventDefault();
       if (process.env.NODE_ENV === "development" ||
@@ -110,7 +113,7 @@ const TypedWord = ({ gameState, gameId, playerName, onTileFlip }: TypedWordProps
 
     window.addEventListener('keydown', handleKeyDownEvent);
     return () => window.removeEventListener('keydown', handleKeyDownEvent);
-  }, [gameId, gameState, playerName, typedWord, onTileFlip]);
+  }, [gameId, gameState, playerName, typedWord, disableHandlers, onTileFlip]);
 
   return (
     <Word word={typedWord} dark={!Dictionary.isValidWord(typedWord)} />

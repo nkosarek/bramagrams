@@ -14,9 +14,10 @@ interface GameBoardProps {
   gameState: GameState;
   gameId: string;
   playerName: string;
+  disableHandlers: boolean;
 }
 
-const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
+const GameBoard = ({ gameState, gameId, playerName, disableHandlers }: GameBoardProps) => {
   // Save each player's original index into the players list before filtering out spectators and reordering
   let playingPlayers = gameState.players.map((player, idx) => ({ player, idx }))
     .filter(p => p.player.status !== PlayerStatuses.SPECTATING);
@@ -36,6 +37,7 @@ const GameBoard = ({ gameState, gameId, playerName }: GameBoardProps) => {
         gameState={gameState}
         gameId={gameId}
         playerName={playerName}
+        disableHandlers={disableHandlers}
       />
       <Box flexGrow={1} display="flex" px={3} pb={3}>
         {playingPlayers.map(({ player, idx }) => (

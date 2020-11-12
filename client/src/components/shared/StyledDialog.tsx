@@ -4,7 +4,7 @@ import { DialogProps } from '@material-ui/core/Dialog/Dialog';
 
 const useStyles = makeStyles((theme) => ({
   dialog: {
-    backgroundColor: theme.palette.primary.light,
+    backgroundColor: theme.palette.primary.main,
   },
   darkDialog: {
     backgroundColor: theme.palette.primary.dark,

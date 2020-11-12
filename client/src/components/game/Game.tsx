@@ -8,6 +8,7 @@ import api from '../../api/api';
 import GameLobby from './GameLobby';
 import GameBoard from './GameBoard';
 import EndGameDialog from './EndGameDialog';
+import EnterNameDialog from './EnterNameDialog';
 
 export const PLAYER_NAME_COOKIE = 'bramagrams-player-name';
 
@@ -115,9 +116,21 @@ const Game = () => {
     />
   ) : (
     <>
-      <GameBoard gameState={gameState} gameId={gameId} playerName={playerName} />
+      <GameBoard
+        gameState={gameState}
+        gameId={gameId}
+        playerName={playerName}
+        disableHandlers={!playerState}
+      />
+      <EnterNameDialog
+        open={!playerState}
+        gameId={gameId}
+        playerName={playerName}
+        players={players}
+        onNameClaimed={handleNameClaimed}
+      />
       <EndGameDialog
-        open={endGameDialogOpen}
+        open={!!playerState && endGameDialogOpen}
         players={players}
         disableRematch={!playerState || playerState.status === PlayerStatuses.SPECTATING}
         onClose={onEndGameDialogClosed}

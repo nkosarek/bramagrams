@@ -22,9 +22,10 @@ interface GameBoardHeaderProps {
   gameState: GameState;
   gameId: string;
   playerName: string;
+  disableHandlers: boolean;
 }
 
-const GameBoardHeader = ({ gameState, gameId, playerName }: GameBoardHeaderProps) => {
+const GameBoardHeader = ({ gameState, gameId, playerName, disableHandlers }: GameBoardHeaderProps) => {
   const [toastAcked, setToastAcked] = useState(initToastAcked(gameState, playerName));
 
   const classes = useStyles();
@@ -68,6 +69,7 @@ const GameBoardHeader = ({ gameState, gameId, playerName }: GameBoardHeaderProps
             gameState={gameState}
             gameId={gameId}
             playerName={playerName}
+            disableHandlers={disableHandlers}
             onTileFlip={() => setToastAcked(true)}
           />
         </Box>
