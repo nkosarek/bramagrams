@@ -56,4 +56,5 @@ export interface GameState {
   tiles: string[];
   numTilesLeft: number;
   totalTiles: number;
+  timeoutTime: string | null;
 }

@@ -55,7 +55,12 @@ const GameBoardHeader = ({ gameState, gameId, playerName, disableHandlers }: Gam
         <Box flexGrow={1} width="90%" py={2} display="flex" flexDirection="column" alignItems="center">
           <Box mb={2}>
             {showEndGameButtons ? (
-              <EndGameButtons gameId={gameId} playerName={playerName} playerState={playerState} />
+              <EndGameButtons
+                gameId={gameId}
+                playerName={playerName}
+                playerState={playerState}
+                gameTimeoutTime={gameState.timeoutTime}
+              />
             ) : (
               <Typography variant="h5">Tiles Left: {gameState.numTilesLeft}</Typography>
             )}

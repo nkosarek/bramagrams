@@ -14,6 +14,7 @@ interface ServerGameState {
   clientGameState: GameState;
   tilesLeft: string[];
   lastAccessed: number;
+  endgameTimer: ReturnType<typeof setTimeout> | null;
 }
 
 export default class GamesController {
@@ -148,22 +149,33 @@ export default class GamesController {
     });
   }
 
-  private checkForGameEnd(game: GameState) {
+  private endGame(game: GameState) {
+    game.status = GameStatuses.ENDED;
+    game.timeoutTime = null;
+    game.players.forEach(player => {
+      if (player.status !== PlayerStatuses.SPECTATING) {
+        player.status = PlayerStatuses.ENDED;
+      }
+    });
+  }
+
+  private checkForGameEnd(game: GameState, endgameTimer: ReturnType<typeof setTimeout> | null) {
     if ((game.numTilesLeft === 0 && !game.tiles.length) || game.players.every(player =>
         [PlayerStatuses.READY_TO_END, PlayerStatuses.SPECTATING].includes(player.status))) {
-      game.status = GameStatuses.ENDED;
-      game.players.forEach(player => {
-        if (player.status !== PlayerStatuses.SPECTATING) {
-          player.status = PlayerStatuses.ENDED;
-        }
-      });
+      if (endgameTimer) clearTimeout(endgameTimer);
+      this.endGame(game)
     }
   }
 
   private restartGame(serverGameState: ServerGameState, toLobby: boolean = false): GameState {
     serverGameState.tilesLeft = [...TILES];
+    if (serverGameState.endgameTimer) {
+      clearTimeout(serverGameState.endgameTimer);
+      serverGameState.endgameTimer = null;
+    }
     const { clientGameState: game } = serverGameState;
     this.resetCurrPlayerIdx(game);
+    game.timeoutTime = null;
     game.status = toLobby ? GameStatuses.WAITING_TO_START : GameStatuses.IN_PROGRESS;
     game.tiles = [];
     game.numTilesLeft = TILES.length;
@@ -177,7 +189,7 @@ export default class GamesController {
     return game;
   }
 
-  getGame(gameId: string) {
+  getGame(gameId: string): ServerGameState {
     const game = this.games[gameId];
     if (!game) {
       throw 'Game does not exist';
@@ -199,6 +211,7 @@ export default class GamesController {
     this.games[id] = {
       tilesLeft: [...TILES],
       lastAccessed: Date.now(),
+      endgameTimer: null,
       clientGameState: {
         players: [],
         currPlayerIdx: 0,
@@ -206,6 +219,7 @@ export default class GamesController {
         tiles: [],
         numTilesLeft: TILES.length,
         totalTiles: TILES.length,
+        timeoutTime: null,
       },
     }
     return id;
@@ -286,14 +300,29 @@ export default class GamesController {
     return game;
   }
 
-  addTile(gameId: string, playerName: string): GameState | undefined {
-    const { clientGameState: game, tilesLeft } = this.getGame(gameId);
+  addTile(
+    gameId: string,
+    playerName: string,
+    onEndgameTimerDone: (gameId: string, gameState: GameState) => void
+  ): GameState | undefined {
+    const serverGameState = this.getGame(gameId);
+    const { clientGameState: game, tilesLeft } = serverGameState;
     if (game.numTilesLeft === 0 ||
         (!isRunningInDev() && playerName !== game.players[game.currPlayerIdx].name)) {
       return;
     }
     this.addNewTileToPool(game, tilesLeft);
     this.advanceCurrPlayer(game);
+    if (game.numTilesLeft === 0) {
+      game.timeoutTime = new Date(Date.now() + 60000).toISOString();
+      serverGameState.endgameTimer = setTimeout(() => {
+        console.log(`Endgame timer complete for ${gameId}. Ending game`)
+        if (game.status !== GameStatuses.ENDED) {
+          this.endGame(game);
+          onEndgameTimerDone(gameId, game);
+        }
+      }, 60000);
+    }
     return game;
   }
 
@@ -303,10 +332,11 @@ export default class GamesController {
     newWord: string,
     wordsToClaim?: PlayerWord[]
   ): GameState | undefined {
-    const { clientGameState: game } = this.getGame(gameId);
+    const { clientGameState: game, endgameTimer } = this.getGame(gameId);
     const player = this.getPlayer(game, playerName);
     const playerIsSpectating = player?.status === PlayerStatuses.SPECTATING;
     if (!player || !newWord || newWord.length < 3 ||
+        game.status !== GameStatuses.IN_PROGRESS ||
         (playerIsSpectating && this.getNumPlayingPlayers(game) >= MAX_PLAYERS)) {
       return;
     }
@@ -323,18 +353,18 @@ export default class GamesController {
     if (playerIsSpectating) {
       player.status = PlayerStatuses.PLAYING;
     }
-    this.checkForGameEnd(game);
+    this.checkForGameEnd(game, endgameTimer);
     return game;
   }
 
   setPlayerReadyToEnd(gameId: string, playerName: string): GameState | undefined {
-    const { clientGameState: game } = this.getGame(gameId);
+    const { clientGameState: game, endgameTimer } = this.getGame(gameId);
     const player = this.getPlayer(game, playerName);
     if (!player || game.numTilesLeft || player.status !== PlayerStatuses.PLAYING) {
       return;
     }
     player.status = PlayerStatuses.READY_TO_END;
-    this.checkForGameEnd(game)
+    this.checkForGameEnd(game, endgameTimer)
     return game;
   }
 

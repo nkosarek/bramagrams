@@ -3,7 +3,7 @@ import http from 'http';
 import socketIO from 'socket.io';
 import path from 'path';
 import cors from 'cors';
-import { ServerEvents, ClientEvents, GameState, PlayerWord } from 'bramagrams-shared';
+import { ServerEvents, ClientEvents, GameState, PlayerWord, GameStatuses } from 'bramagrams-shared';
 import GamesController from './game-controller';
 
 export const isRunningInDev = () => process.env.NODE_ENV === 'development';
@@ -125,7 +125,12 @@ io.on('connection', (socket) => {
 
   socket.on(ClientEvents.ADD_TILE, (gameId: string, player: string) => {
     console.log("Received ADD_TILE request with args: gameId=", gameId, "player=", player);
-    updateGameStateWrapper(socket, gameId, () => gamesController.addTile(gameId, player));
+    updateGameStateWrapper(socket, gameId, () => {
+      const onEndgameTimerDone = (gameId: string, game: GameState) => {
+        io.to(gameId).emit(ServerEvents.GAME_UPDATED, game);
+      }
+      return gamesController.addTile(gameId, player, onEndgameTimerDone);
+    });
   });
 
   socket.on(ClientEvents.CLAIM_WORD,
