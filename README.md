@@ -4,9 +4,9 @@ Kinda like Bananagrams except Emily changed it so she always wins.
 
 This application is deployed to Heroku and can be accessed via the following URLs:
 
-[http://www.bramagrams.com]()
+[http://www.bramagrams.com](http://www.bramagrams.com)
 
-[https://bramagrams-v2.herokuapp.com/]()
+[https://bramagrams-v2.herokuapp.com/](https://bramagrams-v2.herokuapp.com/)
 
 How to play instructions can be viewed on the home page of the deployed application and are rendered via the [HowToPlay component](client/src/components/shared/HowToPlay.tsx).
 
