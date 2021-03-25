@@ -140,7 +140,9 @@ io.on('connection', (socket) => {
       updateGameStateWrapper(socket, gameId, () => {
         const game = gamesController.claimWord(gameId, player, newWord, wordsToClaim);
         if (game) {
-          socket.emit(ServerEvents.WORD_CLAIMED, newWord);
+          socket.emit(ServerEvents.WORD_CLAIMED, true, newWord);
+        } else {
+          socket.emit(ServerEvents.WORD_CLAIMED, false, newWord);
         }
         return game;
       });

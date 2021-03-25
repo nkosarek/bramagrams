@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Dictionary, GameState, GameStatuses } from 'bramagrams-shared';
 import api from '../../../api/api';
 import ClaimHandler from '../../../util/claimHandler';
@@ -31,12 +31,22 @@ interface TypedWordProps {
 const TypedWord = ({ gameState, gameId, playerName, disableHandlers, onTileFlip }: TypedWordProps) => {
   const [typedWord, setTypedWord] = useState("");
 
-  useEffect(() => {
-    api.initWordClaimedSubscription(() => setTypedWord(""));
-  }, [gameId]);
+  const handleWordClaimedResponse = useRef<(claimed: boolean, word: string) => void>(() => {});
+  const handleKeyDownEvent = useRef<(event: KeyboardEvent) => void>(() => {});
 
   useEffect(() => {
-    if (disableHandlers) return;
+    handleWordClaimedResponse.current = (claimed, word) => {
+      if (word === typedWord) {
+        setTypedWord("");
+      }
+    };
+  }, [typedWord]);
+
+  useEffect(() => {
+    if (disableHandlers) {
+      handleKeyDownEvent.current = () => {};
+      return;
+    }
 
     const handleSpacebar = (event: KeyboardEvent) => {
       event.preventDefault();
@@ -50,10 +60,17 @@ const TypedWord = ({ gameState, gameId, playerName, disableHandlers, onTileFlip 
     const handleEnter = (event: KeyboardEvent) => {
       event.preventDefault();
       if (typedWord && typedWord.length >= 3) {
+        if (!Dictionary.isValidWord(typedWord)) {
+          handleWordClaimedResponse.current(false, typedWord);
+          return;
+        }
         const claimOptions = ClaimHandler.getAllPossibleClaims(gameState, typedWord);
         // Default to steal if it's possible
         const claim = ClaimHandler.getClaimWithMostStealsAndWords(gameState, playerName, claimOptions);
-        if (!claim) return;
+        if (!claim) {
+          handleWordClaimedResponse.current(false, typedWord);
+          return;
+        }
         api.claimWord(gameId, playerName, typedWord, claim.wordsToClaim);
       }
     };
@@ -79,7 +96,7 @@ const TypedWord = ({ gameState, gameId, playerName, disableHandlers, onTileFlip 
       }
     };
 
-    const handleKeyDownEvent = (event: KeyboardEvent) => {
+    handleKeyDownEvent.current = (event: KeyboardEvent) => {
       if (event.key != null) {
         const upperCaseKey = event.key.toUpperCase();
         switch (event.key) {
@@ -110,10 +127,15 @@ const TypedWord = ({ gameState, gameId, playerName, disableHandlers, onTileFlip 
         }
       }
     };
-
-    window.addEventListener('keydown', handleKeyDownEvent);
-    return () => window.removeEventListener('keydown', handleKeyDownEvent);
   }, [gameId, gameState, playerName, typedWord, disableHandlers, onTileFlip]);
+
+  useEffect(() => {
+    const onWordClaimed = (claimed: boolean, word: string) => handleWordClaimedResponse.current(claimed, word);
+    const onKeyDown = (event: KeyboardEvent) => handleKeyDownEvent.current(event);
+    api.initWordClaimedSubscription(onWordClaimed);
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
 
   return (
     <Word word={typedWord} dark={!Dictionary.isValidWord(typedWord)} />

@@ -40,7 +40,7 @@ const Game = () => {
   const [endGameDialogOpen, setEndGameDialogOpen] = useState(false);
   const [connectedToGame, setConnectedToGame] = useState(false);
 
-  const handleGameUpdate = useRef<(game: GameState) => void>((game) => {});
+  const handleGameUpdate = useRef<(game: GameState) => void>(() => {});
 
   const players = gameState?.players || [];
   const playerState = getPlayer(gameState, playerName);
