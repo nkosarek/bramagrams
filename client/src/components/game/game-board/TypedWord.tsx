@@ -3,6 +3,7 @@ import { Dictionary, GameState, GameStatuses } from 'bramagrams-shared';
 import api from '../../../api/api';
 import ClaimHandler from '../../../util/claimHandler';
 import Word from '../../shared/Word';
+import { animated, useSpring } from 'react-spring';
 
 const getAllAvailableTiles = (gameState: GameState) => {
   let poolAndWords = [...gameState.tiles];
@@ -31,16 +32,24 @@ interface TypedWordProps {
 const TypedWord = ({ gameState, gameId, playerName, disableHandlers, onTileFlip }: TypedWordProps) => {
   const [typedWord, setTypedWord] = useState("");
 
+  const [{ wiggle }, setWiggle] = useSpring(() => ({
+    reset: true,
+    from: { wiggle: 0 },
+    wiggle: 0,
+    config: { duration: 500 },
+    onRest: () => setTypedWord(""),
+  }));
+
   const handleWordClaimedResponse = useRef<(claimed: boolean, word: string) => void>(() => {});
   const handleKeyDownEvent = useRef<(event: KeyboardEvent) => void>(() => {});
 
   useEffect(() => {
     handleWordClaimedResponse.current = (claimed, word) => {
       if (word === typedWord) {
-        setTypedWord("");
+        if (!claimed) setWiggle({ wiggle: 1 });
       }
     };
-  }, [typedWord]);
+  }, [typedWord, setWiggle]);
 
   useEffect(() => {
     if (disableHandlers) {
@@ -138,7 +147,18 @@ const TypedWord = ({ gameState, gameId, playerName, disableHandlers, onTileFlip 
   }, []);
 
   return (
-    <Word word={typedWord} dark={!Dictionary.isValidWord(typedWord)} />
+    <animated.div
+      style={{
+        transform: wiggle
+          .interpolate({
+            range: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 1],
+            output: [0, 0.5, -0.5, 0.5, -0.5, 0, 0]
+          })
+          .interpolate(x => `translate(${x}rem)`)
+      }}
+    >
+      <Word word={typedWord} dark={!Dictionary.isValidWord(typedWord)} />
+    </animated.div>
   )
 };
 
