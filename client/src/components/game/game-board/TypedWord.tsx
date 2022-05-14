@@ -32,12 +32,10 @@ interface TypedWordProps {
 const TypedWord = ({ gameState, gameId, playerName, disableHandlers, onTileFlip }: TypedWordProps) => {
   const [typedWord, setTypedWord] = useState("");
 
-  const [{ wiggle }, setWiggle] = useSpring(() => ({
-    reset: true,
+  const [{ wiggle }, animateWiggle] = useSpring(() => ({
     from: { wiggle: 0 },
-    wiggle: 0,
-    config: { duration: 500 },
-    onRest: () => setTypedWord(""),
+    to: { wiggle: 1 },
+    config: { duration: 300 },
   }));
 
   const handleWordClaimedResponse = useRef<(claimed: boolean, word: string) => void>(() => {});
@@ -45,11 +43,18 @@ const TypedWord = ({ gameState, gameId, playerName, disableHandlers, onTileFlip 
 
   useEffect(() => {
     handleWordClaimedResponse.current = (claimed, word) => {
+      const clearTypedWord = () => setTypedWord("");
       if (word === typedWord) {
-        if (!claimed) setWiggle({ wiggle: 1 });
+        if (claimed) {
+          clearTypedWord();
+        } else {
+          // Disable typing during animation
+          handleKeyDownEvent.current = () => {};
+          animateWiggle.start({ reset: true, onRest: clearTypedWord });
+        }
       }
     };
-  }, [typedWord, setWiggle]);
+  }, [typedWord, animateWiggle]);
 
   useEffect(() => {
     if (disableHandlers) {
@@ -150,11 +155,11 @@ const TypedWord = ({ gameState, gameId, playerName, disableHandlers, onTileFlip 
     <animated.div
       style={{
         transform: wiggle
-          .interpolate({
-            range: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 1],
-            output: [0, 0.5, -0.5, 0.5, -0.5, 0, 0]
+          .to({
+            range: [0, 0.15, 0.3, 0.45, 0.6, 0.75, 1],
+            output: [0, 0.75, -0.75, 0.75, -0.75, 0, 0]
           })
-          .interpolate(x => `translate(${x}rem)`)
+          .to(x => `translate(${x}rem)`)
       }}
     >
       <Word word={typedWord} dark={!Dictionary.isValidWord(typedWord)} />
