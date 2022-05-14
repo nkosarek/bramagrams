@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Dictionary, GameState, GameStatuses } from 'bramagrams-shared';
 import api from '../../../api/api';
 import ClaimHandler from '../../../util/claimHandler';
 import Word from '../../shared/Word';
+import { animated, useSpring } from 'react-spring';
 
 const getAllAvailableTiles = (gameState: GameState) => {
   let poolAndWords = [...gameState.tiles];
@@ -31,12 +32,39 @@ interface TypedWordProps {
 const TypedWord = ({ gameState, gameId, playerName, disableHandlers, onTileFlip }: TypedWordProps) => {
   const [typedWord, setTypedWord] = useState("");
 
-  useEffect(() => {
-    api.initWordClaimedSubscription(() => setTypedWord(""));
-  }, [gameId]);
+  const { animateFailure } = useSpring({
+    config: { duration: 300 },
+    animateFailure: 1,
+  });
+
+  const transform = animateFailure.to({
+    range: [0, 0.15, 0.3, 0.45, 0.6, 0.75, 1],
+    output: [0, 0.75, -0.75, 0.75, -0.75, 0, 0]
+  }).to(x => `translate(${x}rem)`)
+
+  const handleWordClaimedResponse = useRef<(claimed: boolean, word: string) => void>(() => {});
+  const handleKeyDownEvent = useRef<(event: KeyboardEvent) => void>(() => {});
 
   useEffect(() => {
-    if (disableHandlers) return;
+    handleWordClaimedResponse.current = (claimed, word) => {
+      const clearTypedWord = () => setTypedWord("");
+      if (word === typedWord) {
+        if (claimed) {
+          clearTypedWord();
+        } else {
+          // Disable typing during animation
+          handleKeyDownEvent.current = () => {};
+          animateFailure.start({ from: 0, to: 1, onRest: clearTypedWord });
+        }
+      }
+    };
+  }, [typedWord, animateFailure]);
+
+  useEffect(() => {
+    if (disableHandlers) {
+      handleKeyDownEvent.current = () => {};
+      return;
+    }
 
     const handleSpacebar = (event: KeyboardEvent) => {
       event.preventDefault();
@@ -50,10 +78,17 @@ const TypedWord = ({ gameState, gameId, playerName, disableHandlers, onTileFlip 
     const handleEnter = (event: KeyboardEvent) => {
       event.preventDefault();
       if (typedWord && typedWord.length >= 3) {
+        if (!Dictionary.isValidWord(typedWord)) {
+          handleWordClaimedResponse.current(false, typedWord);
+          return;
+        }
         const claimOptions = ClaimHandler.getAllPossibleClaims(gameState, typedWord);
         // Default to steal if it's possible
         const claim = ClaimHandler.getClaimWithMostStealsAndWords(gameState, playerName, claimOptions);
-        if (!claim) return;
+        if (!claim) {
+          handleWordClaimedResponse.current(false, typedWord);
+          return;
+        }
         api.claimWord(gameId, playerName, typedWord, claim.wordsToClaim);
       }
     };
@@ -79,7 +114,7 @@ const TypedWord = ({ gameState, gameId, playerName, disableHandlers, onTileFlip 
       }
     };
 
-    const handleKeyDownEvent = (event: KeyboardEvent) => {
+    handleKeyDownEvent.current = (event: KeyboardEvent) => {
       if (event.key != null) {
         const upperCaseKey = event.key.toUpperCase();
         switch (event.key) {
@@ -110,13 +145,20 @@ const TypedWord = ({ gameState, gameId, playerName, disableHandlers, onTileFlip 
         }
       }
     };
-
-    window.addEventListener('keydown', handleKeyDownEvent);
-    return () => window.removeEventListener('keydown', handleKeyDownEvent);
   }, [gameId, gameState, playerName, typedWord, disableHandlers, onTileFlip]);
 
+  useEffect(() => {
+    const onWordClaimed = (claimed: boolean, word: string) => handleWordClaimedResponse.current(claimed, word);
+    const onKeyDown = (event: KeyboardEvent) => handleKeyDownEvent.current(event);
+    api.initWordClaimedSubscription(onWordClaimed);
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
+
   return (
-    <Word word={typedWord} dark={!Dictionary.isValidWord(typedWord)} />
+    <animated.div style={{ transform }}>
+      <Word word={typedWord} dark={!Dictionary.isValidWord(typedWord)} />
+    </animated.div>
   )
 };
 

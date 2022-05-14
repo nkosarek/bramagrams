@@ -34,7 +34,7 @@ class Api {
     this.socket.on(ServerEvents.NAME_CLAIMED, onNameClaimed);
   }
 
-  initWordClaimedSubscription(onWordClaimed: (word: string) => void) {
+  initWordClaimedSubscription(onWordClaimed: (claimed: boolean, word: string) => void) {
     this.socket.on(ServerEvents.WORD_CLAIMED, onWordClaimed);
   }
 
