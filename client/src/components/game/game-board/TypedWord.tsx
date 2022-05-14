@@ -32,11 +32,10 @@ interface TypedWordProps {
 const TypedWord = ({ gameState, gameId, playerName, disableHandlers, onTileFlip }: TypedWordProps) => {
   const [typedWord, setTypedWord] = useState("");
 
-  const [{ wiggle }, animateWiggle] = useSpring(() => ({
-    from: { wiggle: 0 },
-    to: { wiggle: 1 },
+  const { animateFailure } = useSpring({
     config: { duration: 300 },
-  }));
+    animateFailure: 1,
+  });
 
   const handleWordClaimedResponse = useRef<(claimed: boolean, word: string) => void>(() => {});
   const handleKeyDownEvent = useRef<(event: KeyboardEvent) => void>(() => {});
@@ -50,11 +49,11 @@ const TypedWord = ({ gameState, gameId, playerName, disableHandlers, onTileFlip 
         } else {
           // Disable typing during animation
           handleKeyDownEvent.current = () => {};
-          animateWiggle.start({ reset: true, onRest: clearTypedWord });
+          animateFailure.start({ from: 0, to: 1, onRest: clearTypedWord });
         }
       }
     };
-  }, [typedWord, animateWiggle]);
+  }, [typedWord, animateFailure]);
 
   useEffect(() => {
     if (disableHandlers) {
@@ -154,7 +153,7 @@ const TypedWord = ({ gameState, gameId, playerName, disableHandlers, onTileFlip 
   return (
     <animated.div
       style={{
-        transform: wiggle
+        transform: animateFailure
           .to({
             range: [0, 0.15, 0.3, 0.45, 0.6, 0.75, 1],
             output: [0, 0.75, -0.75, 0.75, -0.75, 0, 0]
