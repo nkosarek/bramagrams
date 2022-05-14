@@ -37,6 +37,11 @@ const TypedWord = ({ gameState, gameId, playerName, disableHandlers, onTileFlip 
     animateFailure: 1,
   });
 
+  const transform = animateFailure.to({
+    range: [0, 0.15, 0.3, 0.45, 0.6, 0.75, 1],
+    output: [0, 0.75, -0.75, 0.75, -0.75, 0, 0]
+  }).to(x => `translate(${x}rem)`)
+
   const handleWordClaimedResponse = useRef<(claimed: boolean, word: string) => void>(() => {});
   const handleKeyDownEvent = useRef<(event: KeyboardEvent) => void>(() => {});
 
@@ -151,16 +156,7 @@ const TypedWord = ({ gameState, gameId, playerName, disableHandlers, onTileFlip 
   }, []);
 
   return (
-    <animated.div
-      style={{
-        transform: animateFailure
-          .to({
-            range: [0, 0.15, 0.3, 0.45, 0.6, 0.75, 1],
-            output: [0, 0.75, -0.75, 0.75, -0.75, 0, 0]
-          })
-          .to(x => `translate(${x}rem)`)
-      }}
-    >
+    <animated.div style={{ transform }}>
       <Word word={typedWord} dark={!Dictionary.isValidWord(typedWord)} />
     </animated.div>
   )
