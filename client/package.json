@@ -16,7 +16,7 @@
     "@types/react-router-dom": "^5.1.5",
     "@types/socket.io-client": "^1.4.33",
     "@types/universal-cookie": "^2.2.0",
-    "axios": "^0.19.2",
+    "axios": "^0.21.2",
     "bramagrams-shared": "file:../shared",
     "react": "^16.13.1",
     "react-copy-to-clipboard": "^5.0.2",
