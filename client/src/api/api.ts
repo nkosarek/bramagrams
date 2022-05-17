@@ -2,7 +2,7 @@ import axios, { AxiosInstance } from 'axios';
 import socketIOClient from 'socket.io-client';
 import { GameState, PlayerWord, ClientEvents, ServerEvents } from 'bramagrams-shared';
 
-const DEV_SERVER_URL = 'http://localhost:5000';
+const DEV_SERVER_URL = 'http://localhost:3737';
 
 class Api {
   private socket: SocketIOClient.Socket;
