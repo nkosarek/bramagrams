@@ -24,6 +24,7 @@
     "build": "tsc",
     "start": "NODE_ENV=production node ./dist/server",
     "build-client": "cd client && yarn build && cd ..",
-    "dev": "NODE_ENV=development PORT=3737 nodemon --watch 'server/**/*.ts' --exec 'ts-node' src/server.ts"
+    "dev": "NODE_ENV=development PORT=3737 nodemon --watch 'server/**/*.ts' --exec 'ts-node' src/server.ts",
+    "clean": "rm -rf dist node_modules"
   }
 }

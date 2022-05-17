@@ -7,17 +7,23 @@ import {
   PlayerWord,
   PlayerStatuses,
   MAX_PLAYERS,
+  GameConfig,
 } from 'bramagrams-shared';
 import { isRunningInDev } from './server';
+
+const DEFAULT_GAME_CONFIG: GameConfig = {
+  isPublic: false,
+};
 
 interface ServerGameState {
   clientGameState: GameState;
   tilesLeft: string[];
   lastAccessed: number;
   endgameTimer: ReturnType<typeof setTimeout> | null;
+  gameConfig: GameConfig;
 }
 
-export default class GamesController {
+export class GamesController {
   private games: { [gameId: string]: ServerGameState} = {};
 
   private static generateGameId() {
@@ -198,7 +204,7 @@ export default class GamesController {
     return game;
   }
 
-  createGame(): string {
+  createGame(gameConfig: GameConfig = DEFAULT_GAME_CONFIG): string {
     let id: string;
     let count: number = 0;
     this.cleanupAbandonedGames();
@@ -221,6 +227,7 @@ export default class GamesController {
         totalTiles: TILES.length,
         timeoutTime: null,
       },
+      gameConfig,
     }
     return id;
   }

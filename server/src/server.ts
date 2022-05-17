@@ -3,8 +3,8 @@ import http from 'http';
 import socketIO from 'socket.io';
 import path from 'path';
 import cors from 'cors';
-import { ServerEvents, ClientEvents, GameState, PlayerWord, GameStatuses } from 'bramagrams-shared';
-import GamesController from './game-controller';
+import { ServerEvents, ClientEvents, GameState, PlayerWord } from 'bramagrams-shared';
+import { GamesController } from './game-controller';
 
 export const isRunningInDev = () => process.env.NODE_ENV === 'development';
 
@@ -26,8 +26,8 @@ app.get('*', (req: express.Request, res: express.Response) => {
 });
 
 app.post('/games', (req: express.Request, res: express.Response) => {
-  console.log("Received request to create game");
-  const id = gamesController.createGame();
+  console.log("Received request to create game: body=", req.body);
+  const id = gamesController.createGame(req.body?.gameConfig);
   if (!id) {
     res.status(500).send("ERROR: Failed to create a unique game ID\n");
     return;
