@@ -74,8 +74,8 @@ export const JoinGamePage: React.FC = () => {
   return joinedGameId ? (
     <RedirectToGame gameId={joinedGameId} />
   ) : (
-    <Page>
-      <Box flexGrow={1} p={2}>
+    <Page showHomeButton showHowToPlayButton>
+      <Box flexGrow={1} p={3}>
         <BoldTypography variant="h3" color="secondary" gutterBottom>
           Join Game
         </BoldTypography>
