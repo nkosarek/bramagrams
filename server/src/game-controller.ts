@@ -7,8 +7,13 @@ import {
   PlayerWord,
   PlayerStatuses,
   MAX_PLAYERS,
+  GameConfig,
 } from 'bramagrams-shared';
 import { isRunningInDev } from './server';
+
+const DEFAULT_GAME_CONFIG: GameConfig = {
+  isPublic: false,
+};
 
 interface ServerGameState {
   clientGameState: GameState;
@@ -16,9 +21,8 @@ interface ServerGameState {
   lastAccessed: number;
   endgameTimer: ReturnType<typeof setTimeout> | null;
 }
-
-export default class GamesController {
-  private games: { [gameId: string]: ServerGameState} = {};
+export class GamesController {
+  private games: { [gameId: string]: ServerGameState } = {};
 
   private static generateGameId() {
     const min = 0x10000000;
@@ -198,7 +202,7 @@ export default class GamesController {
     return game;
   }
 
-  createGame(): string {
+  createGame(gameConfig: GameConfig = DEFAULT_GAME_CONFIG): string {
     let id: string;
     let count: number = 0;
     this.cleanupAbandonedGames();
@@ -220,9 +224,17 @@ export default class GamesController {
         numTilesLeft: TILES.length,
         totalTiles: TILES.length,
         timeoutTime: null,
+        gameConfig,
       },
     }
     return id;
+  }
+
+  getPublicGames(): { [gameId: string]: GameState } {
+    return Object.fromEntries(Object.entries(this.games)
+      .filter((entry) => entry[1].clientGameState.gameConfig.isPublic)
+      .map(([gameId, serverGameState]) => [gameId, serverGameState.clientGameState])
+    );
   }
 
   addPlayer(gameId: string, name: string): GameState | undefined {

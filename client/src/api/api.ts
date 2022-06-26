@@ -17,8 +17,13 @@ class Api {
     });
   }
 
-  async createGame(): Promise<string> {
-    const response = await this.client.post('/games');
+  async createGame(isPublic = false): Promise<string> {
+    const response = await this.client.post('/api/games', { gameConfig: { isPublic } });
+    return response.data;
+  }
+
+  async getPublicGames(): Promise<{ [gameId: string]: GameState }> {
+    const response = await this.client.get('/api/public-games');
     return response.data;
   }
 

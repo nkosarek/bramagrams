@@ -1,10 +1,10 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import http from 'http';
 import socketIO from 'socket.io';
 import path from 'path';
 import cors from 'cors';
-import { ServerEvents, ClientEvents, GameState, PlayerWord, GameStatuses } from 'bramagrams-shared';
-import GamesController from './game-controller';
+import { ServerEvents, ClientEvents, GameState, PlayerWord } from 'bramagrams-shared';
+import { GamesController } from './game-controller';
 
 export const isRunningInDev = () => process.env.NODE_ENV === 'development';
 
@@ -17,17 +17,19 @@ const server = http.createServer(app);
 const io = socketIO(server);
 
 isRunningInDev() && app.use(cors({ origin: 'http://localhost:3000' }));
-app.use(express.static(path.join(__dirname, "..", "..", "client", "build")))
+app.use(express.static(path.join(__dirname, "..", "..", "client", "build")));
+app.use(express.json());
 app.set('port', port);
 
 // Routing
-app.get('*', (req: express.Request, res: express.Response) => {
-  res.sendFile(path.join(__dirname, "..", "..", "client", "build", "index.html"));
+app.get('/api/public-games', (req, res) => {
+  console.log("Received request to get public games");
+  res.status(200).send(gamesController.getPublicGames());
 });
 
-app.post('/games', (req: express.Request, res: express.Response) => {
-  console.log("Received request to create game");
-  const id = gamesController.createGame();
+app.post('/api/games', (req: Request, res: Response) => {
+  console.log("Received request to create game: body=", req.body);
+  const id = gamesController.createGame(req.body?.gameConfig);
   if (!id) {
     res.status(500).send("ERROR: Failed to create a unique game ID\n");
     return;
@@ -35,6 +37,16 @@ app.post('/games', (req: express.Request, res: express.Response) => {
   console.log("Created game", id);
   res.status(201).send(id);
 });
+
+app.all('/api/*', (req, res) => {
+  res.status(404).send("Server endpoint not found");
+});
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "..", "client", "build", "index.html"));
+});
+
+app.all('*', (req, res) => res.sendStatus(404));
 
 // Starts the server.
 server.listen(port, () => {

@@ -5,14 +5,15 @@ import {
   Button,
   ButtonGroup,
   CircularProgress,
-  Typography,
   makeStyles,
+  withStyles,
 } from '@material-ui/core';
-import { Redirect } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import api from '../../api/api';
 import Page from '../shared/Page';
-import JoinGameDialog from './JoinGameDialog';
 import HowToPlayDialog from './HowToPlayDialog';
+import { BoldTypography } from '../shared/BoldTypography';
+import { RedirectToGame } from '../shared/RedirectToGame';
 
 const useStyles = makeStyles((theme) => ({
   backdrop: {
@@ -21,26 +22,29 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const HomePageButton = withStyles((theme) => ({
+  root: {
+    color: theme.palette.getContrastText(theme.palette.secondary.main),
+    "&:hover": {
+      backgroundColor: theme.palette.action.hover,
+    }
+  },
+}))(Button) as typeof Button;
+
 const Home = () => {
-  const [joinDialogOpen, setJoinDialogOpen] = useState(false);
   const [howToPlayDialogOpen, setHowToPlayDialogOpen] = useState(false);
   const [gameId, setGameId] = useState("");
   const [loading, setLoading] = useState(false);
 
   const classes = useStyles();
 
-  const handleNewGame = () => {
+  const handleNewGame = (isPublic = false) => {
     setLoading(true);
-    api.createGame().then(setGameId);
+    api.createGame(isPublic).then(setGameId);
   };
-  const handleCancelJoin = () => setJoinDialogOpen(false);
-  const handleJoinGame = (gameIdToJoin: string) => {
-    setJoinDialogOpen(false);
-    setGameId(gameIdToJoin);
-  }
 
   return gameId ? (
-    <Redirect push to={`/game/${gameId}`} />
+    <RedirectToGame gameId={gameId} />
   ) : (
     <Page>
       <Box
@@ -50,11 +54,9 @@ const Home = () => {
         justifyContent="flex-end"
         paddingBottom="2rem"
       >
-        <Typography variant="h2" align="center" color="secondary">
-          <Box fontWeight="fontWeightBold">
-            Bramagrams
-          </Box>
-        </Typography>
+        <BoldTypography variant="h2" align="center" color="secondary">
+          Bramagrams
+        </BoldTypography>
       </Box>
       <Box
         flexGrow={1}
@@ -65,22 +67,20 @@ const Home = () => {
         paddingTop="2rem"
       >
         <ButtonGroup orientation="vertical" variant="text">
-          <Button onClick={() => handleNewGame()}>
-            New Game
-          </Button>
-          <Button onClick={() => setJoinDialogOpen(true)}>
+          <HomePageButton onClick={() => handleNewGame()}>
+            New Private Game
+          </HomePageButton>
+          <HomePageButton onClick={() => handleNewGame(true)}>
+            New Public Game
+          </HomePageButton>
+          <HomePageButton component={Link} to="/public-games">
             Join Game
-          </Button>
-          <Button onClick={() => setHowToPlayDialogOpen(true)}>
+          </HomePageButton>
+          <HomePageButton onClick={() => setHowToPlayDialogOpen(true)}>
             How To Play
-          </Button>
+          </HomePageButton>
         </ButtonGroup>
       </Box>
-      <JoinGameDialog
-        open={joinDialogOpen}
-        onCancel={handleCancelJoin}
-        onJoin={handleJoinGame}
-      />
       <HowToPlayDialog
         open={howToPlayDialogOpen}
         onClose={() => setHowToPlayDialogOpen(false)}

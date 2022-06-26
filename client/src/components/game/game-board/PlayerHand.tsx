@@ -1,7 +1,8 @@
 import React from 'react';
 import { Box, Typography } from '@material-ui/core';
-import { ArrowDropDown, Check } from '@material-ui/icons';
 import Word from '../../shared/Word';
+import { CurrentPlayerIcon } from '../../shared/icons/CurrentPlayerIcon';
+import { DonePlayingIcon } from '../../shared/icons/DonePlayingIcon';
 
 interface PlayerHandProps {
   name: string;
@@ -22,33 +23,36 @@ const PlayerHand = ({
   isReady,
   dark,
   small,
-}: PlayerHandProps) => (
-  <Box display="flex" flexDirection="column" alignItems="center">
-    {isCurrPlayer ? (
-      <ArrowDropDown fontSize="large" />
-    ) : isReady ? (
-      <Check fontSize="large" />
-    ) : (
-      // Hidden because the background is primary color
-      <ArrowDropDown fontSize="large" color="primary" />
-    )}
-    <Typography variant="h4" color={isYou ? "secondary" : undefined}>
-      {name}
-    </Typography>
-    <Box
-      display="flex"
-      flexWrap="wrap"
-      justifyContent="center"
-      alignItems="center"
-      alignContent="flex-start"
-    >
-      {words.map((word, i) => (
-        <Box m={small ? 1.5 : 2} key={i}>
-          <Word word={word} dark={dark} small={small} />
-        </Box>
-      ))}
+}: PlayerHandProps) => {
+  const nameColor = isYou ? "secondary" : "textSecondary";
+  return (
+    <Box display="flex" flexDirection="column" alignItems="center">
+      {isCurrPlayer ? (
+        <CurrentPlayerIcon color={nameColor} />
+      ) : isReady ? (
+        <DonePlayingIcon color={nameColor} />
+      ) : (
+        // Hidden because the background is primary color
+        <CurrentPlayerIcon color="primary" />
+      )}
+      <Typography variant="h4" color={nameColor}>
+        {name}
+      </Typography>
+      <Box
+        display="flex"
+        flexWrap="wrap"
+        justifyContent="center"
+        alignItems="center"
+        alignContent="flex-start"
+      >
+        {words.map((word, i) => (
+          <Box m={small ? 1.5 : 2} key={i}>
+            <Word word={word} dark={dark} small={small} />
+          </Box>
+        ))}
+      </Box>
     </Box>
-  </Box>
-);
+  );
+};
 
 export default PlayerHand;

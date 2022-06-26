@@ -9,6 +9,7 @@ import { TypographyProps } from '@material-ui/core/Typography/Typography';
 import { ButtonProps } from '@material-ui/core/Button/Button';
 import { FileCopy } from '@material-ui/icons';
 import { MAX_PLAYERS } from 'bramagrams-shared';
+import { BoldTypography } from './BoldTypography';
 
 const useStyles = makeStyles((theme) => ({
   scrollableSection: {
@@ -31,11 +32,9 @@ const useStyles = makeStyles((theme) => ({
 const Header = ({ children, ...other }: TypographyProps) => {
   const classes = useStyles();
   return (
-    <Typography gutterBottom className={classes.header} variant="h5" {...other}>
-      <Box fontWeight="fontWeightBold">
-        {children}
-      </Box>
-    </Typography>
+    <BoldTypography gutterBottom className={classes.header} variant="h5" {...other}>
+      {children}
+    </BoldTypography>
   );
 };
 
@@ -124,6 +123,10 @@ const HowToPlay = ({ hideGameLobby }: HowToPlayProps) => {
             taking additional tiles from the pool, or by stealing multiple words at once.
           </Body>
           <Body>
+            The letters of a word can also be rearranged in order to steal it. For
+            example, "CAP" can be stolen by adding an "L" and "E" to make "PLACE".
+          </Body>
+          <Body>
             NOTE: It is highly frowned upon (though not illegal) to execute a steal where
             the new word has the same root as the original stolen word. For example:
             "CAT" to "CATS" or "JAZZY" to "JAZZILY".
@@ -145,9 +148,9 @@ const HowToPlay = ({ hideGameLobby }: HowToPlayProps) => {
         </Header>
         <Box ml={3}>
           <Body>
-            Once all of the tiles have been "flipped" and added to the pool, the game will not
-            end until either all of the tiles have been claimed from the pool or all players
-            have acknowledged that they are done searching for words by clicking
+            After all of the tiles have been "flipped" and added to the pool, the game ends
+            once the remaining tiles have been claimed from the pool, the timer has run out,
+            or all players have acknowledged that they are done searching for words by clicking
             the <StyledButton variant="contained">DONE</StyledButton> button.
           </Body>
           <Body>

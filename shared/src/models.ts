@@ -57,4 +57,9 @@ export interface GameState {
   numTilesLeft: number;
   totalTiles: number;
   timeoutTime: string | null;
+  gameConfig: GameConfig;
+}
+
+export interface GameConfig {
+  isPublic?: boolean;
 }
