@@ -29,7 +29,7 @@ const TableHeadTypography: React.FC = ({ children }) => (
 );
 
 const TableBodyTypography: React.FC = ({ children }) => (
-  <Typography color="secondary">
+  <Typography color="textSecondary">
     {children}
   </Typography>
 );
@@ -82,18 +82,11 @@ export const JoinGamePage: React.FC = () => {
         <Typography variant="h5" color="secondary" gutterBottom>
           Private Game
         </Typography>
-        <Typography gutterBottom>
-          Paste the link of the game you want to join into the address bar
-        </Typography>
-        <Box ml={2}>
-          <Typography gutterBottom>or</Typography>
-        </Box>
-        <Typography gutterBottom>
-          Enter the game's ID and click JOIN.
-        </Typography>
         <form onSubmit={() => setJoinedGameId(typedGameId)}>
-          <Box display="flex">
+          <Box display="flex" pt={1} pl={2}>
             <TextField
+              id="join-private-game-id-input"
+              label="Game ID"
               value={typedGameId}
               onChange={(event) => setTypedGameId(event.target.value)}
               autoFocus
@@ -111,16 +104,13 @@ export const JoinGamePage: React.FC = () => {
             </Button>
           </Box>
         </form>
-        <Box py={2}>
+        <Box py={3}>
           <Divider />
         </Box>
         <Typography variant="h5" color="secondary" gutterBottom>
-          Public Game
+          Public Games
         </Typography>
-        <Typography gutterBottom>
-          Click a game below to join it
-        </Typography>
-        <Box p={3}>
+        <Box px={2}>
           {!publicGames ? (
             <CircularProgress color="secondary" />
           ) : !Object.keys(publicGames).length ? (
@@ -171,28 +161,30 @@ export const JoinGamePage: React.FC = () => {
                         </TableBodyTypography>
                       </TableCell>
                       <TableCell>
-                        <Tooltip
-                          arrow
-                          title={
-                            `${numPlaying} Player${numPlaying !== 1 ? 's' : ''}, ${
-                              numSpectating
-                            } Spectator${numSpectating !== 1 ? 's' : ''}`
-                          }
-                        >
-                          <Box display="flex" alignItems="center">
-                            <TableBodyTypography>
-                              {numPlaying}
-                            </TableBodyTypography>
-                            <Box pl={1} />
-                            <PlayerIcon />
-                            <Box pl={4} />
-                            <TableBodyTypography>
-                              {numSpectating}
-                            </TableBodyTypography>
-                            <Box pl={1} />
-                            <SpectatorIcon />
-                          </Box>
-                        </Tooltip>
+                        <Box display="flex" justifyContent="flex-start">
+                          <Tooltip
+                            arrow
+                            title={
+                              `${numPlaying} Player${numPlaying !== 1 ? 's' : ''}, ${
+                                numSpectating
+                              } Spectator${numSpectating !== 1 ? 's' : ''}`
+                            }
+                          >
+                            <Box my={-3} display="flex" alignItems="center">
+                              <TableBodyTypography>
+                                {numPlaying}
+                              </TableBodyTypography>
+                              <Box pl={1} />
+                              <PlayerIcon color="textSecondary" />
+                              <Box pl={4} />
+                              <TableBodyTypography>
+                                {numSpectating}
+                              </TableBodyTypography>
+                              <Box pl={1} />
+                              <SpectatorIcon color="textSecondary" />
+                            </Box>
+                          </Tooltip>
+                        </Box>
                       </TableCell>
                     </TableRow>
                   );

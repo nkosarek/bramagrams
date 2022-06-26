@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Box, Button, ButtonGroup, makeStyles, Paper, Typography } from '@material-ui/core';
+import { Box, Button, ButtonGroup, makeStyles, Paper } from '@material-ui/core';
 import { GameState, GameStatuses, PlayerStatuses } from 'bramagrams-shared';
 import HowToPlayButtonAndDialog from '../../shared/HowToPlayButtonAndDialog';
 import EndGameButtons from './EndGameButtons';
@@ -8,6 +8,7 @@ import TilePool from './TilePool';
 import SpectatorsList from './SpectatorsList';
 import GameStartToast, { initToastAcked } from './GameStartToast';
 import TypedWord from './TypedWord';
+import { BoldTypography } from '../../shared/BoldTypography';
 
 const useStyles = makeStyles((theme) => ({
   topCornerBox: {
@@ -62,7 +63,9 @@ const GameBoardHeader = ({ gameState, gameId, playerName, disableHandlers }: Gam
                 gameTimeoutTime={gameState.timeoutTime}
               />
             ) : (
-              <Typography variant="h5">Tiles Left: {gameState.numTilesLeft}</Typography>
+              <BoldTypography variant="h5">
+                Tiles Left: {gameState.numTilesLeft}
+              </BoldTypography>
             )}
           </Box>
           <Box flexGrow={1} display="flex" pb={3}>
