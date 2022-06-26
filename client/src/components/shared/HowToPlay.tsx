@@ -9,6 +9,7 @@ import { TypographyProps } from '@material-ui/core/Typography/Typography';
 import { ButtonProps } from '@material-ui/core/Button/Button';
 import { FileCopy } from '@material-ui/icons';
 import { MAX_PLAYERS } from 'bramagrams-shared';
+import { BoldTypography } from './BoldTypography';
 
 const useStyles = makeStyles((theme) => ({
   scrollableSection: {
@@ -31,11 +32,9 @@ const useStyles = makeStyles((theme) => ({
 const Header = ({ children, ...other }: TypographyProps) => {
   const classes = useStyles();
   return (
-    <Typography gutterBottom className={classes.header} variant="h5" {...other}>
-      <Box fontWeight="fontWeightBold">
-        {children}
-      </Box>
-    </Typography>
+    <BoldTypography gutterBottom className={classes.header} variant="h5" {...other}>
+      {children}
+    </BoldTypography>
   );
 };
 

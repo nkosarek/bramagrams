@@ -5,20 +5,24 @@ import {
   Button,
   ButtonGroup,
   CircularProgress,
-  Typography,
   makeStyles,
 } from '@material-ui/core';
-import { Redirect } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import api from '../../api/api';
 import Page from '../shared/Page';
 import JoinGameDialog from './JoinGameDialog';
 import HowToPlayDialog from './HowToPlayDialog';
+import { BoldTypography } from '../shared/BoldTypography';
+import { RedirectToGame } from '../shared/RedirectToGame';
 
 const useStyles = makeStyles((theme) => ({
   backdrop: {
     zIndex: theme.zIndex.drawer + 1,
     color: '#fff',
   },
+  buttons: {
+    color: theme.palette.getContrastText(theme.palette.secondary.main),
+  }
 }));
 
 const Home = () => {
@@ -29,9 +33,9 @@ const Home = () => {
 
   const classes = useStyles();
 
-  const handleNewGame = () => {
+  const handleNewGame = (isPublic = false) => {
     setLoading(true);
-    api.createGame().then(setGameId);
+    api.createGame(isPublic).then(setGameId);
   };
   const handleCancelJoin = () => setJoinDialogOpen(false);
   const handleJoinGame = (gameIdToJoin: string) => {
@@ -40,7 +44,7 @@ const Home = () => {
   }
 
   return gameId ? (
-    <Redirect push to={`/game/${gameId}`} />
+    <RedirectToGame gameId={gameId} />
   ) : (
     <Page>
       <Box
@@ -50,11 +54,9 @@ const Home = () => {
         justifyContent="flex-end"
         paddingBottom="2rem"
       >
-        <Typography variant="h2" align="center" color="secondary">
-          <Box fontWeight="fontWeightBold">
-            Bramagrams
-          </Box>
-        </Typography>
+        <BoldTypography variant="h2" align="center" color="secondary">
+          Bramagrams
+        </BoldTypography>
       </Box>
       <Box
         flexGrow={1}
@@ -65,13 +67,16 @@ const Home = () => {
         paddingTop="2rem"
       >
         <ButtonGroup orientation="vertical" variant="text">
-          <Button onClick={() => handleNewGame()}>
-            New Game
+          <Button onClick={() => handleNewGame()} className={classes.buttons}>
+            New Private Game
           </Button>
-          <Button onClick={() => setJoinDialogOpen(true)}>
+          <Button onClick={() => handleNewGame(true)} className={classes.buttons}>
+            New Public Game
+          </Button>
+          <Button component={Link} to="/public-games" className={classes.buttons}>
             Join Game
           </Button>
-          <Button onClick={() => setHowToPlayDialogOpen(true)}>
+          <Button onClick={() => setHowToPlayDialogOpen(true)} className={classes.buttons}>
             How To Play
           </Button>
         </ButtonGroup>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Player } from 'bramagrams-shared';
 import { Box, Divider, List, ListItem, ListItemText, Typography, makeStyles } from '@material-ui/core';
-import { Visibility } from '@material-ui/icons';
+import { SpectatorIcon } from '../../shared/icons/SpectatorIcon';
 
 const useStyles = makeStyles((theme) => ({
   listText: {
@@ -32,7 +32,7 @@ const SpectatorsList = ({ spectators, playerName }: SpectatorsListProps) => {
     <Box maxHeight={1} display="flex" flexDirection="column">
       <Box m={2} display="flex" alignItems="flex-end">
         <Box pr={2}>
-          <Visibility color="secondary" />
+          <SpectatorIcon />
         </Box>
         <Typography variant="h6" color="secondary">
           Spectators

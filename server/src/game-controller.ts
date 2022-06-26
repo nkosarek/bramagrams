@@ -20,11 +20,9 @@ interface ServerGameState {
   tilesLeft: string[];
   lastAccessed: number;
   endgameTimer: ReturnType<typeof setTimeout> | null;
-  gameConfig: GameConfig;
 }
-
 export class GamesController {
-  private games: { [gameId: string]: ServerGameState} = {};
+  private games: { [gameId: string]: ServerGameState } = {};
 
   private static generateGameId() {
     const min = 0x10000000;
@@ -226,10 +224,17 @@ export class GamesController {
         numTilesLeft: TILES.length,
         totalTiles: TILES.length,
         timeoutTime: null,
+        gameConfig,
       },
-      gameConfig,
     }
     return id;
+  }
+
+  getPublicGames(): { [gameId: string]: GameState } {
+    return Object.fromEntries(Object.entries(this.games)
+      .filter((entry) => entry[1].clientGameState.gameConfig.isPublic)
+      .map(([gameId, serverGameState]) => [gameId, serverGameState.clientGameState])
+    );
   }
 
   addPlayer(gameId: string, name: string): GameState | undefined {

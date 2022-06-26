@@ -1,11 +1,12 @@
 import React, { useState, useEffect, FormEvent } from 'react';
 import { Box, Button, ButtonGroup, Divider, Typography } from '@material-ui/core';
-import { Person, Visibility } from '@material-ui/icons';
 import Page from '../../shared/Page';
 import api from '../../../api/api';
 import { MAX_PLAYERS, Player, PlayerStatuses } from 'bramagrams-shared';
 import CopyGameLinkButton from './CopyGameLinkButton';
 import NameInput from '../../shared/NameInput';
+import { SpectatorIcon } from '../../shared/icons/SpectatorIcon';
+import { PlayerIcon } from '../../shared/icons/PlayerIcon';
 
 const getNumPlayingPlayers = (players: Player[]) => {
   return players.filter(p => p.status !== PlayerStatuses.SPECTATING).length;
@@ -90,9 +91,9 @@ const GameLobby = ({ gameId, playerName, players, onNameClaimed }: GameLobbyProp
                 <Typography variant="h6" color="secondary">{player.name}</Typography>
                 <Box display="flex">
                   {player.status === PlayerStatuses.SPECTATING ? (
-                    <Visibility />
+                    <SpectatorIcon />
                   ) : (
-                    <Person />
+                    <PlayerIcon />
                   )}
                 </Box>
               </Box>
