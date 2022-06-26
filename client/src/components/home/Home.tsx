@@ -10,7 +10,6 @@ import {
 import { Link } from 'react-router-dom';
 import api from '../../api/api';
 import Page from '../shared/Page';
-import JoinGameDialog from './JoinGameDialog';
 import HowToPlayDialog from './HowToPlayDialog';
 import { BoldTypography } from '../shared/BoldTypography';
 import { RedirectToGame } from '../shared/RedirectToGame';
@@ -26,7 +25,6 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const Home = () => {
-  const [joinDialogOpen, setJoinDialogOpen] = useState(false);
   const [howToPlayDialogOpen, setHowToPlayDialogOpen] = useState(false);
   const [gameId, setGameId] = useState("");
   const [loading, setLoading] = useState(false);
@@ -37,11 +35,6 @@ const Home = () => {
     setLoading(true);
     api.createGame(isPublic).then(setGameId);
   };
-  const handleCancelJoin = () => setJoinDialogOpen(false);
-  const handleJoinGame = (gameIdToJoin: string) => {
-    setJoinDialogOpen(false);
-    setGameId(gameIdToJoin);
-  }
 
   return gameId ? (
     <RedirectToGame gameId={gameId} />
@@ -81,11 +74,6 @@ const Home = () => {
           </Button>
         </ButtonGroup>
       </Box>
-      <JoinGameDialog
-        open={joinDialogOpen}
-        onCancel={handleCancelJoin}
-        onJoin={handleJoinGame}
-      />
       <HowToPlayDialog
         open={howToPlayDialogOpen}
         onClose={() => setHowToPlayDialogOpen(false)}
