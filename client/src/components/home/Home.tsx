@@ -6,6 +6,7 @@ import {
   ButtonGroup,
   CircularProgress,
   makeStyles,
+  withStyles,
 } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import api from '../../api/api';
@@ -19,10 +20,16 @@ const useStyles = makeStyles((theme) => ({
     zIndex: theme.zIndex.drawer + 1,
     color: '#fff',
   },
-  buttons: {
-    color: theme.palette.getContrastText(theme.palette.secondary.main),
-  }
 }));
+
+const HomePageButton = withStyles((theme) => ({
+  root: {
+    color: theme.palette.getContrastText(theme.palette.secondary.main),
+    "&:hover": {
+      backgroundColor: theme.palette.action.hover,
+    }
+  },
+}))(Button) as typeof Button;
 
 const Home = () => {
   const [howToPlayDialogOpen, setHowToPlayDialogOpen] = useState(false);
@@ -60,18 +67,18 @@ const Home = () => {
         paddingTop="2rem"
       >
         <ButtonGroup orientation="vertical" variant="text">
-          <Button onClick={() => handleNewGame()} className={classes.buttons}>
+          <HomePageButton onClick={() => handleNewGame()}>
             New Private Game
-          </Button>
-          <Button onClick={() => handleNewGame(true)} className={classes.buttons}>
+          </HomePageButton>
+          <HomePageButton onClick={() => handleNewGame(true)}>
             New Public Game
-          </Button>
-          <Button component={Link} to="/public-games" className={classes.buttons}>
+          </HomePageButton>
+          <HomePageButton component={Link} to="/public-games">
             Join Game
-          </Button>
-          <Button onClick={() => setHowToPlayDialogOpen(true)} className={classes.buttons}>
+          </HomePageButton>
+          <HomePageButton onClick={() => setHowToPlayDialogOpen(true)}>
             How To Play
-          </Button>
+          </HomePageButton>
         </ButtonGroup>
       </Box>
       <HowToPlayDialog
