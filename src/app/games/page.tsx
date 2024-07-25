@@ -1,4 +1,4 @@
-import { JoinGamePage } from "@/features/join-game/JoinGamePage";
+import { JoinGamePage } from "@/ui/join-game/JoinGamePage";
 
 export default function JoinGamePageRoute() {
   return <JoinGamePage />;
