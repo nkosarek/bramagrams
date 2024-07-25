@@ -1,6 +1,5 @@
-export default function Home() {
-  return (
-    <main>
-    </main>
-  );
+import { HomePage } from "@/features/home/HomePage";
+
+export default function HomePageRoute() {
+  return <HomePage />;
 }
