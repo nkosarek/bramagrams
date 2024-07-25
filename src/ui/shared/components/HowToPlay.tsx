@@ -7,7 +7,7 @@ import {
   TypographyProps,
 } from "@mui/material";
 import { FileCopy } from "@mui/icons-material";
-import { MAX_PLAYERS } from "../constants/max-players";
+import { MAX_PLAYERS } from "@/server/schema";
 
 const Header = ({ children, ...other }: TypographyProps) => {
   return (

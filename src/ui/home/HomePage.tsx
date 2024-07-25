@@ -19,6 +19,7 @@ import { Close } from "@mui/icons-material";
 import HowToPlay from "../shared/components/HowToPlay";
 import { TransitionProps } from "@mui/material/transitions";
 import { useRouter } from "next/navigation";
+import * as serverActions from "@/server/server-actions";
 
 export const HomePage: FC = () => {
   const router = useRouter();
@@ -28,7 +29,9 @@ export const HomePage: FC = () => {
 
   const handleNewGame = (isPublic = false) => {
     setLoading(true);
-    // api.createGame(isPublic).then((gameId) => router.push(`/games/${gameId}`));
+    serverActions
+      .createGame({ isPublic })
+      .then((gameId) => router.push(`/games/${gameId}`));
   };
   return (
     <Box
