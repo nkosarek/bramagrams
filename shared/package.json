@@ -1,8 +1,0 @@
-{
-  "name": "bramagrams-shared",
-  "version": "1.0.0",
-  "author": "nkosarek",
-  "license": "MIT",
-  "main": "./dist/index.js",
-  "types": "./src/index.ts"
-}
