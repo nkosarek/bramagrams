@@ -1,8 +1,9 @@
 "use server";
 
-import { GamesController } from "./game-controller";
+import { GamesController } from "./games-controller";
 import { GameConfig } from "./schema";
 
+// TODO: Move into Redis
 const gamesController = new GamesController();
 
 export async function createGame(gameConfig: GameConfig): Promise<string> {

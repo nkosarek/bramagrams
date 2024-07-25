@@ -7,7 +7,7 @@ import { forwardRef } from "react";
 
 const LinkBehavior = forwardRef<HTMLAnchorElement, LinkProps>(
   function LinkBehavior(props, ref) {
-    return <NextLink ref={ref} {...props} />;
+    return <NextLink ref={ref} {...props} prefetch />;
   }
 );
 
