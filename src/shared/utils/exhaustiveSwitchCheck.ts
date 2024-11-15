@@ -1,3 +1,3 @@
-export const exhaustiveSwitchCheck = (x: never): never => {
-  throw Error("This is impossible");
+export const exhaustiveSwitchCheck = (_: never): never => {
+  throw Error(`This should never happen. ${_}`);
 };
