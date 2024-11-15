@@ -1,4 +1,4 @@
-import { keysSameAsValuesCheck } from "../shared/utils/keysSameAsValuesCheck";
+import { keysSameAsValuesCheck } from "@/shared/utils/keysSameAsValuesCheck";
 
 export const MAX_PLAYERS = 4;
 
