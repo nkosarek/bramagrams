@@ -7,7 +7,6 @@ import {
   Typography,
   TypographyProps,
 } from "@mui/material";
-import React from "react";
 
 const Header = ({ children, ...other }: TypographyProps) => {
   return (
