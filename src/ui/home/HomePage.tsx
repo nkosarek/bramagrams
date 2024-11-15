@@ -127,7 +127,9 @@ export const HomePage: FC = () => {
       </Dialog>
       <Backdrop
         open={loading}
-        sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        sx={(theme) => ({
+          zIndex: theme.zIndex.drawer + 1,
+        })}
       >
         <CircularProgress color="secondary" />
       </Backdrop>

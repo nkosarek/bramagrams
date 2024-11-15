@@ -1,4 +1,5 @@
-import React from "react";
+import { MAX_PLAYERS } from "@/server/schema";
+import { FileCopy } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -6,8 +7,7 @@ import {
   Typography,
   TypographyProps,
 } from "@mui/material";
-import { FileCopy } from "@mui/icons-material";
-import { MAX_PLAYERS } from "@/server/schema";
+import React from "react";
 
 const Header = ({ children, ...other }: TypographyProps) => {
   return (
@@ -43,16 +43,15 @@ const HowToPlay = ({ hideGameLobby }: HowToPlayProps) => {
   return (
     <Box
       overflow="auto"
-      sx={{
-        scrollbarColor: (theme) =>
-          `${theme.palette.secondary.light} ${theme.palette.primary.dark}`,
+      sx={(theme) => ({
+        scrollbarColor: `${theme.palette.secondary.light} ${theme.palette.primary.dark}`,
         "&::-webkit-scrollbar-track": {
           background: "primary.dark",
         },
         "&::-webkit-scrollbar-thumb": {
-          border: (theme) => `3px solid ${theme.palette.primary.dark}`,
+          border: `3px solid ${theme.palette.primary.dark}`,
         },
-      }}
+      })}
     >
       <Box mx={5} py={3}>
         {!hideGameLobby && (
