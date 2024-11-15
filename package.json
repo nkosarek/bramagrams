@@ -12,12 +12,12 @@
     "lint": "next lint"
   },
   "devDependencies": {
-    "@emotion/cache": "^11.13.0",
-    "@emotion/react": "^11.13.0",
+    "@emotion/cache": "^11.13.1",
+    "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
-    "@mui/icons-material": "^5.16.4",
-    "@mui/material": "^5.16.4",
-    "@mui/material-nextjs": "^5.16.4",
+    "@mui/icons-material": "^6.1.7",
+    "@mui/material": "^6.1.7",
+    "@mui/material-nextjs": "^6.1.7",
     "@types/express": "^5.0.0",
     "@types/node": "^20",
     "@types/react": "npm:types-react@19.0.0-rc.1",
