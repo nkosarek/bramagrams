@@ -21,7 +21,7 @@ export const JoinGamePage: FC = () => {
         Public Games
       </Typography>
       <Box px={2}>
-        <Suspense fallback={<PublicGamesTable isLoadingVariant />}>
+        <Suspense fallback={<PublicGamesTable.Loading />}>
           <PublicGamesTable />
         </Suspense>
       </Box>

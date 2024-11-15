@@ -32,19 +32,96 @@ const BodyTypography: FC<TypographyProps> = (props) => (
   />
 );
 
-export const PublicGamesTable: FC<{ isLoadingVariant?: boolean }> = async ({
-  isLoadingVariant = false,
-}) => {
-  const publicGames: { [gameId: string]: GameState } = isLoadingVariant
-    ? {}
-    : await fetch(
-        `http://${os.hostname()}:${SOCKET_SERVER_PORT}/api/public-games`,
-        {
-          // TODO: Is this actually what I want?
-          next: { revalidate: 0 },
-        }
-      ).then((r) => r.json());
+export const PublicGamesTable: FC & {
+  Loading: typeof LoadingPublicGamesTable;
+} = async () => {
+  const publicGames: { [gameId: string]: GameState } = await fetch(
+    `http://${os.hostname()}:${SOCKET_SERVER_PORT}/api/public-games`,
+    {
+      // TODO: Is this actually what I want?
+      next: { revalidate: 0 },
+    }
+  ).then((r) => r.json());
 
+  return (
+    <TableHeadAndBody>
+      {!Object.keys(publicGames).length ? (
+        <TableRow>
+          <TableCell colSpan={3}>
+            <BodyTypography fontStyle="oblique">
+              No public games to join
+            </BodyTypography>
+          </TableCell>
+        </TableRow>
+      ) : (
+        Object.entries(publicGames).map(([gameId, gameState]) => {
+          const numSpectating = gameState.players.filter(
+            (p) => p.status === "SPECTATING"
+          ).length;
+          const numPlaying = gameState.players.length - numSpectating;
+          const href = `/games/${gameId}`;
+          const { label: statusLabel, Icon: StatusIcon } =
+            getGameStatusDisplay(gameState);
+          return (
+            <TableRow key={gameId} hover>
+              <LinkCell href={href}>
+                <BodyTypography>{gameId}</BodyTypography>
+              </LinkCell>
+              <LinkCell href={href}>
+                <Box display="flex">
+                  <StatusIcon sx={{ color: "text.secondary", mr: 1 }} />
+                  <BodyTypography>{statusLabel}</BodyTypography>
+                </Box>
+              </LinkCell>
+              <LinkCell href={href}>
+                <Participants
+                  numPlaying={numPlaying}
+                  numSpectating={numSpectating}
+                />
+              </LinkCell>
+            </TableRow>
+          );
+        })
+      )}
+    </TableHeadAndBody>
+  );
+};
+
+const LoadingPublicGamesTable: FC = () => {
+  return (
+    <TableHeadAndBody>
+      <TableRow>
+        <TableCell>
+          <Skeleton variant="text">
+            <BodyTypography>00000000</BodyTypography>
+          </Skeleton>
+        </TableCell>
+        <TableCell>
+          <Box display="flex">
+            <Skeleton
+              variant="rounded"
+              height="24px"
+              width="24px"
+              sx={{ mr: 1 }}
+            >
+              <MeetingRoom />
+            </Skeleton>
+            <Skeleton variant="text">
+              <BodyTypography>In Lobby</BodyTypography>
+            </Skeleton>
+          </Box>
+        </TableCell>
+        <TableCell>
+          <Participants isLoadingVariant />
+        </TableCell>
+      </TableRow>
+    </TableHeadAndBody>
+  );
+};
+
+PublicGamesTable.Loading = LoadingPublicGamesTable;
+
+const TableHeadAndBody: FC<PropsWithChildren> = ({ children }) => {
   return (
     <Table sx={{ tableLayout: "fixed" }}>
       <TableHead>
@@ -58,72 +135,7 @@ export const PublicGamesTable: FC<{ isLoadingVariant?: boolean }> = async ({
           ))}
         </TableRow>
       </TableHead>
-      <TableBody>
-        {isLoadingVariant ? (
-          <TableRow>
-            <TableCell>
-              <Skeleton variant="text">
-                <BodyTypography>00000000</BodyTypography>
-              </Skeleton>
-            </TableCell>
-            <TableCell>
-              <Box display="flex">
-                <Skeleton
-                  variant="rounded"
-                  height="24px"
-                  width="24px"
-                  sx={{ mr: 1 }}
-                >
-                  <MeetingRoom />
-                </Skeleton>
-                <Skeleton variant="text">
-                  <BodyTypography>In Lobby</BodyTypography>
-                </Skeleton>
-              </Box>
-            </TableCell>
-            <TableCell>
-              <Participants isLoadingVariant />
-            </TableCell>
-          </TableRow>
-        ) : !Object.keys(publicGames).length ? (
-          <TableRow>
-            <TableCell colSpan={3}>
-              <BodyTypography fontStyle="oblique">
-                No public games to join
-              </BodyTypography>
-            </TableCell>
-          </TableRow>
-        ) : (
-          Object.entries(publicGames).map(([gameId, gameState]) => {
-            const numSpectating = gameState.players.filter(
-              (p) => p.status === "SPECTATING"
-            ).length;
-            const numPlaying = gameState.players.length - numSpectating;
-            const href = `/games/${gameId}`;
-            const { label: statusLabel, Icon: StatusIcon } =
-              getGameStatusDisplay(gameState);
-            return (
-              <TableRow key={gameId} hover>
-                <LinkCell href={href}>
-                  <BodyTypography>{gameId}</BodyTypography>
-                </LinkCell>
-                <LinkCell href={href}>
-                  <Box display="flex">
-                    <StatusIcon sx={{ color: "text.secondary", mr: 1 }} />
-                    <BodyTypography>{statusLabel}</BodyTypography>
-                  </Box>
-                </LinkCell>
-                <LinkCell href={href}>
-                  <Participants
-                    numPlaying={numPlaying}
-                    numSpectating={numSpectating}
-                  />
-                </LinkCell>
-              </TableRow>
-            );
-          })
-        )}
-      </TableBody>
+      <TableBody>{children}</TableBody>
     </Table>
   );
 };
