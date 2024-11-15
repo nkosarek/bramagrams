@@ -6,28 +6,35 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "concurrently -n socket,nextjs \"NODE_ENV=development nodemon\" \"next dev\" -c yellow,blue",
+    "build": "next build && tsc --project tsconfig.server.json",
+    "start": "concurrently -n socket,nextjs \"NODE_ENV=production tsx --tsconfig tsconfig.server.json src/server/server.ts\" \"next start\" -c yellow,blue",
     "lint": "next lint"
   },
-  "dependencies": {
+  "devDependencies": {
     "@emotion/cache": "^11.13.0",
     "@emotion/react": "^11.13.0",
     "@emotion/styled": "^11.13.0",
     "@mui/icons-material": "^5.16.4",
     "@mui/material": "^5.16.4",
     "@mui/material-nextjs": "^5.16.4",
-    "next": "14.2.5",
-    "react": "^18",
-    "react-dom": "^18"
-  },
-  "devDependencies": {
+    "@types/express": "^5.0.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8",
     "eslint-config-next": "14.2.5",
+    "next": "14.2.5",
+    "nodemon": "^3.1.7",
+    "react": "^18",
+    "react-dom": "^18",
+    "tsx": "^4.19.2",
     "typescript": "^5"
+  },
+  "dependencies": {
+    "concurrently": "^9.1.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
+    "socket.io": "^4.8.1"
   }
 }

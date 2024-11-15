@@ -1,6 +1,7 @@
 "use client";
 
-import { FC, forwardRef, useState } from "react";
+import { SOCKET_SERVER_PORT } from "@/shared/constants/ports";
+import { Close } from "@mui/icons-material";
 import {
   AppBar,
   Backdrop,
@@ -15,11 +16,10 @@ import {
   Toolbar,
   Typography,
 } from "@mui/material";
-import { Close } from "@mui/icons-material";
-import HowToPlay from "../shared/components/HowToPlay";
 import { TransitionProps } from "@mui/material/transitions";
 import { useRouter } from "next/navigation";
-import * as serverActions from "@/server/server-actions";
+import { FC, forwardRef, useState } from "react";
+import HowToPlay from "../shared/components/HowToPlay";
 
 export const HomePage: FC = () => {
   const router = useRouter();
@@ -29,8 +29,20 @@ export const HomePage: FC = () => {
 
   const handleNewGame = (isPublic = false) => {
     setLoading(true);
-    serverActions
-      .createGame({ isPublic })
+    fetch(
+      `${window.location.protocol}//${window.location.hostname}:${SOCKET_SERVER_PORT}/api/games`,
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          gameConfig: { isPublic },
+        }),
+      }
+    )
+      .then((res) => res.text())
       .then((gameId) => router.push(`/games/${gameId}`));
   };
   return (

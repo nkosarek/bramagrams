@@ -1,8 +1,13 @@
-import { FC, Fragment, PropsWithChildren } from "react";
-import { exhaustiveSwitchCheck } from "@/shared/utils/exhaustiveSwitchCheck";
 import { GameState } from "@/server/schema";
-import * as serverActions from "@/server/server-actions";
+import { SOCKET_SERVER_PORT } from "@/shared/constants/ports";
+import { exhaustiveSwitchCheck } from "@/shared/utils/exhaustiveSwitchCheck";
 import { PlayerIcon, SpectatorIcon } from "@/ui/shared/components/icons";
+import {
+  DoneAll,
+  MeetingRoom,
+  Pending,
+  SvgIconComponent,
+} from "@mui/icons-material";
 import {
   Box,
   Link,
@@ -16,12 +21,8 @@ import {
   Typography,
   TypographyProps,
 } from "@mui/material";
-import {
-  DoneAll,
-  MeetingRoom,
-  Pending,
-  SvgIconComponent,
-} from "@mui/icons-material";
+import os from "node:os";
+import { FC, Fragment, PropsWithChildren } from "react";
 
 const BodyTypography: FC<TypographyProps> = (props) => (
   <Typography
@@ -34,9 +35,15 @@ const BodyTypography: FC<TypographyProps> = (props) => (
 export const PublicGamesTable: FC<{ isLoadingVariant?: boolean }> = async ({
   isLoadingVariant = false,
 }) => {
-  const publicGames = isLoadingVariant
+  const publicGames: { [gameId: string]: GameState } = isLoadingVariant
     ? {}
-    : await serverActions.getPublicGames();
+    : await fetch(
+        `http://${os.hostname()}:${SOCKET_SERVER_PORT}/api/public-games`,
+        {
+          // TODO: Is this actually what I want?
+          next: { revalidate: 0 },
+        }
+      ).then((r) => r.json());
 
   return (
     <Table sx={{ tableLayout: "fixed" }}>

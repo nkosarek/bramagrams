@@ -1,7 +1,7 @@
+import { PublicGamesTable } from "@/ui/join-game/PublicGamesTable";
+import { Box, Divider, Typography } from "@mui/material";
 import { FC, Suspense } from "react";
 import { JoinGameInput } from "./JoinGameInput";
-import { Box, Divider, Typography } from "@mui/material";
-import { PublicGamesTable } from "@/ui/join-game/PublicGamesTable";
 
 export const JoinGamePage: FC = () => {
   return (
