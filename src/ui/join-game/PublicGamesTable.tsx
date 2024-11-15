@@ -36,11 +36,7 @@ export const PublicGamesTable: FC & {
   Loading: typeof LoadingPublicGamesTable;
 } = async () => {
   const publicGames: { [gameId: string]: GameState } = await fetch(
-    `http://${os.hostname()}:${SOCKET_SERVER_PORT}/api/public-games`,
-    {
-      // TODO: Is this actually what I want?
-      next: { revalidate: 0 },
-    }
+    `http://${os.hostname()}:${SOCKET_SERVER_PORT}/api/public-games`
   ).then((r) => r.json());
 
   return (

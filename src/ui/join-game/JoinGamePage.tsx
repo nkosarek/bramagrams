@@ -21,6 +21,7 @@ export const JoinGamePage: FC = () => {
         Public Games
       </Typography>
       <Box px={2}>
+        {/* TODO: Add error boundary */}
         <Suspense fallback={<PublicGamesTable.Loading />}>
           <PublicGamesTable />
         </Suspense>
