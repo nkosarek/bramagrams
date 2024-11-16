@@ -19,6 +19,7 @@
     "@mui/material": "^6.1.7",
     "@mui/material-nextjs": "^6.1.7",
     "@types/express": "^5.0.0",
+    "@types/lodash": "^4.17.13",
     "@types/node": "^20",
     "@types/react": "npm:types-react@19.0.0-rc.1",
     "@types/react-dom": "npm:types-react-dom@19.0.0-rc.1",
@@ -28,14 +29,17 @@
     "nodemon": "^3.1.7",
     "react": "19.0.0-rc-66855b96-20241106",
     "react-dom": "19.0.0-rc-66855b96-20241106",
-    "tsx": "^4.19.2",
-    "typescript": "^5"
+    "typescript": "^5",
+    "use-local-storage-state": "^19.5.0"
   },
   "dependencies": {
     "concurrently": "^9.1.0",
     "cors": "^2.8.5",
     "express": "^4.21.1",
-    "socket.io": "^4.8.1"
+    "lodash": "^4.17.21",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
+    "tsx": "^4.19.2"
   },
   "overrides": {
     "@types/react": "npm:types-react@19.0.0-rc.1",

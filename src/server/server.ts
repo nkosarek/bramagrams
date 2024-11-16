@@ -10,15 +10,19 @@ import { ClientEvents, GameState, PlayerWord, ServerEvents } from "./schema";
 export const isRunningInDev = () => process.env.NODE_ENV === "development";
 
 const port = SOCKET_SERVER_PORT;
+const webserverURL = `http://localhost:${WEB_SERVER_PORT}`;
 
 const gamesController = new GamesController();
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+  serveClient: false,
+  cors: { origin: webserverURL },
+});
 
 if (isRunningInDev()) {
-  app.use(cors({ origin: `http://localhost:${WEB_SERVER_PORT}` }));
+  app.use(cors({ origin: webserverURL }));
 } else {
   app.use(cors({ origin: `http://${os.hostname()}:${WEB_SERVER_PORT}` }));
 }

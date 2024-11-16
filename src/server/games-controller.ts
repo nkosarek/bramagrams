@@ -34,12 +34,15 @@ export class GamesController {
   }
 
   private cleanupAbandonedGames() {
-    const gamesToDelete: string[] = [];
     const oneDayAgo = new Date().setDate(new Date().getDate() - 1);
-    Object.keys(this.games).forEach(
-      (gameId) =>
-        this.games[gameId].lastAccessed < oneDayAgo &&
-        gamesToDelete.push(gameId)
+    const gamesToDelete = Object.entries(this.games).reduce<Array<string>>(
+      (toDelete, [gameId, { lastAccessed }]) => {
+        if (lastAccessed < oneDayAgo) {
+          toDelete.push(gameId);
+        }
+        return toDelete;
+      },
+      []
     );
     console.log("Deleting abandoned games:", gamesToDelete);
     gamesToDelete.forEach((gameId) => delete this.games[gameId]);
@@ -47,7 +50,7 @@ export class GamesController {
 
   private resetCurrPlayerIdx(game: GameState) {
     game.currPlayerIdx = 0;
-    if (game.players[game.currPlayerIdx].status === "SPECTATING") {
+    if (game.players[game.currPlayerIdx]?.status === "SPECTATING") {
       this.advanceCurrPlayer(game);
     }
   }
@@ -73,6 +76,10 @@ export class GamesController {
   private addNewTileToPool(game: GameState, tilesLeft: string[]) {
     const tilesIdx = Math.floor(Math.random() * tilesLeft.length);
     const tile = tilesLeft[tilesIdx];
+    if (!tile) {
+      // TODO: this is impossible
+      return;
+    }
     game.tiles.push(tile);
     tilesLeft.splice(tilesIdx, 1);
     game.numTilesLeft = tilesLeft.length;
@@ -81,7 +88,7 @@ export class GamesController {
   private advanceCurrPlayer(game: GameState) {
     const advance = (idx: number) => (idx + 1) % game.players.length;
     const isSpectating = (idx: number) =>
-      game.players[idx].status === "SPECTATING";
+      game.players[idx]?.status === "SPECTATING";
     let newCurrPlayerIdx = advance(game.currPlayerIdx);
     while (isSpectating(newCurrPlayerIdx)) {
       newCurrPlayerIdx = advance(newCurrPlayerIdx);
@@ -146,17 +153,20 @@ export class GamesController {
   private removeClaimedWords(game: GameState, claimedWords?: PlayerWord[]) {
     if (!claimedWords) return;
 
-    const wordsToRemoveByPlayer = claimedWords.reduce((array, word) => {
-      if (array[word.playerIdx] != null) {
-        array[word.playerIdx].push(word.wordIdx);
-      } else {
-        array[word.playerIdx] = [word.wordIdx];
-      }
-      return array;
-    }, new Array(game.players.length) as number[][]);
+    const wordsToRemoveByPlayer = claimedWords.reduce(
+      (array, { playerIdx, wordIdx }) => {
+        array[playerIdx] = array[playerIdx] || [];
+        array[playerIdx].push(wordIdx);
+        return array;
+      },
+      new Array(game.players.length) as number[][]
+    );
 
     wordsToRemoveByPlayer.forEach((wordsToRemove, playerIdx) => {
       const player = game.players[playerIdx];
+      if (!player) {
+        return;
+      }
       player.words = player.words.filter((w, i) => !wordsToRemove.includes(i));
     });
   }
@@ -351,7 +361,7 @@ export class GamesController {
     if (
       game.numTilesLeft === 0 ||
       (!isRunningInDev() &&
-        playerName !== game.players[game.currPlayerIdx].name)
+        playerName !== game.players[game.currPlayerIdx]?.name)
     ) {
       return;
     }
