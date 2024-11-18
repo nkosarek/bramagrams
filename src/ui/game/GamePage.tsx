@@ -3,7 +3,7 @@
 import { GameState } from "@/server/schema";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import { FC, useEffect, useRef, useState } from "react";
-import { GameBoardView } from "./active-game/GameBoardView";
+import { ActiveGameView } from "./active-game/ActiveGameView";
 import { GameLobbyView } from "./GameLobbyView";
 import { useGameClient } from "./useGameClient";
 import { useStoredPlayerName } from "./useStoredPlayerName";
@@ -72,7 +72,7 @@ export const GamePage: FC<{
       onNameClaimed={setPlayerName}
     />
   ) : (
-    <GameBoardView
+    <ActiveGameView
       gameState={gameState}
       gameId={gameId}
       playerName={playerName}

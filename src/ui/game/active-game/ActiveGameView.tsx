@@ -1,12 +1,12 @@
 import { GameState } from "@/server/schema";
 import { Box } from "@mui/material";
 import { FC, useEffect, useState } from "react";
+import { ActiveGameHeader } from "./ActiveGameHeader";
 import { EndGameDialog } from "./EndGameDialog";
 import { EnterNameDialog } from "./EnterNameDialog";
-import { GameBoardHeader } from "./GameBoardHeader";
 import { PlayerHand } from "./PlayerHand";
 
-export const GameBoardView: FC<{
+export const ActiveGameView: FC<{
   gameState: GameState;
   gameId: string;
   playerName: string;
@@ -45,7 +45,7 @@ export const GameBoardView: FC<{
 
   return (
     <>
-      <GameBoardHeader
+      <ActiveGameHeader
         gameState={gameState}
         gameId={gameId}
         playerName={playerName}

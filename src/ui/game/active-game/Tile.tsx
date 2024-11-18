@@ -28,14 +28,11 @@ export const Tile: FC<{
         width: small ? SMALL_WIDTH : LARGE_WIDTH,
         height: small ? SMALL_WIDTH : LARGE_WIDTH,
         bgcolor,
-        // TODO: Is this needed?
-        // color: letter ? theme.palette.getContrastText(bgcolor) : undefined,
       }}
     >
       <Typography
         // TODO: Don't use headers, just vary size of font
         variant={small ? "h5" : "h4"}
-        // TODO: Is this needed?
         sx={{ color: "rgb(0, 0, 0, 0.87)" }}
       >
         {letter}

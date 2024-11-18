@@ -9,7 +9,7 @@ import { TypedWord } from "./TypedWord";
 
 const TOP_CORNER_BOX_WIDTH = "20%";
 
-export const GameBoardHeader: FC<{
+export const ActiveGameHeader: FC<{
   gameState: GameState;
   gameId: string;
   playerName: string;
@@ -41,6 +41,7 @@ export const GameBoardHeader: FC<{
         <Box sx={{ p: 1, width: TOP_CORNER_BOX_WIDTH }}>
           <ButtonGroup variant="outlined" color="secondary">
             <Button href="/">Home</Button>
+            {/* TODO */}
             {/* <HowToPlayButtonAndDialog hideGameLobby /> */}
           </ButtonGroup>
         </Box>
