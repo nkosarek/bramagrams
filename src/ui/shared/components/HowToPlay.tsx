@@ -7,6 +7,7 @@ import {
   Typography,
   TypographyProps,
 } from "@mui/material";
+import { FC } from "react";
 
 const Header = ({ children, ...other }: TypographyProps) => {
   return (
@@ -34,11 +35,9 @@ const StyledButton = (props: ButtonProps) => (
   <Button color="secondary" size="small" {...props} />
 );
 
-interface HowToPlayProps {
-  hideGameLobby?: boolean;
-}
-
-const HowToPlay = ({ hideGameLobby }: HowToPlayProps) => {
+export const HowToPlay: FC<{ hideGameLobby?: boolean }> = ({
+  hideGameLobby,
+}) => {
   return (
     <Box
       overflow="auto"
@@ -161,5 +160,3 @@ const HowToPlay = ({ hideGameLobby }: HowToPlayProps) => {
     </Box>
   );
 };
-
-export default HowToPlay;

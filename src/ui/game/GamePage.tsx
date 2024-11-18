@@ -1,14 +1,12 @@
 "use client";
 
 import { GameState } from "@/server/schema";
-import { GameLobbyView } from "@/ui/game/GameLobbyView";
-import { useGameClient } from "@/ui/game/useGameClient";
-import { useStoredPlayerName } from "@/ui/game/useStoredPlayerName";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import { FC, useEffect, useRef, useState } from "react";
-
-const getPlayer = (gameState: GameState | undefined, name: string) =>
-  gameState?.players.find((p) => p.name === name);
+import { GameBoardView } from "./active-game/GameBoardView";
+import { GameLobbyView } from "./GameLobbyView";
+import { useGameClient } from "./useGameClient";
+import { useStoredPlayerName } from "./useStoredPlayerName";
 
 export const GamePage: FC<{
   gameId: string;
@@ -18,7 +16,6 @@ export const GamePage: FC<{
   const [gameState, setGameState] = useState<GameState | undefined>();
   const { playerName, setPlayerName, onGameStillActive } =
     useStoredPlayerName(gameId);
-  const [endGameDialogOpen, setEndGameDialogOpen] = useState(false);
   const [connectedToGame, setConnectedToGame] = useState(false);
 
   const handleGameUpdate = useRef<(game: GameState) => void>(() => {});
@@ -29,16 +26,6 @@ export const GamePage: FC<{
     handleGameUpdate.current = (gameState: GameState) => {
       setGameState(gameState);
       onGameStillActive();
-      const player = getPlayer(gameState, playerName);
-      if (
-        gameState.status === "ENDED" &&
-        (!player || ["ENDED", "SPECTATING"].includes(player?.status)) &&
-        !endGameDialogOpen
-      ) {
-        setEndGameDialogOpen(true);
-      } else if (gameState.status !== "ENDED" && endGameDialogOpen) {
-        setEndGameDialogOpen(false);
-      }
       setConnectedToGame(true);
     };
   });
@@ -85,6 +72,11 @@ export const GamePage: FC<{
       onNameClaimed={setPlayerName}
     />
   ) : (
-    <>Game board</>
+    <GameBoardView
+      gameState={gameState}
+      gameId={gameId}
+      playerName={playerName}
+      onNameClaimed={setPlayerName}
+    />
   );
 };

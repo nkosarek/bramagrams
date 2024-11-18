@@ -12,25 +12,18 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React, { FormEvent, useEffect, useState } from "react";
+import { FC, FormEvent, useEffect, useState } from "react";
 
 const getNumPlayingPlayers = (players: Player[]) => {
   return players.filter((p) => p.status !== "SPECTATING").length;
 };
 
-interface GameLobbyProps {
+export const GameLobbyView: FC<{
   gameId: string;
   playerName: string;
   players: Player[];
   onNameClaimed: (name: string) => void;
-}
-
-export const GameLobbyView = ({
-  gameId,
-  playerName,
-  players,
-  onNameClaimed,
-}: GameLobbyProps) => {
+}> = ({ gameId, playerName, players, onNameClaimed }) => {
   const gameClient = useGameClient();
   const [requestedName, setRequestedName] = useState(playerName);
   const playerState = players.find((player) => player.name === playerName);
@@ -136,7 +129,7 @@ export const GameLobbyView = ({
               variant="outlined"
               autoFocus
               value={requestedName}
-              onChange={(event) => handleNameEdited(event.target.value)}
+              onChange={(e) => handleNameEdited(e.target.value)}
               error={hasNameError}
               helperText={hasNameError && "Name has already been claimed"}
             />

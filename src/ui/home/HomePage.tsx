@@ -1,6 +1,7 @@
 "use client";
 
 import { SOCKET_SERVER_PORT } from "@/shared/constants/ports";
+import { HowToPlay } from "@/ui/shared/components/HowToPlay";
 import { Close } from "@mui/icons-material";
 import {
   AppBar,
@@ -19,7 +20,6 @@ import {
 import { TransitionProps } from "@mui/material/transitions";
 import { useRouter } from "next/navigation";
 import { FC, forwardRef, useState } from "react";
-import HowToPlay from "../shared/components/HowToPlay";
 
 export const HomePage: FC = () => {
   const router = useRouter();
