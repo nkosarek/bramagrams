@@ -303,7 +303,7 @@ export class GamesController {
   }
 
   setPlayerSpectating(gameId: string, name: string): GameState | undefined {
-    let { clientGameState: game } = this.getGame(gameId);
+    const { clientGameState: game } = this.getGame(gameId);
     const player = this.getPlayer(game, name);
     if (!player || player.status !== "READY_TO_START") {
       return;

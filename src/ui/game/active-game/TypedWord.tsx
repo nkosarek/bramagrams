@@ -175,8 +175,8 @@ export const TypedWord: FC<{
   }, [gameClient]);
 
   return (
-    // TODO: Fix this. Seems like incompatibility with React 19
-    // @ts-ignore
+    // TODO: Fix this
+    // @ts-expect-error - Seems like an incompatibility with React 19
     <animated.div style={{ transform }}>
       <Word word={typedWord} disabled={!isValidWord(typedWord)} />
     </animated.div>
