@@ -46,6 +46,7 @@ export const EnterNameDialog: FC<{
         <DialogTitle>Choose a name to join as a spectator</DialogTitle>
         <DialogContent>
           <TextField
+            sx={{ mt: 1 }}
             color="secondary"
             label="Enter Your Name"
             variant="outlined"

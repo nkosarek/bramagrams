@@ -30,7 +30,7 @@ export const GameStartToast: FC<{
       TransitionComponent={Slide}
       anchorOrigin={{
         vertical: "top",
-        horizontal: "left",
+        horizontal: "right",
       }}
       message="Press the space bar to flip a tile!"
       action={

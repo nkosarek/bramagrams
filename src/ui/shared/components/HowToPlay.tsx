@@ -11,13 +11,7 @@ import { FC } from "react";
 
 const Header = ({ children, ...other }: TypographyProps) => {
   return (
-    <Typography
-      fontWeight="bold"
-      gutterBottom
-      color="secondary.light"
-      variant="h5"
-      {...other}
-    >
+    <Typography fontWeight="bold" gutterBottom variant="h5" {...other}>
       {children}
     </Typography>
   );
@@ -25,7 +19,7 @@ const Header = ({ children, ...other }: TypographyProps) => {
 
 const Body = ({ children, ...other }: TypographyProps) => {
   return (
-    <Typography gutterBottom color="common.white" variant="body1" {...other}>
+    <Typography gutterBottom color="textSecondary" variant="body1" {...other}>
       {children}
     </Typography>
   );
@@ -39,19 +33,8 @@ export const HowToPlay: FC<{ hideGameLobby?: boolean }> = ({
   hideGameLobby,
 }) => {
   return (
-    <Box
-      overflow="auto"
-      sx={(theme) => ({
-        scrollbarColor: `${theme.palette.secondary.light} ${theme.palette.primary.dark}`,
-        "&::-webkit-scrollbar-track": {
-          background: "primary.dark",
-        },
-        "&::-webkit-scrollbar-thumb": {
-          border: `3px solid ${theme.palette.primary.dark}`,
-        },
-      })}
-    >
-      <Box mx={5} py={3}>
+    <Box overflow="auto">
+      <Box mx={3} py={3}>
         {!hideGameLobby && (
           <>
             <Header>Game Lobby</Header>
@@ -92,7 +75,8 @@ export const HowToPlay: FC<{ hideGameLobby?: boolean }> = ({
         <Box ml={3}>
           <Body>
             Each player will take turns {'"'}flipping{'"'} tiles over by hitting
-            the space bar to add them to the pool at the top of the page.
+            the space bar. This will add them to the pool at the top of the
+            page.
           </Body>
           <Body>
             Once a word with at least 3 letters can be constructed using the

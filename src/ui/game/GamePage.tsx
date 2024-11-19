@@ -1,6 +1,7 @@
 "use client";
 
 import { GameState } from "@/server/schema";
+import { SidebarMenu } from "@/ui/game/SidebarMenu";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import { FC, useEffect, useRef, useState } from "react";
 import { ActiveGameView } from "./active-game/ActiveGameView";
@@ -38,45 +39,52 @@ export const GamePage: FC<{
     gameClient.connectToGame(gameId);
   }, [gameId, gameClient]);
 
-  return gameDne ? (
-    <Box
-      sx={{
-        flexGrow: 1,
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <Typography variant="h4" color="secondary">
-        Game ID {"'"}
-        {gameId}
-        {"'"} does not exist!
-      </Typography>
-    </Box>
-  ) : !gameState || !connectedToGame ? (
-    <Box
-      sx={{
-        flexGrow: 1,
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <CircularProgress />
-    </Box>
-  ) : gameState.status === "WAITING_TO_START" ? (
-    <GameLobbyView
-      gameId={gameId}
-      playerName={playerName}
-      players={players}
-      onNameClaimed={setPlayerName}
-    />
-  ) : (
-    <ActiveGameView
-      gameState={gameState}
-      gameId={gameId}
-      playerName={playerName}
-      onNameClaimed={setPlayerName}
-    />
+  return (
+    <>
+      <Box sx={{ mt: 1, ml: 1, position: "absolute", top: 0, left: 0 }}>
+        <SidebarMenu gameState={gameState} />
+      </Box>
+      {gameDne ? (
+        <Box
+          sx={{
+            flexGrow: 1,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Typography variant="h4" color="secondary">
+            Game ID {"'"}
+            {gameId}
+            {"'"} does not exist!
+          </Typography>
+        </Box>
+      ) : !gameState || !connectedToGame ? (
+        <Box
+          sx={{
+            flexGrow: 1,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <CircularProgress />
+        </Box>
+      ) : gameState.status === "WAITING_TO_START" ? (
+        <GameLobbyView
+          gameId={gameId}
+          playerName={playerName}
+          players={players}
+          onNameClaimed={setPlayerName}
+        />
+      ) : (
+        <ActiveGameView
+          gameState={gameState}
+          gameId={gameId}
+          playerName={playerName}
+          onNameClaimed={setPlayerName}
+        />
+      )}
+    </>
   );
 };

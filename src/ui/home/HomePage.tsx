@@ -104,26 +104,32 @@ export const HomePage: FC = () => {
         TransitionComponent={Transition}
         PaperProps={{
           sx: {
-            bgcolor: "primary.dark",
+            bgcolor: "primary.main",
           },
         }}
       >
-        <AppBar
-          sx={{
-            position: "relative",
-            backgroundColor: "secondary.light",
-          }}
-        >
-          <Toolbar>
-            <IconButton edge="start" onClick={() => setIsHowToPlayOpen(false)}>
+        <AppBar sx={{ position: "relative", color: "text.secondary" }}>
+          <Toolbar sx={{ display: "flex" }}>
+            <IconButton
+              edge="start"
+              color="inherit"
+              onClick={() => setIsHowToPlayOpen(false)}
+            >
               <Close />
             </IconButton>
-            <Typography color="inherit" variant="h6">
+            <Typography
+              color="inherit"
+              // TODO: Make this a bigger header variant after changing their sizes
+              variant="h6"
+              sx={{ ml: 0.5 }}
+            >
               How To Play
             </Typography>
           </Toolbar>
         </AppBar>
-        <HowToPlay />
+        <Box sx={{ px: 2 }}>
+          <HowToPlay />
+        </Box>
       </Dialog>
       <Backdrop
         open={loading}

@@ -1,7 +1,13 @@
 import { GameState } from "@/server/schema";
-import { Box } from "@mui/material";
+import { EndGameButtons } from "@/ui/game/active-game/EndGameButtons";
+import {
+  GameStartToast,
+  initToastAcked,
+} from "@/ui/game/active-game/GameStartToast";
+import { TilePool } from "@/ui/game/active-game/TilePool";
+import { TypedWord } from "@/ui/game/active-game/TypedWord";
+import { Box, Container, Typography } from "@mui/material";
 import { FC, useEffect, useState } from "react";
-import { ActiveGameHeader } from "./ActiveGameHeader";
 import { EndGameDialog } from "./EndGameDialog";
 import { EnterNameDialog } from "./EnterNameDialog";
 import { PlayerHand } from "./PlayerHand";
@@ -12,6 +18,9 @@ export const ActiveGameView: FC<{
   playerName: string;
   onNameClaimed: (name: string) => void;
 }> = ({ gameState, gameId, playerName, onNameClaimed }) => {
+  const [toastAcked, setToastAcked] = useState(
+    initToastAcked(gameState, playerName)
+  );
   const [endGameDialogOpen, setEndGameDialogOpen] = useState(false);
 
   // Save each player's original index into the players list before filtering out spectators and reordering
@@ -24,13 +33,14 @@ export const ActiveGameView: FC<{
       ? playingPlayers
       : [...playingPlayers.slice(selfIdx), ...playingPlayers.slice(0, selfIdx)];
 
-  const playerState = gameState.players.find((p) => p.name === playerName);
+  const playerIdx = gameState.players.findIndex((p) => p.name === playerName);
+  const playerState = gameState.players[playerIdx];
   const playerStatus = playerState?.status;
 
-  const isCurrPlayer = (playerIdx: number) =>
-    gameState.status === "IN_PROGRESS" &&
-    !!gameState.numTilesLeft &&
-    playerIdx === gameState.currPlayerIdx;
+  const showEndGameButtons =
+    !gameState.numTilesLeft &&
+    !!playerState &&
+    (playerState.status !== "SPECTATING" || gameState.status === "ENDED");
 
   useEffect(() => {
     if (
@@ -45,12 +55,50 @@ export const ActiveGameView: FC<{
 
   return (
     <>
-      <ActiveGameHeader
-        gameState={gameState}
-        gameId={gameId}
-        playerName={playerName}
-        disableHandlers={!playerState}
-      />
+      <Box sx={{ display: "flex", justifyContent: "center" }}>
+        <GameStartToast
+          open={gameState.currPlayerIdx === playerIdx && !toastAcked}
+          onClose={() => setToastAcked(true)}
+        />
+        <Container
+          maxWidth="md"
+          sx={{
+            my: 2,
+            mx: 8,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <Box mb={2}>
+            {showEndGameButtons ? (
+              <EndGameButtons
+                gameId={gameId}
+                playerName={playerName}
+                playerState={playerState}
+                gameTimeoutTime={gameState.timeoutTime}
+              />
+            ) : (
+              <Typography variant="h5" fontWeight="bold">
+                Tiles Left: {gameState.numTilesLeft}
+              </Typography>
+            )}
+          </Box>
+          <Box flexGrow={1} display="flex" pb={3}>
+            <TilePool
+              letters={gameState.tiles || []}
+              disabled={gameState.status === "ENDED"}
+            />
+          </Box>
+          <TypedWord
+            gameState={gameState}
+            gameId={gameId}
+            playerName={playerName}
+            disableHandlers={!playerState}
+            onTileFlip={() => setToastAcked(true)}
+          />
+        </Container>
+      </Box>
       <Box flexGrow={1} display="flex" px={3} pb={3}>
         {playingPlayersStartingWithSelf.map(({ player, idx }) => (
           <Box key={idx} width={1 / playingPlayersStartingWithSelf.length}>
@@ -58,7 +106,11 @@ export const ActiveGameView: FC<{
               name={player.name}
               words={player.words}
               isSelf={player.name === playerName}
-              isCurrPlayer={isCurrPlayer(idx)}
+              isCurrPlayer={
+                gameState.status === "IN_PROGRESS" &&
+                !!gameState.numTilesLeft &&
+                idx === gameState.currPlayerIdx
+              }
               isReady={player.status === "READY_TO_END"}
               disabled={gameState.status === "ENDED"}
               small={playingPlayersStartingWithSelf.length > 2}
