@@ -75,13 +75,7 @@ export class GamesController {
 
   private addNewTileToPool(game: GameState, tilesLeft: string[]) {
     const tilesIdx = Math.floor(Math.random() * tilesLeft.length);
-    const tile = tilesLeft[tilesIdx];
-    if (!tile) {
-      // TODO: this is impossible
-      return;
-    }
-    game.tiles.push(tile);
-    tilesLeft.splice(tilesIdx, 1);
+    game.tiles.push(...tilesLeft.splice(tilesIdx, 1));
     game.numTilesLeft = tilesLeft.length;
   }
 
@@ -274,7 +268,6 @@ export class GamesController {
     if (!name || this.getPlayer(game, name)) {
       return;
     }
-    // TODO: after multiple players supported, allow players to join mid game (different status?)
     const status =
       game.status === "WAITING_TO_START" &&
       this.getNumPlayingPlayers(game) < MAX_PLAYERS

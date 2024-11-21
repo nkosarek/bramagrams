@@ -40,7 +40,6 @@ export const EnterNameDialog: FC<{
   }, [onNameClaimed, gameClient]);
 
   return (
-    // TODO: Remove bgcolor after refactoring theme palette
     <Dialog open={open}>
       <form onSubmit={handleNameSubmitted}>
         <DialogTitle>Choose a name to join as a spectator</DialogTitle>
