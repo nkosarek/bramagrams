@@ -1,3 +1,5 @@
+"use client";
+
 import { GameState } from "@/server/schema";
 import { HowToPlay } from "@/ui/shared/components/HowToPlay";
 import { SpectatorIcon } from "@/ui/shared/components/icons";
@@ -27,7 +29,7 @@ export const SidebarMenu: FC<{ gameState?: GameState }> = ({ gameState }) => {
     (p) => p.status === "SPECTATING"
   );
   return (
-    <Stack spacing={0.5}>
+    <Stack spacing={0.5} sx={{ mt: 1, ml: 1 }}>
       <Tooltip title="Go to home page" placement="right">
         <IconButton size="large" href="/">
           <Home />
@@ -59,7 +61,7 @@ export const SidebarMenu: FC<{ gameState?: GameState }> = ({ gameState }) => {
         >
           <Clear />
         </IconButton>
-        <HowToPlay hideGameLobby />
+        <HowToPlay />
       </Dialog>
 
       {!gameState?.status ||

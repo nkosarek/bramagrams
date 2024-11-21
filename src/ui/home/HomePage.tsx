@@ -2,8 +2,10 @@
 
 import { SOCKET_SERVER_PORT } from "@/shared/constants/ports";
 import { HowToPlay } from "@/ui/shared/components/HowToPlay";
-import { Close } from "@mui/icons-material";
+import { Clear, Close } from "@mui/icons-material";
 import {
+  Alert,
+  AlertTitle,
   AppBar,
   Backdrop,
   Box,
@@ -14,6 +16,7 @@ import {
   Dialog,
   IconButton,
   Slide,
+  Snackbar,
   Toolbar,
   Typography,
 } from "@mui/material";
@@ -25,11 +28,14 @@ export const HomePage: FC = () => {
   const router = useRouter();
 
   const [isHowToPlayOpen, setIsHowToPlayOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [isNewGamePending, setIsNewGamePending] = useState(false);
+  const [isNewGameErrorOpen, setIsNewGameErrorOpen] = useState(false);
+  const [newGameError, setNewGameError] = useState("");
 
-  const handleNewGame = (isPublic = false) => {
-    setLoading(true);
-    fetch(
+  const handleNewGame = async (isPublic = false) => {
+    setIsNewGamePending(true);
+    setIsNewGameErrorOpen(false);
+    const res = await fetch(
       `${window.location.protocol}//${window.location.hostname}:${SOCKET_SERVER_PORT}/api/games`,
       {
         method: "POST",
@@ -41,9 +47,15 @@ export const HomePage: FC = () => {
           gameConfig: { isPublic },
         }),
       }
-    )
-      .then((res) => res.text())
-      .then((gameId) => router.push(`/games/${gameId}`));
+    );
+    const body = await res.text();
+    if (!res.ok) {
+      setNewGameError(body);
+      setIsNewGamePending(false);
+      setIsNewGameErrorOpen(true);
+    } else {
+      router.push(`/games/${body}`);
+    }
   };
   return (
     <Box
@@ -131,8 +143,28 @@ export const HomePage: FC = () => {
           <HowToPlay />
         </Box>
       </Dialog>
+      <Snackbar
+        open={isNewGameErrorOpen && !!newGameError}
+        TransitionComponent={Slide}
+        anchorOrigin={{
+          vertical: "top",
+          horizontal: "right",
+        }}
+      >
+        <Alert
+          severity="error"
+          action={
+            <IconButton onClick={() => setIsNewGameErrorOpen(false)}>
+              <Clear />
+            </IconButton>
+          }
+        >
+          <AlertTitle color="inherit">Error</AlertTitle>
+          {newGameError}
+        </Alert>
+      </Snackbar>
       <Backdrop
-        open={loading}
+        open={isNewGamePending}
         sx={(theme) => ({
           zIndex: theme.zIndex.drawer + 1,
         })}

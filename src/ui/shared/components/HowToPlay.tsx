@@ -29,49 +29,40 @@ const StyledButton = (props: ButtonProps) => (
   <Button color="secondary" size="small" {...props} />
 );
 
-export const HowToPlay: FC<{ hideGameLobby?: boolean }> = ({
-  hideGameLobby,
-}) => {
+export const HowToPlay: FC = () => {
   return (
     <Box overflow="auto">
       <Box mx={3} py={3}>
-        {!hideGameLobby && (
-          <>
-            <Header>Game Lobby</Header>
-            <Box ml={3}>
-              <Body>
-                After a game is created from the home page, the player that
-                created it will be sent to the lobby.
-              </Body>
-              <Body>
-                In the game lobby, players can set their name and wait for other
-                players to join. Any player in the lobby can invite more players
-                by clicking the{" "}
-                <StyledButton startIcon={<FileCopy />}>
-                  COPY GAME LINK
-                </StyledButton>{" "}
-                button and sending the copied link to whomever they want to
-                invite.
-              </Body>
-              <Body>
-                Up to {MAX_PLAYERS} players can play at a time. Any players
-                added to the game after that number will automatically be made
-                spectators. Players can also choose to spectate the game by
-                clicking the <StyledButton>SPECTATE</StyledButton> button.
-                Spectators can click the <StyledButton>JOIN</StyledButton>{" "}
-                button if they want to play in the game as long as there are
-                less than {MAX_PLAYERS} players playing already.
-              </Body>
-              <Body>
-                Once at least 2 players have joined the game and are not
-                spectating, the <StyledButton>START GAME</StyledButton> button
-                can be clicked to begin playing.
-              </Body>
-            </Box>
-            <br />
-          </>
-        )}
-        <Header>Basics</Header>
+        <Header>Game Lobby</Header>
+        <Box ml={3}>
+          <Body>
+            After a game is created from the home page, the player that created
+            it will be sent to the lobby.
+          </Body>
+          <Body>
+            In the game lobby, players can set their name and wait for other
+            players to join. Any player in the lobby can invite more players by
+            clicking the{" "}
+            <StyledButton startIcon={<FileCopy />}>COPY GAME LINK</StyledButton>{" "}
+            button and sending the copied link to other players.
+          </Body>
+          <Body>
+            Up to {MAX_PLAYERS} players can play at a time. Any players added to
+            the game after that number will automatically be made spectators.
+            Players can also choose to spectate the game by clicking the{" "}
+            <StyledButton>SPECTATE</StyledButton> button. Spectators can click
+            the <StyledButton>JOIN</StyledButton> button if they want to play in
+            the game as long as there are less than {MAX_PLAYERS} players
+            playing already.
+          </Body>
+          <Body>
+            Once at least 2 players have joined the game and are not spectating,
+            the <StyledButton>START GAME</StyledButton> button can be clicked to
+            begin playing.
+          </Body>
+        </Box>
+        <br />
+        <Header>Gameplay Basics</Header>
         <Box ml={3}>
           <Body>
             Each player will take turns {'"'}flipping{'"'} tiles over by hitting

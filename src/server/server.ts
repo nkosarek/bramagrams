@@ -39,7 +39,9 @@ app.post("/api/games", (req: Request, res: Response) => {
   console.log("Received request to create game: body=", req.body);
   const id = gamesController.createGame(req.body?.gameConfig);
   if (!id) {
-    res.status(500).send("ERROR: Failed to create a unique game ID\n");
+    res
+      .status(500)
+      .send("Failed to generate a unique game ID while creating new game.");
     return;
   }
   console.log("Created game", id);

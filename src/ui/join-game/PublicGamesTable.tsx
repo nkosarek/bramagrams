@@ -33,7 +33,7 @@ const BodyTypography: FC<TypographyProps> = (props) => (
 );
 
 export const PublicGamesTable: FC & {
-  Loading: typeof LoadingPublicGamesTable;
+  Loading: typeof PublicGamesTableLoading;
 } = async () => {
   const publicGames: { [gameId: string]: GameState } = await fetch(
     `http://${os.hostname()}:${SOCKET_SERVER_PORT}/api/public-games`
@@ -83,7 +83,7 @@ export const PublicGamesTable: FC & {
   );
 };
 
-const LoadingPublicGamesTable: FC = () => {
+const PublicGamesTableLoading: FC = () => {
   return (
     <TableHeadAndBody>
       <TableRow>
@@ -115,7 +115,7 @@ const LoadingPublicGamesTable: FC = () => {
   );
 };
 
-PublicGamesTable.Loading = LoadingPublicGamesTable;
+PublicGamesTable.Loading = PublicGamesTableLoading;
 
 const TableHeadAndBody: FC<PropsWithChildren> = ({ children }) => {
   return (

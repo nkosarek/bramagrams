@@ -1,7 +1,7 @@
 "use client";
 
 import { GameState } from "@/server/schema";
-import { SidebarMenu } from "@/ui/game/SidebarMenu";
+import { SidebarMenu } from "@/ui/shared/components/SidebarMenu";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import { FC, useEffect, useRef, useState } from "react";
 import { ActiveGameView } from "./active-game/ActiveGameView";
@@ -41,7 +41,7 @@ export const GamePage: FC<{
 
   return (
     <>
-      <Box sx={{ mt: 1, ml: 1, position: "absolute", top: 0, left: 0 }}>
+      <Box sx={{ position: "absolute", top: 0, left: 0 }}>
         <SidebarMenu gameState={gameState} />
       </Box>
       {gameDne ? (

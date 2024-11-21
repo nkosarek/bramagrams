@@ -29,6 +29,7 @@ export const theme = createTheme({
       secondary: TEXT_SECONDARY,
     },
   },
+  // TODO: Remove this; it breaks things like AlertTitle's default styling
   typography: (palette) => ({
     allVariants: {
       color: palette.text.primary,
