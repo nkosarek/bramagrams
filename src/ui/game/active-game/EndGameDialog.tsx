@@ -41,11 +41,7 @@ export const EndGameDialog: FC<{
     spectators,
   });
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      PaperProps={{ sx: { bgcolor: "primary.main" } }}
-    >
+    <Dialog open={open} onClose={onClose}>
       <DialogTitle>{title}</DialogTitle>
       <DialogContent>
         {additionalWinnerText && (
@@ -54,12 +50,9 @@ export const EndGameDialog: FC<{
         <DialogContentText>{dialogBody}</DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button color="secondary" onClick={onClose}>
-          Close
-        </Button>
+        <Button onClick={onClose}>Close</Button>
         <Button
           disabled={disableRematch}
-          color="secondary"
           onClick={() => {
             onClose();
             gameClient.rematch(gameId);
@@ -68,7 +61,6 @@ export const EndGameDialog: FC<{
           Rematch
         </Button>
         <Button
-          color="secondary"
           onClick={() => {
             onClose();
             gameClient.backToLobby(gameId);

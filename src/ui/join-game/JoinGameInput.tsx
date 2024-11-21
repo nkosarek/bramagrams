@@ -16,7 +16,6 @@ export const JoinGameInput: FC = () => {
           value={typedGameId}
           onChange={(event) => setTypedGameId(event.target.value)}
           autoFocus
-          color="secondary"
           placeholder="f005ba11"
           size="small"
           variant="outlined"
@@ -24,7 +23,6 @@ export const JoinGameInput: FC = () => {
         <Button
           disabled={!typedGameId}
           href={`/games/${typedGameId}`}
-          color="secondary"
           type="submit"
         >
           Join

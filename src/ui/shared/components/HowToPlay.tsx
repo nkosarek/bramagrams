@@ -25,9 +25,7 @@ const Body = ({ children, ...other }: TypographyProps) => {
   );
 };
 
-const StyledButton = (props: ButtonProps) => (
-  <Button color="secondary" size="small" {...props} />
-);
+const StyledButton = (props: ButtonProps) => <Button size="small" {...props} />;
 
 export const HowToPlay: FC = () => {
   return (

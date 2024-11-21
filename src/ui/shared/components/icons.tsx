@@ -10,9 +10,9 @@ export const DonePlayingIcon = (iconProps: SvgIconProps) => {
 };
 
 export const PlayerIcon = (iconProps: SvgIconProps) => {
-  return <Person color="secondary" {...iconProps} />;
+  return <Person {...iconProps} />;
 };
 
 export const SpectatorIcon = (iconProps: SvgIconProps) => {
-  return <Visibility color="secondary" {...iconProps} />;
+  return <Visibility {...iconProps} />;
 };

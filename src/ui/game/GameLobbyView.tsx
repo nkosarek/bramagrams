@@ -106,14 +106,12 @@ export const GameLobbyView: FC<{
               alignItems="center"
               mx={1}
             >
-              <Typography variant="h6" color="secondary">
-                {player.name}
-              </Typography>
+              <Typography variant="h6">{player.name}</Typography>
               <Box display="flex">
                 {player.status === "SPECTATING" ? (
-                  <SpectatorIcon />
+                  <SpectatorIcon color="primary" />
                 ) : (
-                  <PlayerIcon />
+                  <PlayerIcon color="primary" />
                 )}
               </Box>
             </Box>
@@ -124,7 +122,6 @@ export const GameLobbyView: FC<{
         <form onSubmit={handleNameSubmitted}>
           <Box display="flex" flexDirection="column">
             <TextField
-              color="secondary"
               label="Enter Your Name"
               variant="outlined"
               autoFocus
@@ -136,7 +133,6 @@ export const GameLobbyView: FC<{
             <Box display="flex" justifyContent="space-evenly">
               <Button
                 disabled={!playerState}
-                color="secondary"
                 fullWidth
                 onClick={() => setEditingName(false)}
               >
@@ -145,7 +141,6 @@ export const GameLobbyView: FC<{
               <Button
                 disabled={!requestedName || hasNameError}
                 type="submit"
-                color="secondary"
                 fullWidth
                 onClick={handleNameSubmitted}
               >
@@ -155,37 +150,28 @@ export const GameLobbyView: FC<{
           </Box>
         </form>
       ) : (
-        <Typography variant="h4" color="secondary">
-          {playerName}
-        </Typography>
+        <Typography variant="h4">{playerName}</Typography>
       )}
       <Box mt={3} mb={5}>
         <ButtonGroup variant="text">
-          <Button
-            disabled={editingName}
-            onClick={() => setEditingName(true)}
-            color="secondary"
-          >
+          <Button disabled={editingName} onClick={() => setEditingName(true)}>
             Edit Name
           </Button>
           <Button
             disabled={statusChangeButtonDisabled}
             onClick={() => handleStatusChange()}
-            color="secondary"
           >
             {statusChangeButtonLabel}
           </Button>
           <Button
             disabled={startDisabled}
             onClick={() => gameClient.startGame(gameId)}
-            color="secondary"
           >
             Start Game
           </Button>
         </ButtonGroup>
       </Box>
       <Button
-        color="secondary"
         startIcon={<FileCopy />}
         onClick={() =>
           navigator.clipboard

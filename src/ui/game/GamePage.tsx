@@ -53,7 +53,7 @@ export const GamePage: FC<{
             alignItems: "center",
           }}
         >
-          <Typography variant="h4" color="secondary">
+          <Typography variant="h4">
             Game ID {"'"}
             {gameId}
             {"'"} does not exist!

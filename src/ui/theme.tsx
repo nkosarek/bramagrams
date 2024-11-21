@@ -5,36 +5,29 @@ import { green, yellow } from "@mui/material/colors";
 import NextLink, { LinkProps } from "next/link";
 import { forwardRef } from "react";
 
-const LinkBehavior = forwardRef<HTMLAnchorElement, LinkProps>(
+const LinkBehavior = forwardRef<HTMLAnchorElement, LinkProps<unknown>>(
   function LinkBehavior(props, ref) {
     return <NextLink ref={ref} {...props} prefetch />;
   }
 );
 
-const PALETTE_PRIMARY = green[500];
-const PALETTE_SECONDARY = yellow[500];
-
+const PALETTE_PRIMARY = yellow[500];
 const TEXT_SECONDARY = yellow[200];
 
 export const theme = createTheme({
   palette: {
+    background: {
+      default: green[500],
+      paper: green[500],
+    },
     primary: {
       main: PALETTE_PRIMARY,
     },
-    secondary: {
-      main: PALETTE_SECONDARY,
-    },
     text: {
-      primary: PALETTE_SECONDARY,
+      primary: PALETTE_PRIMARY,
       secondary: TEXT_SECONDARY,
     },
   },
-  // TODO: Remove this; it breaks things like AlertTitle's default styling
-  typography: (palette) => ({
-    allVariants: {
-      color: palette.text.primary,
-    },
-  }),
   components: {
     MuiLink: {
       defaultProps: {

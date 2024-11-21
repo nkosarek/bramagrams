@@ -16,7 +16,6 @@ export const PlayerHand: FC<{
   disabled?: boolean;
   small?: boolean;
 }> = ({ name, words, isSelf, isCurrPlayer, isReady, disabled, small }) => {
-  const nameColor = isSelf ? "secondary" : "textSecondary";
   const Icon = !isCurrPlayer && isReady ? DonePlayingIcon : CurrentPlayerIcon;
   return (
     <Box display="flex" flexDirection="column" alignItems="center">
@@ -26,11 +25,11 @@ export const PlayerHand: FC<{
             !isCurrPlayer && !isReady
               ? "transparent"
               : isSelf
-              ? "secondary.main"
+              ? "primary.main"
               : "text.secondary",
         }}
       />
-      <Typography variant="h4" color={nameColor}>
+      <Typography variant="h4" color={isSelf ? "primary" : "textSecondary"}>
         {name}
       </Typography>
       <Box

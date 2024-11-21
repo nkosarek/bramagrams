@@ -24,14 +24,6 @@ import {
 import os from "node:os";
 import { FC, Fragment, PropsWithChildren } from "react";
 
-const BodyTypography: FC<TypographyProps> = (props) => (
-  <Typography
-    color="text.secondary"
-    {...props}
-    sx={{ ...props.sx, textDecoration: "none" }}
-  />
-);
-
 export const PublicGamesTable: FC & {
   Loading: typeof PublicGamesTableLoading;
 } = async () => {
@@ -124,9 +116,7 @@ const TableHeadAndBody: FC<PropsWithChildren> = ({ children }) => {
         <TableRow>
           {["Game ID", "Status", "Participants"].map((header) => (
             <TableCell key={header}>
-              <Typography fontWeight="bold" color="secondary">
-                {header}
-              </Typography>
+              <Typography fontWeight="bold">{header}</Typography>
             </TableCell>
           ))}
         </TableRow>
@@ -135,6 +125,14 @@ const TableHeadAndBody: FC<PropsWithChildren> = ({ children }) => {
     </Table>
   );
 };
+
+const BodyTypography: FC<TypographyProps> = (props) => (
+  <Typography
+    color="textSecondary"
+    {...props}
+    sx={{ ...props.sx, textDecoration: "none" }}
+  />
+);
 
 const getGameStatusDisplay = ({
   status,

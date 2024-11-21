@@ -41,13 +41,12 @@ export const EnterNameDialog: FC<{
 
   return (
     // TODO: Remove bgcolor after refactoring theme palette
-    <Dialog open={open} PaperProps={{ sx: { bgcolor: "primary.main" } }}>
+    <Dialog open={open}>
       <form onSubmit={handleNameSubmitted}>
         <DialogTitle>Choose a name to join as a spectator</DialogTitle>
         <DialogContent>
           <TextField
             sx={{ mt: 1 }}
-            color="secondary"
             label="Enter Your Name"
             variant="outlined"
             autoFocus
@@ -62,7 +61,6 @@ export const EnterNameDialog: FC<{
           <Button
             disabled={!requestedName || nameAlreadyClaimed}
             onClick={handleNameSubmitted}
-            color="secondary"
             type="submit"
           >
             Confirm

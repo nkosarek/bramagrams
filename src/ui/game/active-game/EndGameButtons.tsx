@@ -74,21 +74,15 @@ export const EndGameButtons: FC<{
 
   return (
     <Box display="flex" alignItems="center">
-      <ButtonGroup>
+      <ButtonGroup variant="contained">
         <Button
-          variant="contained"
-          color="secondary"
           disabled={!playerState || playerState.status === "SPECTATING"}
           onClick={onEndGameButtonClicked}
         >
           {endGameButtonLabel}
         </Button>
         {showBackToLobbyButton && (
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => gameClient.backToLobby(gameId)}
-          >
+          <Button onClick={() => gameClient.backToLobby(gameId)}>
             Change Players
           </Button>
         )}

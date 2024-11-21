@@ -58,38 +58,30 @@ export const HomePage: FC = () => {
     }
   };
   return (
-    <Box
-      component="main"
-      height="100vh"
-      overflow="auto"
-      display="flex"
-      flexDirection="column"
-      justifyContent="space-between"
-      bgcolor="primary.main"
-    >
+    <>
       <Box
-        flexGrow={1}
-        display="flex"
-        flexDirection="column"
-        justifyContent="flex-end"
-        paddingBottom="2rem"
+        sx={{
+          flexGrow: 1,
+          pb: 4,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "flex-end",
+        }}
       >
-        <Typography
-          variant="h2"
-          letterSpacing={1.1}
-          align="center"
-          color="secondary"
-        >
+        <Typography variant="h2" letterSpacing={1.1} align="center">
           Bramagrams
         </Typography>
       </Box>
       <Box
-        flexGrow={1}
-        display="flex"
-        flexDirection="column"
-        alignItems="center"
-        bgcolor="secondary.main"
-        paddingTop="2rem"
+        sx={{
+          pt: 4,
+          flexGrow: 1,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          bgcolor: "primary.main",
+          color: (theme) => theme.palette.primary.contrastText,
+        }}
       >
         <ButtonGroup
           color="inherit"
@@ -114,13 +106,11 @@ export const HomePage: FC = () => {
         onClose={() => setIsHowToPlayOpen(false)}
         fullScreen
         TransitionComponent={Transition}
-        PaperProps={{
-          sx: {
-            bgcolor: "primary.main",
-          },
-        }}
       >
-        <AppBar sx={{ position: "relative", color: "text.secondary" }}>
+        <AppBar
+          color="transparent"
+          sx={{ position: "relative", color: "text.secondary" }}
+        >
           <Toolbar sx={{ display: "flex" }}>
             <IconButton
               edge="start"
@@ -159,7 +149,7 @@ export const HomePage: FC = () => {
             </IconButton>
           }
         >
-          <AlertTitle color="inherit">Error</AlertTitle>
+          <AlertTitle>Error</AlertTitle>
           {newGameError}
         </Alert>
       </Snackbar>
@@ -169,9 +159,9 @@ export const HomePage: FC = () => {
           zIndex: theme.zIndex.drawer + 1,
         })}
       >
-        <CircularProgress color="secondary" />
+        <CircularProgress />
       </Backdrop>
-    </Box>
+    </>
   );
 };
 

@@ -44,9 +44,7 @@ export const SidebarMenu: FC<{ gameState?: GameState }> = ({ gameState }) => {
       <Dialog
         open={howToPlayOpen}
         onClose={() => setHowToPlayOpen(false)}
-        PaperProps={{
-          sx: { bgcolor: "primary.main", position: "relative" },
-        }}
+        PaperProps={{ sx: { position: "relative" } }}
       >
         <IconButton
           size="large"
@@ -69,7 +67,7 @@ export const SidebarMenu: FC<{ gameState?: GameState }> = ({ gameState }) => {
       !spectatingPlayers?.length ? null : (
         <>
           <Badge
-            color="secondary"
+            color="primary"
             overlap="circular"
             badgeContent={spectatingPlayers.length}
           >
@@ -79,7 +77,7 @@ export const SidebarMenu: FC<{ gameState?: GameState }> = ({ gameState }) => {
                 size="large"
                 onClick={() => setSpectatorsOpen((t) => !t)}
               >
-                <SpectatorIcon color={undefined} />
+                <SpectatorIcon />
               </IconButton>
             </Tooltip>
           </Badge>
@@ -89,10 +87,7 @@ export const SidebarMenu: FC<{ gameState?: GameState }> = ({ gameState }) => {
             placement="bottom-start"
           >
             <ClickAwayListener onClickAway={() => setSpectatorsOpen(false)}>
-              <Paper
-                elevation={9}
-                sx={{ pt: 1, bgcolor: "primary.main", overflow: "hidden" }}
-              >
+              <Paper elevation={9} sx={{ pt: 1, overflow: "hidden" }}>
                 <Typography
                   variant="overline"
                   sx={{ mx: 1.5, lineHeight: "unset" }}
