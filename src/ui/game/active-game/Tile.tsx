@@ -23,8 +23,9 @@ export const Tile: FC<{
       elevation={letter ? 3 : 0}
       sx={{
         display: "flex",
+        alignItems: "center",
         justifyContent: "center",
-        paddingBottom: "0.1rem",
+        pt: "2px",
         width: small ? SMALL_WIDTH : LARGE_WIDTH,
         height: small ? SMALL_WIDTH : LARGE_WIDTH,
         bgcolor,
@@ -33,7 +34,7 @@ export const Tile: FC<{
       <Typography
         // TODO: Don't use headers, just vary size of font
         variant={small ? "h5" : "h4"}
-        sx={{ color: "rgb(0, 0, 0, 0.87)" }}
+        sx={{ color: "rgb(0, 0, 0, 0.87)", lineHeight: 1 }}
       >
         {letter}
       </Typography>
