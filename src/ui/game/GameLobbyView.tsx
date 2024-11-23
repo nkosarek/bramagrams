@@ -1,4 +1,4 @@
-import { MAX_PLAYERS, Player } from "@/server/schema";
+import { MAX_PLAYERS, Player } from "@/shared/schema";
 import { useGameClient } from "@/ui/game/useGameClient";
 import { PlayerIcon, SpectatorIcon } from "@/ui/shared/components/icons";
 import { FileCopy } from "@mui/icons-material";

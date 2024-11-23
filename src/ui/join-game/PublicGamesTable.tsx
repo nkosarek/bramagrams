@@ -1,5 +1,5 @@
-import { GameState } from "@/server/schema";
-import { SOCKET_SERVER_PORT } from "@/shared/constants/ports";
+import { GAME_SERVER_PORT } from "@/shared/constants/ports";
+import { GameState } from "@/shared/schema";
 import { exhaustiveSwitchCheck } from "@/shared/utils/exhaustiveSwitchCheck";
 import { PlayerIcon, SpectatorIcon } from "@/ui/shared/components/icons";
 import {
@@ -28,7 +28,7 @@ export const PublicGamesTable: FC & {
   Loading: typeof PublicGamesTableLoading;
 } = async () => {
   const publicGames: { [gameId: string]: GameState } = await fetch(
-    `http://${os.hostname()}:${SOCKET_SERVER_PORT}/api/public-games`
+    `http://${os.hostname()}:${GAME_SERVER_PORT}/api/public-games`
   ).then((r) => r.json());
 
   return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { SOCKET_SERVER_PORT } from "@/shared/constants/ports";
+import { GAME_SERVER_PORT } from "@/shared/constants/ports";
 import { HowToPlay } from "@/ui/shared/components/HowToPlay";
 import { Clear, Close } from "@mui/icons-material";
 import {
@@ -36,7 +36,7 @@ export const HomePage: FC = () => {
     setIsNewGamePending(true);
     setIsNewGameErrorOpen(false);
     const res = await fetch(
-      `${window.location.protocol}//${window.location.hostname}:${SOCKET_SERVER_PORT}/api/games`,
+      `${window.location.protocol}//${window.location.hostname}:${GAME_SERVER_PORT}/api/games`,
       {
         method: "POST",
         headers: {
@@ -105,7 +105,7 @@ export const HomePage: FC = () => {
         open={isHowToPlayOpen}
         onClose={() => setIsHowToPlayOpen(false)}
         fullScreen
-        TransitionComponent={Transition}
+        TransitionComponent={HowToPlayTransition}
       >
         <AppBar
           color="transparent"
@@ -155,9 +155,7 @@ export const HomePage: FC = () => {
       </Snackbar>
       <Backdrop
         open={isNewGamePending}
-        sx={(theme) => ({
-          zIndex: theme.zIndex.drawer + 1,
-        })}
+        sx={(theme) => ({ zIndex: theme.zIndex.drawer + 1 })}
       >
         <CircularProgress />
       </Backdrop>
@@ -165,7 +163,7 @@ export const HomePage: FC = () => {
   );
 };
 
-const Transition = forwardRef(function Transition(
+const HowToPlayTransition = forwardRef(function Transition(
   props: TransitionProps & { children: React.ReactElement },
   ref: React.Ref<unknown>
 ) {

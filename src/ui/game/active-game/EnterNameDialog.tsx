@@ -1,4 +1,4 @@
-import { Player } from "@/server/schema";
+import { Player } from "@/shared/schema";
 import { useGameClient } from "@/ui/game/useGameClient";
 import {
   Button,

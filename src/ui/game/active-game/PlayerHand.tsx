@@ -1,7 +1,4 @@
-import {
-  CurrentPlayerIcon,
-  DonePlayingIcon,
-} from "@/ui/shared/components/icons";
+import { ArrowDropDown, Check } from "@mui/icons-material";
 import { Box, Typography } from "@mui/material";
 import { FC } from "react";
 import { Word } from "./Word";
@@ -16,10 +13,11 @@ export const PlayerHand: FC<{
   disabled?: boolean;
   small?: boolean;
 }> = ({ name, words, isSelf, isCurrPlayer, isReady, disabled, small }) => {
-  const Icon = !isCurrPlayer && isReady ? DonePlayingIcon : CurrentPlayerIcon;
+  const Icon = !isCurrPlayer && isReady ? Check : ArrowDropDown;
   return (
     <Box display="flex" flexDirection="column" alignItems="center">
       <Icon
+        fontSize="large"
         sx={{
           color:
             !isCurrPlayer && !isReady

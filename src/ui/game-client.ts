@@ -1,37 +1,17 @@
+import { GAME_SERVER_PORT } from "@/shared/constants/ports";
 import {
   ClientEvents,
   GameState,
   PlayerWord,
   ServerEvents,
-} from "@/server/schema";
-import { SOCKET_SERVER_PORT, WEB_SERVER_PORT } from "@/shared/constants/ports";
+} from "@/shared/schema";
 import { io, Socket } from "socket.io-client";
 
 export class GameClient {
   private socket: Socket;
-  private webserverUrl: string;
 
   constructor(hostname: string) {
-    const baseUrl = `http://${hostname}`;
-    this.webserverUrl = `${baseUrl}:${WEB_SERVER_PORT}`;
-    this.socket = io(`${baseUrl}:${SOCKET_SERVER_PORT}`);
-  }
-
-  async createGame(isPublic = false): Promise<string> {
-    const response = await fetch(`${this.webserverUrl}/api/games`, {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ gameConfig: { isPublic } }),
-    });
-    return await response.text();
-  }
-
-  async getPublicGames(): Promise<{ [gameId: string]: GameState }> {
-    const response = await fetch(`${this.webserverUrl}/api/public-games`);
-    return await response.json();
+    this.socket = io(`http://${hostname}:${GAME_SERVER_PORT}`);
   }
 
   initGameSubscriptions({

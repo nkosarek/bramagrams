@@ -1,4 +1,4 @@
-import { Player } from "@/server/schema";
+import { Player } from "@/shared/schema";
 import { GameClient } from "@/ui/game-client";
 import { useGameClient } from "@/ui/game/useGameClient";
 import { Box, Button, ButtonGroup, Typography } from "@mui/material";

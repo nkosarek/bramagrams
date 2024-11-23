@@ -1,6 +1,6 @@
 "use client";
 
-import { GameState } from "@/server/schema";
+import { GameState } from "@/shared/schema";
 import { SidebarMenu } from "@/ui/shared/components/SidebarMenu";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import { FC, useEffect, useRef, useState } from "react";
@@ -17,7 +17,6 @@ export const GamePage: FC<{
   const [gameState, setGameState] = useState<GameState | undefined>();
   const { playerName, setPlayerName, onGameStillActive } =
     useStoredPlayerName(gameId);
-  const [connectedToGame, setConnectedToGame] = useState(false);
 
   const handleGameUpdate = useRef<(game: GameState) => void>(() => {});
 
@@ -27,15 +26,15 @@ export const GamePage: FC<{
     handleGameUpdate.current = (gameState: GameState) => {
       setGameState(gameState);
       onGameStillActive();
-      setConnectedToGame(true);
     };
-  });
+  }, [onGameStillActive]);
 
   useEffect(() => {
-    const onGameDne = () => setGameDne(true);
-    const onGameUpdate = (gameState: GameState) =>
-      handleGameUpdate.current(gameState);
-    gameClient.initGameSubscriptions({ onGameUpdate, onGameDne });
+    gameClient.initGameSubscriptions({
+      onGameUpdate: (gameState: GameState) =>
+        handleGameUpdate.current(gameState),
+      onGameDne: () => setGameDne(true),
+    });
     gameClient.connectToGame(gameId);
   }, [gameId, gameClient]);
 
@@ -59,7 +58,7 @@ export const GamePage: FC<{
             {"'"} does not exist!
           </Typography>
         </Box>
-      ) : !gameState || !connectedToGame ? (
+      ) : !gameState ? (
         <Box
           sx={{
             flexGrow: 1,

@@ -1,4 +1,4 @@
-import { GameState } from "@/server/schema";
+import { GameState } from "@/shared/schema";
 import { EndGameButtons } from "@/ui/game/active-game/EndGameButtons";
 import {
   GameStartToast,

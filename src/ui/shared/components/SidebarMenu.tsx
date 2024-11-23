@@ -1,6 +1,6 @@
 "use client";
 
-import { GameState } from "@/server/schema";
+import { GameState } from "@/shared/schema";
 import { HowToPlay } from "@/ui/shared/components/HowToPlay";
 import { SpectatorIcon } from "@/ui/shared/components/icons";
 import { Clear, Help, Home } from "@mui/icons-material";

@@ -1,11 +1,11 @@
-import { isValidWord } from "@/shared/dictionary/dictionary";
+import { isValidWord } from "@/shared/dictionary/isValidWord";
 import {
   GameConfig,
   GameState,
   MAX_PLAYERS,
   Player,
   PlayerWord,
-} from "./schema";
+} from "../shared/schema";
 import { baseTiles } from "./tiles";
 
 const isRunningInDev = () => process.env.NODE_ENV === "development";

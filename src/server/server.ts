@@ -1,15 +1,20 @@
-import { SOCKET_SERVER_PORT, WEB_SERVER_PORT } from "@/shared/constants/ports";
+import { GAME_SERVER_PORT, WEB_SERVER_PORT } from "@/shared/constants/ports";
 import cors from "cors";
 import express, { Request, Response } from "express";
 import http from "node:http";
 import os from "node:os";
 import { Server, Socket } from "socket.io";
+import {
+  ClientEvents,
+  GameState,
+  PlayerWord,
+  ServerEvents,
+} from "../shared/schema";
 import { GamesController } from "./games-controller";
-import { ClientEvents, GameState, PlayerWord, ServerEvents } from "./schema";
 
 export const isRunningInDev = () => process.env.NODE_ENV === "development";
 
-const port = SOCKET_SERVER_PORT;
+const port = GAME_SERVER_PORT;
 const webserverURL = `http://localhost:${WEB_SERVER_PORT}`;
 
 const gamesController = new GamesController();

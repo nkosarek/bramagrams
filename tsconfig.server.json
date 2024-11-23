@@ -5,7 +5,7 @@
     "moduleResolution": "nodenext",
     "lib": ["esnext"],
     "target": "esnext",
-    "isolatedModules": false,
+    "isolatedModules": true,
     "noEmit": true,
     "baseUrl": ".",
     "paths": {

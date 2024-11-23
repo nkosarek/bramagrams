@@ -1,4 +1,4 @@
-import { GameState, PlayerWord } from "@/server/schema";
+import { GameState, PlayerWord } from "@/shared/schema";
 import { maxBy } from "lodash";
 
 interface Claim {

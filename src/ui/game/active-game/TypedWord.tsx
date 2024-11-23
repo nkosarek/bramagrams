@@ -1,5 +1,5 @@
-import { GameState } from "@/server/schema";
-import { isValidWord } from "@/shared/dictionary/dictionary";
+import { isValidWord } from "@/shared/dictionary/isValidWord";
+import { GameState } from "@/shared/schema";
 import { useGameClient } from "@/ui/game/useGameClient";
 import { animated, useSpring } from "@react-spring/web";
 import { FC, useEffect, useRef, useState } from "react";

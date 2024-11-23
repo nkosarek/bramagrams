@@ -1,4 +1,4 @@
-import { MAX_PLAYERS } from "@/server/schema";
+import { MAX_PLAYERS } from "@/shared/schema";
 import { FileCopy } from "@mui/icons-material";
 import {
   Box,

@@ -1,4 +1,4 @@
-import { GameState } from "@/server/schema";
+import { GameState } from "@/shared/schema";
 import { Close } from "@mui/icons-material";
 import { IconButton, Slide, Snackbar } from "@mui/material";
 import { FC } from "react";
