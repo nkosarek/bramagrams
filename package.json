@@ -6,8 +6,10 @@
   "private": true,
   "scripts": {
     "dev": "concurrently -n socket,nextjs \"NODE_ENV=development nodemon\" \"next dev\" -c yellow,blue",
-    "build": "next build && tsc --project tsconfig.server.json",
-    "start": "concurrently -n socket,nextjs \"NODE_ENV=production tsx --tsconfig tsconfig.server.json src/server/server.ts\" \"next start\" -c yellow,blue",
+    "build:ui": "next build",
+    "build:game-server": "tsc --project tsconfig.server.json",
+    "start:ui": "next start",
+    "start:game-server": "NODE_ENV=production tsx --tsconfig tsconfig.server.json src/server/server.ts",
     "lint": "next lint"
   },
   "devDependencies": {
