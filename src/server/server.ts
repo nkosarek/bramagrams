@@ -12,7 +12,7 @@ import {
 import { GamesController } from "./games-controller";
 
 const port = process.env.GAME_SERVER_PORT;
-const webserverUrl = process.env.NEXT_PUBLIC_WEBSERVER_URL;
+const webserverUrl = process.env.WEBSERVER_URL;
 
 const gamesController = new GamesController();
 
