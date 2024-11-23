@@ -1,5 +1,5 @@
+import dotenvx from "@dotenvx/dotenvx";
 import cors from "cors";
-import "dotenv/config";
 import express, { Request, Response } from "express";
 import http from "node:http";
 import { Server, Socket } from "socket.io";
@@ -11,6 +11,7 @@ import {
 } from "../shared/schema";
 import { GamesController } from "./games-controller";
 
+dotenvx.config();
 const port = process.env.GAME_SERVER_PORT;
 const webserverUrl = process.env.WEBSERVER_URL;
 
@@ -87,7 +88,7 @@ const updateGameStateWrapper = (
 };
 
 io.on("connection", (socket) => {
-  console.log("New client connected");
+  console.log("New client connected:", socket.handshake.address);
   socket.on("disconnect", () => {
     // TODO: Keep track of client connect/disconnect per player to delete abandoned games
     console.log("Client disconnected");
