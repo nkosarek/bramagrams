@@ -1,8 +1,7 @@
-import { GAME_SERVER_PORT, WEB_SERVER_PORT } from "@/shared/constants/ports";
 import cors from "cors";
+import "dotenv/config";
 import express, { Request, Response } from "express";
 import http from "node:http";
-import os from "node:os";
 import { Server, Socket } from "socket.io";
 import {
   ClientEvents,
@@ -12,25 +11,22 @@ import {
 } from "../shared/schema";
 import { GamesController } from "./games-controller";
 
-export const isRunningInDev = () => process.env.NODE_ENV === "development";
-
-const port = GAME_SERVER_PORT;
-const webserverURL = `http://localhost:${WEB_SERVER_PORT}`;
+const port = process.env.GAME_SERVER_PORT;
+const webserverUrl = process.env.NEXT_PUBLIC_WEBSERVER_URL;
 
 const gamesController = new GamesController();
 
 const app = express();
 const server = http.createServer(app);
+
+console.log("Allowing requests from webserver at", webserverUrl);
 const io = new Server(server, {
   serveClient: false,
-  cors: { origin: webserverURL },
+  cors: { origin: webserverUrl },
 });
 
-if (isRunningInDev()) {
-  app.use(cors({ origin: webserverURL }));
-} else {
-  app.use(cors({ origin: `http://${os.hostname()}:${WEB_SERVER_PORT}` }));
-}
+app.use(cors({ origin: webserverUrl }));
+
 app.use(express.json());
 app.set("port", port);
 

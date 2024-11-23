@@ -1,6 +1,5 @@
 "use client";
 
-import { GAME_SERVER_PORT } from "@/shared/constants/ports";
 import { HowToPlay } from "@/ui/shared/components/HowToPlay";
 import { Clear, Close } from "@mui/icons-material";
 import {
@@ -36,7 +35,7 @@ export const HomePage: FC = () => {
     setIsNewGamePending(true);
     setIsNewGameErrorOpen(false);
     const res = await fetch(
-      `${window.location.protocol}//${window.location.hostname}:${GAME_SERVER_PORT}/api/games`,
+      `${process.env.NEXT_PUBLIC_GAME_SERVER_URL}/api/games`,
       {
         method: "POST",
         headers: {

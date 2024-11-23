@@ -1,4 +1,3 @@
-import { GAME_SERVER_PORT } from "@/shared/constants/ports";
 import { GameState } from "@/shared/schema";
 import { exhaustiveSwitchCheck } from "@/shared/utils/exhaustiveSwitchCheck";
 import { PlayerIcon, SpectatorIcon } from "@/ui/shared/components/icons";
@@ -21,14 +20,13 @@ import {
   Typography,
   TypographyProps,
 } from "@mui/material";
-import os from "node:os";
 import { FC, Fragment, PropsWithChildren } from "react";
 
 export const PublicGamesTable: FC & {
   Loading: typeof PublicGamesTableLoading;
 } = async () => {
   const publicGames: { [gameId: string]: GameState } = await fetch(
-    `http://${os.hostname()}:${GAME_SERVER_PORT}/api/public-games`
+    `${process.env.NEXT_PUBLIC_GAME_SERVER_URL}/api/public-games`
   ).then((r) => r.json());
 
   return (

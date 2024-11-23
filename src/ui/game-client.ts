@@ -1,4 +1,3 @@
-import { GAME_SERVER_PORT } from "@/shared/constants/ports";
 import {
   ClientEvents,
   GameState,
@@ -10,8 +9,8 @@ import { io, Socket } from "socket.io-client";
 export class GameClient {
   private socket: Socket;
 
-  constructor(hostname: string) {
-    this.socket = io(`http://${hostname}:${GAME_SERVER_PORT}`);
+  constructor() {
+    this.socket = io(process.env.NEXT_PUBLIC_GAME_SERVER_URL);
   }
 
   initGameSubscriptions({
