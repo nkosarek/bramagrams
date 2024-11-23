@@ -1,21 +1,50 @@
 {
   "name": "bramagrams",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "repository": "https://github.com/nkosarek/bramagrams",
   "author": "nkosarek",
-  "license": "MIT",
-  "dependencies": {
-    "typescript": "^3.9.7"
-  },
+  "private": true,
   "scripts": {
-    "postinstall": "tsc -b -v shared && cd client && yarn install && cd ../server && yarn install",
-    "build": "tsc -b -v server && cd client && yarn build",
-    "start": "NODE_ENV=production node server",
-    "clean": "rm -rf client/build client/node_modules server/dist server/node_modules shared/dist"
+    "dev": "concurrently -n socket,nextjs \"NODE_ENV=development nodemon\" \"next dev\" -c yellow,blue",
+    "build": "next build && tsc --project tsconfig.server.json",
+    "start": "concurrently -n socket,nextjs \"NODE_ENV=production tsx --tsconfig tsconfig.server.json src/server/server.ts\" \"next start\" -c yellow,blue",
+    "lint": "next lint"
   },
-  "engines": {
-    "yarn": "1.x",
-    "npm": "6.x",
-    "node": "14.x"
+  "devDependencies": {
+    "@emotion/cache": "^11.13.1",
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@mui/icons-material": "^6.1.7",
+    "@mui/material": "^6.1.7",
+    "@mui/material-nextjs": "^6.1.7",
+    "@react-spring/web": "^9.7.5",
+    "@types/express": "^5.0.0",
+    "@types/lodash": "^4.17.13",
+    "@types/node": "^20",
+    "@types/react": "npm:types-react@19.0.0-rc.1",
+    "@types/react-dom": "npm:types-react-dom@19.0.0-rc.1",
+    "eslint": "^8",
+    "eslint-config-next": "15.0.3",
+    "next": "15.0.3",
+    "nodemon": "^3.1.7",
+    "react": "19.0.0-rc-66855b96-20241106",
+    "react-dom": "19.0.0-rc-66855b96-20241106",
+    "typescript": "^5",
+    "use-local-storage-state": "^19.5.0"
+  },
+  "dependencies": {
+    "concurrently": "^9.1.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
+    "lodash": "^4.17.21",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
+    "tsx": "^4.19.2"
+  },
+  "overrides": {
+    "@types/react": "npm:types-react@19.0.0-rc.1",
+    "@types/react-dom": "npm:types-react-dom@19.0.0-rc.1",
+    "react": "19.0.0-rc-66855b96-20241106",
+    "react-dom": "19.0.0-rc-66855b96-20241106"
   }
 }

@@ -1,3 +1,5 @@
+TODO: This is all outdated. Update after deployment is restored.
+
 # Bramagrams
 
 Kinda like Bananagrams except Emily changed it so she always wins.
@@ -12,9 +14,9 @@ How to play instructions can be viewed on the home page of the deployed applicat
 
 ## Dependencies
 
-* Node v14.x
-* NPM v6.x
-* Yarn v1.x
+- Node v14.x
+- NPM v6.x
+- Yarn v1.x
 
 ## Repo Structure
 
@@ -27,6 +29,7 @@ Shared source code is located in the `./shared/src` directory. This package is a
 ## Execution
 
 To build and run the production build, run the following command:
+
 ```sh
 yarn clean && \
 yarn install && \
@@ -39,12 +42,14 @@ Run the following commands to start up the server and client separately in a dev
 **NOTE:** Before running the following commands, the `shared` packaged must be built and installed. To do this, run `yarn install` from the root directory.
 
 Server:
+
 ```sh
 cd server && \
 yarn dev
 ```
 
 Client:
+
 ```sh
 cd client && \
 yarn start
