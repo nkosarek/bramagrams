@@ -196,10 +196,7 @@ io.on("connection", (socket) => {
       player
     );
     updateGameStateWrapper(socket, gameId, () => {
-      const onEndgameTimerDone = (gameId: string, game: GameState) => {
-        io.to(gameId).emit(ServerEvents.GAME_UPDATED, game);
-      };
-      return gamesController.addTile(gameId, player, onEndgameTimerDone);
+      return gamesController.addTile(gameId, player);
     });
   });
 
@@ -245,9 +242,16 @@ io.on("connection", (socket) => {
       "player=",
       player
     );
-    updateGameStateWrapper(socket, gameId, () =>
-      gamesController.setPlayerReadyToEnd(gameId, player)
-    );
+    updateGameStateWrapper(socket, gameId, () => {
+      const onEndgameTimerDone = (gameId: string, game: GameState) => {
+        io.to(gameId).emit(ServerEvents.GAME_UPDATED, game);
+      };
+      return gamesController.setPlayerReadyToEnd(
+        gameId,
+        player,
+        onEndgameTimerDone
+      );
+    });
   });
 
   socket.on(ClientEvents.NOT_READY_TO_END, (gameId: string, player: string) => {

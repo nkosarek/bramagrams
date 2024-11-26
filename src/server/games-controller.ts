@@ -344,11 +344,7 @@ export class GamesController {
     return game;
   }
 
-  addTile(
-    gameId: string,
-    playerName: string,
-    onEndgameTimerDone: (gameId: string, gameState: GameState) => void
-  ): GameState | undefined {
+  addTile(gameId: string, playerName: string): GameState | undefined {
     const serverGameState = this.getGame(gameId);
     const { clientGameState: game, tilesLeft } = serverGameState;
     if (
@@ -360,16 +356,6 @@ export class GamesController {
     }
     this.addNewTileToPool(game, tilesLeft);
     this.advanceCurrPlayer(game);
-    if (game.numTilesLeft === 0) {
-      game.timeoutTime = new Date(Date.now() + 60000).toISOString();
-      serverGameState.endgameTimer = setTimeout(() => {
-        console.log(`Endgame timer complete for ${gameId}. Ending game`);
-        if (game.status !== "ENDED") {
-          this.endGame(game);
-          onEndgameTimerDone(gameId, game);
-        }
-      }, 60000);
-    }
     return game;
   }
 
@@ -410,15 +396,28 @@ export class GamesController {
 
   setPlayerReadyToEnd(
     gameId: string,
-    playerName: string
+    playerName: string,
+    onEndgameTimerDone: (gameId: string, gameState: GameState) => void
   ): GameState | undefined {
-    const { clientGameState: game, endgameTimer } = this.getGame(gameId);
+    const serverGameState = this.getGame(gameId);
+    const { clientGameState: game } = serverGameState;
     const player = this.getPlayer(game, playerName);
     if (!player || game.numTilesLeft || player.status !== "PLAYING") {
       return;
     }
+    // If this is the first player to be ready, start endgame timer
+    if (!game.players.some((p) => p.status === "READY_TO_END")) {
+      game.timeoutTime = new Date(Date.now() + 60000).toISOString();
+      serverGameState.endgameTimer = setTimeout(() => {
+        console.log(`Endgame timer complete for ${gameId}. Ending game`);
+        if (game.status !== "ENDED") {
+          this.endGame(game);
+          onEndgameTimerDone(gameId, game);
+        }
+      }, 60000);
+    }
     player.status = "READY_TO_END";
-    this.checkForGameEnd(game, endgameTimer);
+    this.checkForGameEnd(game, serverGameState.endgameTimer);
     return game;
   }
 
@@ -426,12 +425,17 @@ export class GamesController {
     gameId: string,
     playerName: string
   ): GameState | undefined {
-    const { clientGameState: game } = this.getGame(gameId);
+    const { clientGameState: game, endgameTimer } = this.getGame(gameId);
     const player = this.getPlayer(game, playerName);
     if (!player || player.status !== "READY_TO_END") {
       return;
     }
     player.status = "PLAYING";
+    // If no players are ready to end, clear endgame timer
+    if (!game.players.some((p) => p.status === "READY_TO_END")) {
+      game.timeoutTime = null;
+      if (endgameTimer) clearTimeout(endgameTimer);
+    }
     return game;
   }
 

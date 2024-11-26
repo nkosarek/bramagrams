@@ -4,9 +4,12 @@ import { useGameClient } from "@/ui/game/useGameClient";
 import { Box, Button, ButtonGroup, Typography } from "@mui/material";
 import { FC, useEffect, useState } from "react";
 
-const getMsLeft = (gameTimeoutTime: string | null): number | undefined => {
+const calculateMsLeft = (
+  gameTimeoutTime: string | null
+): number | undefined => {
   if (!gameTimeoutTime) return;
-  return Math.floor(new Date(gameTimeoutTime).getTime() - Date.now());
+  const msLeft = new Date(gameTimeoutTime).getTime() - Date.now();
+  return msLeft > 0 ? msLeft : 0;
 };
 
 const getDisplayByStatus = (
@@ -20,7 +23,7 @@ const getDisplayByStatus = (
       return {
         showBackToLobbyButton: false,
         showTimer: true,
-        endGameButtonLabel: "Done",
+        endGameButtonLabel: "I can't find any more words",
         onEndGameButtonClicked: () => gameClient.readyToEnd(gameId, playerName),
       };
     case "READY_TO_END":
@@ -52,7 +55,7 @@ export const EndGameButtons: FC<{
 }> = ({ gameId, playerName, playerState, gameTimeoutTime }) => {
   const gameClient = useGameClient();
   const [msLeft, setMsLeft] = useState<number | undefined>(
-    getMsLeft(gameTimeoutTime)
+    calculateMsLeft(gameTimeoutTime)
   );
 
   const {
@@ -63,14 +66,18 @@ export const EndGameButtons: FC<{
   } = getDisplayByStatus(playerState?.status, gameId, playerName, gameClient);
 
   useEffect(() => {
-    if (gameTimeoutTime) {
-      const timer = setTimeout(
-        () => setMsLeft(getMsLeft(gameTimeoutTime)),
-        500
-      );
-      return () => clearTimeout(timer);
+    if (!gameTimeoutTime) {
+      setMsLeft(undefined);
+      return;
     }
-  });
+
+    setMsLeft(calculateMsLeft(gameTimeoutTime));
+    const interval = setInterval(
+      () => setMsLeft(calculateMsLeft(gameTimeoutTime)),
+      500
+    );
+    return () => clearInterval(interval);
+  }, [gameTimeoutTime]);
 
   return (
     <Box display="flex" alignItems="center">
@@ -89,7 +96,7 @@ export const EndGameButtons: FC<{
           </Button>
         )}
       </ButtonGroup>
-      {showTimer && gameTimeoutTime && (
+      {showTimer && msLeft !== undefined && (
         <Box ml={3}>
           <Typography
             variant="overline"
@@ -99,7 +106,7 @@ export const EndGameButtons: FC<{
               lineHeight: h6.lineHeight,
             })}
           >
-            {msLeft && Math.floor(msLeft / 1000)}
+            {Math.ceil(msLeft / 1000)}
           </Typography>
         </Box>
       )}
