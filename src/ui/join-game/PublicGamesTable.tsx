@@ -25,9 +25,16 @@ import { FC, Fragment, PropsWithChildren } from "react";
 export const PublicGamesTable: FC & {
   Loading: typeof PublicGamesTableLoading;
 } = async () => {
-  const publicGames: { [gameId: string]: GameState } = await fetch(
+  const res = await fetch(
     `${process.env.NEXT_PUBLIC_GAME_SERVER_URL}/api/public-games`
-  ).then((r) => r.json());
+  );
+  if (!res.ok) {
+    console.error(await res.text());
+    return (
+      <Typography color="textSecondary">Something went wrong :(</Typography>
+    );
+  }
+  const publicGames: { [gameId: string]: GameState } = await res.json();
 
   return (
     <TableHeadAndBody>
