@@ -76,6 +76,8 @@ export const EndGameButtons: FC<{
     <Box display="flex" alignItems="center">
       <ButtonGroup variant="contained">
         <Button
+          // Rerender button when label changes to ensure it loses focus
+          key={endGameButtonLabel}
           disabled={!playerState || playerState.status === "SPECTATING"}
           onClick={onEndGameButtonClicked}
         >

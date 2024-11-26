@@ -37,6 +37,13 @@ export const TypedWord: FC<{
   const handleKeyDownEvent = useRef<(event: KeyboardEvent) => void>(() => {});
 
   useEffect(() => {
+    // Reset typed word when game restarts
+    if (gameState.status === "IN_PROGRESS") {
+      setTypedWord("");
+    }
+  }, [gameState.status]);
+
+  useEffect(() => {
     handleWordClaimedResponse.current = (claimed, word) => {
       const clearTypedWord = () => setTypedWord("");
       if (word === typedWord) {
@@ -52,7 +59,7 @@ export const TypedWord: FC<{
   }, [typedWord, animateFailure]);
 
   useEffect(() => {
-    if (disableHandlers) {
+    if (disableHandlers || gameState.status === "ENDED") {
       handleKeyDownEvent.current = () => {};
       return;
     }
@@ -102,9 +109,6 @@ export const TypedWord: FC<{
     };
 
     const handleTypedLetter = (letter: string) => {
-      if (gameState.status === "ENDED") {
-        return;
-      }
       const allTiles = [
         ...gameState.tiles,
         ...gameState.players.flatMap((p) =>
