@@ -91,7 +91,16 @@ export const EndGameButtons: FC<{
       </ButtonGroup>
       {showTimer && gameTimeoutTime && (
         <Box ml={3}>
-          <Typography>{msLeft && Math.floor(msLeft / 1000)}</Typography>
+          <Typography
+            variant="overline"
+            fontWeight="bold"
+            sx={({ typography: { h6 } }) => ({
+              fontSize: h6.fontSize,
+              lineHeight: h6.lineHeight,
+            })}
+          >
+            {msLeft && Math.floor(msLeft / 1000)}
+          </Typography>
         </Box>
       )}
     </Box>

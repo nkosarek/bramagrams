@@ -70,7 +70,7 @@ export const ActiveGameView: FC<{
             alignItems: "center",
           }}
         >
-          <Box mb={2}>
+          <Box sx={{ mb: 1.5, height: "40px" }}>
             {showEndGameButtons ? (
               <EndGameButtons
                 gameId={gameId}
@@ -79,8 +79,15 @@ export const ActiveGameView: FC<{
                 gameTimeoutTime={gameState.timeoutTime}
               />
             ) : (
-              <Typography variant="h5" fontWeight="bold">
-                Tiles Left: {gameState.numTilesLeft}
+              <Typography
+                variant="overline"
+                fontWeight="bold"
+                sx={({ typography: { h6 } }) => ({
+                  fontSize: h6.fontSize,
+                  lineHeight: h6.lineHeight,
+                })}
+              >
+                {gameState.numTilesLeft} Tiles Left
               </Typography>
             )}
           </Box>

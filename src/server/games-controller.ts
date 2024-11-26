@@ -6,7 +6,7 @@ import {
   Player,
   PlayerWord,
 } from "../shared/schema";
-import { baseTiles } from "./tiles";
+import { defaultStartingTiles as startingTiles } from "./tiles";
 
 const isRunningInDev = () => process.env.NODE_ENV === "development";
 
@@ -194,7 +194,7 @@ export class GamesController {
     serverGameState: ServerGameState,
     toLobby: boolean = false
   ): GameState {
-    serverGameState.tilesLeft = [...baseTiles];
+    serverGameState.tilesLeft = [...startingTiles];
     if (serverGameState.endgameTimer) {
       clearTimeout(serverGameState.endgameTimer);
       serverGameState.endgameTimer = null;
@@ -204,7 +204,7 @@ export class GamesController {
     game.timeoutTime = null;
     game.status = toLobby ? "WAITING_TO_START" : "IN_PROGRESS";
     game.tiles = [];
-    game.numTilesLeft = baseTiles.length;
+    game.numTilesLeft = startingTiles.length;
     const newPlayingPlayerStatus = toLobby ? "READY_TO_START" : "PLAYING";
     game.players.forEach((p) => {
       p.words = [];
@@ -235,7 +235,7 @@ export class GamesController {
       id = GamesController.generateGameId();
     } while (this.games[id]);
     this.games[id] = {
-      tilesLeft: [...baseTiles],
+      tilesLeft: [...startingTiles],
       lastAccessed: Date.now(),
       endgameTimer: null,
       clientGameState: {
@@ -243,8 +243,8 @@ export class GamesController {
         currPlayerIdx: 0,
         status: "WAITING_TO_START",
         tiles: [],
-        numTilesLeft: baseTiles.length,
-        totalTiles: baseTiles.length,
+        numTilesLeft: startingTiles.length,
+        totalTiles: startingTiles.length,
         timeoutTime: null,
         gameConfig,
       },

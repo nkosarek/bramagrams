@@ -1,4 +1,4 @@
-export const baseTiles = [
+export const defaultStartingTiles = [
   // 2 of J, K, Q, X, Z
   "J",
   "J",
@@ -156,7 +156,7 @@ export const baseTiles = [
   "E",
 ] as const;
 
-export const devTiles = [
+export const devStartingTiles = [
   "D",
   "I",
   "S",
