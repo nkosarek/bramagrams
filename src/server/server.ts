@@ -2,6 +2,7 @@ import dotenvx from "@dotenvx/dotenvx";
 import cors from "cors";
 import express, { Request, Response } from "express";
 import http from "node:http";
+import { exit } from "node:process";
 import { Server, Socket } from "socket.io";
 import {
   ClientEvents,
@@ -12,21 +13,31 @@ import {
 import { GamesController } from "./games-controller";
 
 dotenvx.config();
-const port = process.env.GAME_SERVER_PORT;
-const webserverUrl = process.env.WEBSERVER_URL;
+const { GAME_SERVER_PORT, ALLOWED_ORIGINS } = process.env;
+if (!GAME_SERVER_PORT || !ALLOWED_ORIGINS) {
+  console.error(
+    "Required env var is not set:",
+    `\n  GAME_SERVER_PORT=${GAME_SERVER_PORT}`,
+    `\n  ALLOWED_ORIGINS=${ALLOWED_ORIGINS}`
+  );
+  exit(1);
+}
+
+const port = GAME_SERVER_PORT;
+const allowedOrigins = JSON.parse(ALLOWED_ORIGINS);
 
 const gamesController = new GamesController();
 
 const app = express();
 const server = http.createServer(app);
 
-console.log("Allowing requests from webserver at", webserverUrl);
+console.log("Allowing requests from webserver at", allowedOrigins.join(", "));
 const io = new Server(server, {
   serveClient: false,
-  cors: { origin: webserverUrl },
+  cors: { origin: allowedOrigins },
 });
 
-app.use(cors({ origin: webserverUrl }));
+app.use(cors({ origin: allowedOrigins }));
 
 app.use(express.json());
 app.set("port", port);
