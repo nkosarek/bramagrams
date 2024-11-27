@@ -1,7 +1,7 @@
 import { GameState, MAX_PLAYERS, Player } from "@/shared/schema";
 import { useGameClient } from "@/ui/game/useGameClient";
 import { PlayerIcon, SpectatorIcon } from "@/ui/shared/components/icons";
-import { FileCopy } from "@mui/icons-material";
+import { FileCopy, Refresh } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -279,6 +279,15 @@ export const GameLobbyView: FC<{
               Starting tiles
             </Typography>
           </Stack>
+          <Box sx={{ pt: 2 }} />
+          <Button
+            startIcon={<Refresh />}
+            variant="outlined"
+            size="large"
+            onClick={() => gameClient.resetGameConfig(gameId)}
+          >
+            Reset to defaults
+          </Button>
         </Stack>
       </Box>
     </Box>
