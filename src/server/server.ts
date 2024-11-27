@@ -1,15 +1,16 @@
+import {
+  ClientEvents,
+  GameConfig,
+  GameState,
+  PlayerWord,
+  ServerEvents,
+} from "@/shared/schema";
 import dotenvx from "@dotenvx/dotenvx";
 import cors from "cors";
 import express, { Request, Response } from "express";
 import http from "node:http";
 import { exit } from "node:process";
 import { Server, Socket } from "socket.io";
-import {
-  ClientEvents,
-  GameState,
-  PlayerWord,
-  ServerEvents,
-} from "../shared/schema";
 import { GamesController } from "./games-controller";
 
 dotenvx.config();
@@ -49,8 +50,8 @@ app.get("/api/public-games", (req, res) => {
 });
 
 app.post("/api/games", (req: Request, res: Response) => {
-  console.log("Received request to create game: body=", req.body);
-  const id = gamesController.createGame(req.body?.gameConfig);
+  console.log("Received request to create game");
+  const id = gamesController.createGame();
   if (!id) {
     res
       .status(500)
@@ -166,6 +167,31 @@ io.on("connection", (socket) => {
     );
     updateGameStateWrapper(socket, gameId, () =>
       gamesController.setPlayerSpectating(gameId, player)
+    );
+  });
+
+  socket.on(
+    ClientEvents.UPDATE_GAME_CONFIG,
+    (gameId: string, gameConfig: GameConfig) => {
+      console.log(
+        "Received UPDATE_GAME_CONFIG request with args: gameId=",
+        gameId,
+        "gameConfig=",
+        gameConfig
+      );
+      updateGameStateWrapper(socket, gameId, () =>
+        gamesController.updateGameConfig(gameId, gameConfig)
+      );
+    }
+  );
+
+  socket.on(ClientEvents.RESET_GAME_CONFIG, (gameId: string) => {
+    console.log(
+      "Received RESET_GAME_CONFIG request with args: gameId=",
+      gameId
+    );
+    updateGameStateWrapper(socket, gameId, () =>
+      gamesController.updateGameConfig(gameId)
     );
   });
 

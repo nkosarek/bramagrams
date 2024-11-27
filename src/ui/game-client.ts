@@ -1,5 +1,6 @@
 import {
   ClientEvents,
+  GameConfig,
   GameState,
   PlayerWord,
   ServerEvents,
@@ -48,6 +49,14 @@ export class GameClient {
 
   becomeSpectator(gameId: string, player: string) {
     this.socket.emit(ClientEvents.BECOME_SPECTATOR, gameId, player);
+  }
+
+  updateGameConfig(gameId: string, gameConfig: GameConfig) {
+    this.socket.emit(ClientEvents.UPDATE_GAME_CONFIG, gameId, gameConfig);
+  }
+
+  resetGameConfig(gameId: string) {
+    this.socket.emit(ClientEvents.RESET_GAME_CONFIG, gameId);
   }
 
   readyToStart(gameId: string, player: string) {

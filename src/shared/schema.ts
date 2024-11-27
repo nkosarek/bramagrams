@@ -7,6 +7,8 @@ export const ClientEvents = keysSameAsValuesCheck({
   JOIN_GAME: "JOIN_GAME",
   CHANGE_NAME: "CHANGE_NAME",
   BECOME_SPECTATOR: "BECOME_SPECTATOR",
+  UPDATE_GAME_CONFIG: "UPDATE_GAME_CONFIG",
+  RESET_GAME_CONFIG: "RESET_GAME_CONFIG",
   READY_TO_START: "READY_TO_START",
   START_GAME: "START_GAME",
   ADD_TILE: "ADD_TILE",
@@ -58,5 +60,7 @@ export interface GameState {
 }
 
 export interface GameConfig {
-  isPublic?: boolean;
+  isPublic: boolean;
+  numStartingTiles: 91 | 144;
+  validTypedWordFeedback: boolean;
 }

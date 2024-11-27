@@ -20,8 +20,6 @@ export const GamePage: FC<{
 
   const handleGameUpdate = useRef<(game: GameState) => void>(() => {});
 
-  const players = gameState?.players || [];
-
   useEffect(() => {
     handleGameUpdate.current = (gameState: GameState) => {
       setGameState(gameState);
@@ -73,7 +71,7 @@ export const GamePage: FC<{
         <GameLobbyView
           gameId={gameId}
           playerName={playerName}
-          players={players}
+          gameState={gameState}
           onNameClaimed={setPlayerName}
         />
       ) : (

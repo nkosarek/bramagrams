@@ -6,13 +6,15 @@ import {
   Player,
   PlayerWord,
 } from "../shared/schema";
-import { defaultStartingTiles as startingTiles } from "./tiles";
+import { defaultStartingTiles, fewerStartingTiles } from "./tiles";
 
 const isRunningInDev = () => process.env.NODE_ENV === "development";
 
-const DEFAULT_GAME_CONFIG: GameConfig = {
+const DEFAULT_GAME_CONFIG = {
   isPublic: false,
-};
+  numStartingTiles: 144,
+  validTypedWordFeedback: true,
+} as const satisfies GameConfig;
 
 interface ServerGameState {
   clientGameState: GameState;
@@ -71,6 +73,12 @@ export class GamesController {
       game.players.filter((player) => player.status === "READY_TO_START")
         .length > 1
     );
+  }
+
+  private getStartingTiles(gameConfig: GameConfig): Array<string> {
+    return gameConfig.numStartingTiles === 91
+      ? [...fewerStartingTiles]
+      : [...defaultStartingTiles];
   }
 
   private addNewTileToPool(game: GameState, tilesLeft: string[]) {
@@ -194,7 +202,10 @@ export class GamesController {
     serverGameState: ServerGameState,
     toLobby: boolean = false
   ): GameState {
-    serverGameState.tilesLeft = [...startingTiles];
+    const startingTiles = this.getStartingTiles(
+      serverGameState.clientGameState.gameConfig
+    );
+    serverGameState.tilesLeft = startingTiles;
     if (serverGameState.endgameTimer) {
       clearTimeout(serverGameState.endgameTimer);
       serverGameState.endgameTimer = null;
@@ -224,7 +235,7 @@ export class GamesController {
     return game;
   }
 
-  createGame(gameConfig: GameConfig = DEFAULT_GAME_CONFIG): string {
+  createGame(): string {
     let id: string;
     let count: number = 0;
     this.cleanupAbandonedGames();
@@ -234,8 +245,10 @@ export class GamesController {
       }
       id = GamesController.generateGameId();
     } while (this.games[id]);
+    const gameConfig = DEFAULT_GAME_CONFIG;
+    const startingTiles = this.getStartingTiles(gameConfig);
     this.games[id] = {
-      tilesLeft: [...startingTiles],
+      tilesLeft: startingTiles,
       lastAccessed: Date.now(),
       endgameTimer: null,
       clientGameState: {
@@ -302,6 +315,18 @@ export class GamesController {
       return;
     }
     player.status = "SPECTATING";
+    return game;
+  }
+
+  updateGameConfig(
+    gameId: string,
+    gameConfig: GameConfig = DEFAULT_GAME_CONFIG
+  ): GameState | undefined {
+    const { clientGameState: game } = this.getGame(gameId);
+    if (game.status !== "WAITING_TO_START") {
+      return;
+    }
+    game.gameConfig = { ...gameConfig };
     return game;
   }
 

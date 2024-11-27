@@ -31,7 +31,7 @@ export const HomePage: FC = () => {
   const [isNewGameErrorOpen, setIsNewGameErrorOpen] = useState(false);
   const [newGameError, setNewGameError] = useState("");
 
-  const handleNewGame = async (isPublic = false) => {
+  const handleNewGame = async () => {
     setIsNewGamePending(true);
     setIsNewGameErrorOpen(false);
     const res = await fetch(
@@ -42,9 +42,6 @@ export const HomePage: FC = () => {
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          gameConfig: { isPublic },
-        }),
       }
     );
     const body = await res.text();
@@ -94,8 +91,7 @@ export const HomePage: FC = () => {
             },
           }}
         >
-          <Button onClick={() => handleNewGame(false)}>New Private Game</Button>
-          <Button onClick={() => handleNewGame(true)}>New Public Game</Button>
+          <Button onClick={() => handleNewGame()}>New Game</Button>
           <Button href="/games">Join Game</Button>
           <Button onClick={() => setIsHowToPlayOpen(true)}>How To Play</Button>
         </ButtonGroup>

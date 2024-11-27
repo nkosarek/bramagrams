@@ -19,6 +19,8 @@ export const TypedWord: FC<{
   const gameClient = useGameClient();
   const [typedWord, setTypedWord] = useState("");
 
+  const { validTypedWordFeedback } = gameState.gameConfig;
+
   const { animateFailure } = useSpring({
     config: { duration: 300 },
     animateFailure: 1,
@@ -182,7 +184,10 @@ export const TypedWord: FC<{
     // TODO: Fix this
     // @ts-expect-error - Seems like an incompatibility with React 19
     <animated.div style={{ transform }}>
-      <Word word={typedWord} disabled={!isValidWord(typedWord)} />
+      <Word
+        word={typedWord}
+        disabled={!validTypedWordFeedback || !isValidWord(typedWord)}
+      />
     </animated.div>
   );
 };
