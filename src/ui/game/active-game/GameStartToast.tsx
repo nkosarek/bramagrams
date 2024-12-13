@@ -8,7 +8,7 @@ export const initToastAcked = (
   playerName: string
 ): boolean => {
   const player = game.players.find((p) => p.name === playerName);
-  const tilesFlipped = game.totalTiles - game.numTilesLeft;
+  const tilesFlipped = game.gameConfig.numStartingTiles - game.numTilesLeft;
   const numPlayingPlayers = game.players.reduce(
     (count, p) => (count += p.status !== "SPECTATING" ? 1 : 0),
     0

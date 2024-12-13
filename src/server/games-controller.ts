@@ -1,4 +1,5 @@
 import { isValidWord } from "@/shared/dictionary/isValidWord";
+import { exhaustiveSwitchCheck } from "@/shared/utils/exhaustiveSwitchCheck";
 import {
   GameConfig,
   GameState,
@@ -6,7 +7,11 @@ import {
   Player,
   PlayerWord,
 } from "../shared/schema";
-import { defaultStartingTiles, fewerStartingTiles } from "./tiles";
+import {
+  defaultStartingTiles,
+  fewerStartingTiles,
+  moreStartingTiles,
+} from "../shared/tiles";
 
 const isRunningInDev = () => process.env.NODE_ENV === "development";
 
@@ -22,6 +27,7 @@ interface ServerGameState {
   lastAccessed: number;
   endgameTimer: ReturnType<typeof setTimeout> | null;
 }
+
 export class GamesController {
   private games: { [gameId: string]: ServerGameState } = {};
 
@@ -75,10 +81,17 @@ export class GamesController {
     );
   }
 
-  private getStartingTiles(gameConfig: GameConfig): Array<string> {
-    return gameConfig.numStartingTiles === 91
-      ? [...fewerStartingTiles]
-      : [...defaultStartingTiles];
+  private getStartingTiles({ numStartingTiles }: GameConfig): Array<string> {
+    switch (numStartingTiles) {
+      case 91:
+        return [...fewerStartingTiles];
+      case 144:
+        return [...defaultStartingTiles];
+      case 288:
+        return [...moreStartingTiles];
+      default:
+        return exhaustiveSwitchCheck(numStartingTiles);
+    }
   }
 
   private addNewTileToPool(game: GameState, tilesLeft: string[]) {
@@ -257,7 +270,6 @@ export class GamesController {
         status: "WAITING_TO_START",
         tiles: [],
         numTilesLeft: startingTiles.length,
-        totalTiles: startingTiles.length,
         timeoutTime: null,
         gameConfig,
       },
@@ -322,10 +334,14 @@ export class GamesController {
     gameId: string,
     gameConfig: GameConfig = DEFAULT_GAME_CONFIG
   ): GameState | undefined {
-    const { clientGameState: game } = this.getGame(gameId);
+    const serverGameState = this.getGame(gameId);
+    const { clientGameState: game } = serverGameState;
     if (game.status !== "WAITING_TO_START") {
       return;
     }
+    const startingTiles = this.getStartingTiles(gameConfig);
+    serverGameState.tilesLeft = startingTiles;
+    game.numTilesLeft = startingTiles.length;
     game.gameConfig = { ...gameConfig };
     return game;
   }

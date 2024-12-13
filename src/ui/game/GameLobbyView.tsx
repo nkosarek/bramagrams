@@ -1,13 +1,21 @@
-import { GameState, MAX_PLAYERS, Player } from "@/shared/schema";
+import {
+  GameState,
+  MAX_PLAYERS,
+  NUM_STARTING_TILE_OPTIONS,
+  Player,
+} from "@/shared/schema";
 import { useGameClient } from "@/ui/game/useGameClient";
 import { PlayerIcon, SpectatorIcon } from "@/ui/shared/components/icons";
-import { FileCopy, Refresh } from "@mui/icons-material";
+import { ChevronRight, FileCopy, Refresh, Settings } from "@mui/icons-material";
 import {
   Box,
   Button,
   ButtonGroup,
   Divider,
+  Drawer,
+  drawerClasses,
   FormControlLabel,
+  IconButton,
   Slide,
   Snackbar,
   Stack,
@@ -19,6 +27,8 @@ import {
   Typography,
 } from "@mui/material";
 import { FC, FormEvent, useEffect, useState } from "react";
+
+const DRAWER_WIDTH = 320;
 
 const STARTING_TILES_HEADER_ID = "num-starting-tiles-header" as const;
 const STARTING_TILES_BUTTON_WIDTH = 49;
@@ -40,6 +50,7 @@ export const GameLobbyView: FC<{
   const [editingName, setEditingName] = useState(!playerState);
   const [hasEdited, setHasEdited] = useState(false);
   const [copyToastOpen, setCopyToastOpen] = useState(false);
+  const [settingsDrawerOpen, setSettingsDrawerOpen] = useState(true);
 
   const hasNameError =
     requestedName !== playerName &&
@@ -99,13 +110,26 @@ export const GameLobbyView: FC<{
   }, [gameClient, onNameClaimed]);
 
   return (
-    <Box sx={{ py: 3, flexGrow: 1, display: "flex" }}>
+    <Box sx={{ flexGrow: 1, display: "flex" }}>
       <Box
-        flexGrow={2}
-        display="flex"
-        flexDirection="column"
-        alignItems="center"
-        justifyContent="center"
+        sx={(theme) => ({
+          position: "relative",
+          flexGrow: 1,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          marginRight: settingsDrawerOpen ? 0 : `-${DRAWER_WIDTH}px`,
+          transition: settingsDrawerOpen
+            ? theme.transitions.create("margin", {
+                easing: theme.transitions.easing.sharp,
+                duration: theme.transitions.duration.leavingScreen,
+              })
+            : theme.transitions.create("margin", {
+                easing: theme.transitions.easing.easeOut,
+                duration: theme.transitions.duration.enteringScreen,
+              }),
+        })}
       >
         <Box display="flex" mb={10}>
           {players.map((player, index) => (
@@ -203,93 +227,113 @@ export const GameLobbyView: FC<{
           }}
           message="Game link copied"
         />
+        <Box
+          sx={(theme) => ({
+            position: "absolute",
+            top: theme.spacing(2),
+            right: theme.spacing(2),
+          })}
+        >
+          <IconButton onClick={() => setSettingsDrawerOpen((o) => !o)}>
+            {settingsDrawerOpen ? <ChevronRight /> : <Settings />}
+          </IconButton>
+        </Box>
       </Box>
-      <Divider orientation="vertical" flexItem />
-      <Box sx={{ py: 2, px: 4 }}>
-        <Stack spacing={2}>
-          <Typography variant="h5">Game Settings</Typography>
-          <Tooltip
-            arrow
-            title="When this setting is on, this game will be publicly accessible on the Join Game page."
-            placement="left"
-          >
-            <FormControlLabel
-              label="Public game"
-              control={
-                <Switch
-                  checked={gameConfig.isPublic}
-                  onChange={() =>
-                    gameClient.updateGameConfig(gameId, {
-                      ...gameConfig,
-                      isPublic: !gameConfig.isPublic,
-                    })
-                  }
-                />
-              }
-            />
-          </Tooltip>
-          <Tooltip
-            arrow
-            title="When this setting is on, typed letters will be highlighted if they form one of the valid words in the Bramagrams dictionary."
-            placement="left"
-          >
-            <FormControlLabel
-              label="Valid words highlighted"
-              control={
-                <Switch
-                  checked={gameConfig.validTypedWordFeedback}
-                  onChange={() =>
-                    gameClient.updateGameConfig(gameId, {
-                      ...gameConfig,
-                      validTypedWordFeedback:
-                        !gameConfig.validTypedWordFeedback,
-                    })
-                  }
-                />
-              }
-            />
-          </Tooltip>
-          <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
-            <ToggleButtonGroup
-              exclusive
-              aria-labelledby={STARTING_TILES_HEADER_ID}
-              value={gameConfig.numStartingTiles}
-              onChange={(e, numStartingTiles: 91 | 144 | null) =>
-                numStartingTiles &&
-                gameClient.updateGameConfig(gameId, {
-                  ...gameConfig,
-                  numStartingTiles,
-                })
-              }
+      <Drawer
+        sx={{
+          width: DRAWER_WIDTH,
+          flexShrink: 0,
+          [`& .${drawerClasses.paper}`]: {
+            width: DRAWER_WIDTH,
+            boxSizing: "border-box",
+          },
+        }}
+        variant="persistent"
+        anchor="right"
+        open={settingsDrawerOpen}
+      >
+        <Box sx={{ p: 3 }}>
+          <Stack spacing={2}>
+            <Typography variant="h5">Game Settings</Typography>
+            <Tooltip
+              arrow
+              title="When this setting is on, this game will be publicly accessible on the Join Game page."
+              placement="left"
             >
-              <ToggleButton
-                value={91}
-                sx={{ width: STARTING_TILES_BUTTON_WIDTH }}
+              <FormControlLabel
+                label="Public game"
+                control={
+                  <Switch
+                    checked={gameConfig.isPublic}
+                    onChange={() =>
+                      gameClient.updateGameConfig(gameId, {
+                        ...gameConfig,
+                        isPublic: !gameConfig.isPublic,
+                      })
+                    }
+                  />
+                }
+              />
+            </Tooltip>
+            <Tooltip
+              arrow
+              title="When this setting is on, typed letters will be highlighted if they form one of the words in the Bramagrams dictionary."
+              placement="left"
+            >
+              <FormControlLabel
+                label="Valid words highlighted"
+                control={
+                  <Switch
+                    checked={gameConfig.validTypedWordFeedback}
+                    onChange={() =>
+                      gameClient.updateGameConfig(gameId, {
+                        ...gameConfig,
+                        validTypedWordFeedback:
+                          !gameConfig.validTypedWordFeedback,
+                      })
+                    }
+                  />
+                }
+              />
+            </Tooltip>
+            <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
+              <ToggleButtonGroup
+                exclusive
+                aria-labelledby={STARTING_TILES_HEADER_ID}
+                value={gameConfig.numStartingTiles}
               >
-                91
-              </ToggleButton>
-              <ToggleButton
-                value={144}
-                sx={{ width: STARTING_TILES_BUTTON_WIDTH }}
-              >
-                144
-              </ToggleButton>
-            </ToggleButtonGroup>
-            <Typography id={STARTING_TILES_HEADER_ID}>
-              Starting tiles
-            </Typography>
+                {NUM_STARTING_TILE_OPTIONS.map((value) => (
+                  <ToggleButton
+                    key={value}
+                    value={value}
+                    onClick={() => {
+                      gameClient.updateGameConfig(gameId, {
+                        ...gameConfig,
+                        numStartingTiles: value,
+                      });
+                    }}
+                    sx={{ width: STARTING_TILES_BUTTON_WIDTH }}
+                  >
+                    {value}
+                  </ToggleButton>
+                ))}
+              </ToggleButtonGroup>
+              <Typography id={STARTING_TILES_HEADER_ID}>
+                Starting tiles
+              </Typography>
+            </Stack>
+            <Box sx={{ pt: 2 }} />
+            <Button
+              startIcon={<Refresh />}
+              variant="outlined"
+              size="large"
+              onClick={() => gameClient.resetGameConfig(gameId)}
+            >
+              Reset to defaults
+            </Button>
           </Stack>
-          <Box sx={{ pt: 2 }} />
-          <Button
-            startIcon={<Refresh />}
-            variant="outlined"
-            size="large"
-            onClick={() => gameClient.resetGameConfig(gameId)}
-          >
-            Reset to defaults
-          </Button>
-        </Stack>
-      </Box>
+        </Box>
+      </Drawer>
     </Box>
   );
 };

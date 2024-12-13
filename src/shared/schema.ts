@@ -1,6 +1,17 @@
+import {
+  defaultStartingTiles,
+  fewerStartingTiles,
+  moreStartingTiles,
+} from "@/shared/tiles";
 import { keysSameAsValuesCheck } from "@/shared/utils/keysSameAsValuesCheck";
 
 export const MAX_PLAYERS = 4;
+
+export const NUM_STARTING_TILE_OPTIONS = [
+  fewerStartingTiles.length,
+  defaultStartingTiles.length,
+  moreStartingTiles.length,
+] as const;
 
 export const ClientEvents = keysSameAsValuesCheck({
   CONNECT_TO_GAME: "CONNECT_TO_GAME",
@@ -54,13 +65,12 @@ export interface GameState {
   status: GameStatus;
   tiles: string[];
   numTilesLeft: number;
-  totalTiles: number;
   timeoutTime: string | null;
   gameConfig: GameConfig;
 }
 
 export interface GameConfig {
   isPublic: boolean;
-  numStartingTiles: 91 | 144;
+  numStartingTiles: (typeof NUM_STARTING_TILE_OPTIONS)[number];
   validTypedWordFeedback: boolean;
 }
