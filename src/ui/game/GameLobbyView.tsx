@@ -6,7 +6,7 @@ import {
 } from "@/shared/schema";
 import { useGameClient } from "@/ui/game/useGameClient";
 import { PlayerIcon, SpectatorIcon } from "@/ui/shared/components/icons";
-import { ChevronRight, FileCopy, Refresh, Settings } from "@mui/icons-material";
+import { Close, FileCopy, Refresh, Settings } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -110,10 +110,9 @@ export const GameLobbyView: FC<{
   }, [gameClient, onNameClaimed]);
 
   return (
-    <Box sx={{ flexGrow: 1, display: "flex" }}>
+    <Box sx={{ flexGrow: 1, display: "flex", position: "relative" }}>
       <Box
         sx={(theme) => ({
-          position: "relative",
           flexGrow: 1,
           display: "flex",
           flexDirection: "column",
@@ -227,17 +226,26 @@ export const GameLobbyView: FC<{
           }}
           message="Game link copied"
         />
-        <Box
-          sx={(theme) => ({
-            position: "absolute",
-            top: theme.spacing(2),
-            right: theme.spacing(2),
-          })}
+      </Box>
+      <Box
+        sx={(theme) => ({
+          position: "absolute",
+          top: theme.spacing(2),
+          right: theme.spacing(1),
+          zIndex: theme.zIndex.drawer + 1,
+        })}
+      >
+        <Tooltip
+          title={`${settingsDrawerOpen ? "" : "Game settings"}`}
+          placement="left"
         >
-          <IconButton onClick={() => setSettingsDrawerOpen((o) => !o)}>
-            {settingsDrawerOpen ? <ChevronRight /> : <Settings />}
+          <IconButton
+            size="large"
+            onClick={() => setSettingsDrawerOpen((o) => !o)}
+          >
+            {settingsDrawerOpen ? <Close /> : <Settings />}
           </IconButton>
-        </Box>
+        </Tooltip>
       </Box>
       <Drawer
         sx={{

@@ -38,7 +38,7 @@ export const GamePage: FC<{
 
   return (
     <>
-      <Box sx={{ position: "absolute", top: 0, left: 0 }}>
+      <Box sx={{ position: "absolute", top: 0, left: 0, zIndex: 1 }}>
         <SidebarMenu gameState={gameState} />
       </Box>
       {gameDne ? (
