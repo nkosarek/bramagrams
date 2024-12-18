@@ -6,16 +6,24 @@ import {
 } from "@/shared/schema";
 import { useGameClient } from "@/ui/game/useGameClient";
 import { PlayerIcon, SpectatorIcon } from "@/ui/shared/components/icons";
-import { Close, FileCopy, Refresh, Settings } from "@mui/icons-material";
+import {
+  Check,
+  Clear,
+  Close,
+  Edit,
+  FileCopy,
+  Refresh,
+  Settings,
+} from "@mui/icons-material";
 import {
   Box,
   Button,
-  ButtonGroup,
   Divider,
   Drawer,
   drawerClasses,
   FormControlLabel,
   IconButton,
+  InputAdornment,
   Slide,
   Snackbar,
   Stack,
@@ -30,8 +38,11 @@ import { FC, FormEvent, useEffect, useState } from "react";
 
 const DRAWER_WIDTH = 320;
 
-const STARTING_TILES_HEADER_ID = "num-starting-tiles-header" as const;
+const STARTING_TILES_LABEL_ID = "num-starting-tiles-header" as const;
 const STARTING_TILES_BUTTON_WIDTH = 49;
+
+const PLAY_OR_SPECTATE_SWITCH_LABEL_ID =
+  "play-or-spectate-switch-label" as const;
 
 const getNumPlayingPlayers = (players: Player[]) => {
   return players.filter((p) => p.status !== "SPECTATING").length;
@@ -56,15 +67,6 @@ export const GameLobbyView: FC<{
     requestedName !== playerName &&
     players.map((p) => p.name).includes(requestedName);
 
-  const statusChangeButtonLabel =
-    !playerState || playerState.status === "READY_TO_START"
-      ? "Spectate"
-      : "Join";
-  const statusChangeButtonDisabled =
-    !playerState ||
-    (playerState.status === "SPECTATING" &&
-      getNumPlayingPlayers(players) >= MAX_PLAYERS);
-
   const startDisabled =
     !playerState ||
     playerState.status === "SPECTATING" ||
@@ -80,7 +82,9 @@ export const GameLobbyView: FC<{
     if (!requestedName || hasNameError) {
       return;
     }
-    if (playerState && requestedName !== playerName) {
+    if (playerState && requestedName === playerName) {
+      setEditingName(false);
+    } else if (playerState) {
       gameClient.changeName(gameId, requestedName, playerName);
     } else if (!playerState) {
       gameClient.joinGame(gameId, requestedName);
@@ -130,7 +134,8 @@ export const GameLobbyView: FC<{
               }),
         })}
       >
-        <Box display="flex" mb={10}>
+        <Box display="flex">
+          {/* TODO: Filter out self (or sort at top) after player IDs are added */}
           {players.map((player, index) => (
             <Box key={player.name} display="flex">
               {index > 0 && <Divider orientation="vertical" variant="middle" />}
@@ -152,9 +157,12 @@ export const GameLobbyView: FC<{
             </Box>
           ))}
         </Box>
-        {editingName ? (
-          <form onSubmit={handleNameSubmitted}>
-            <Box display="flex" flexDirection="column">
+        <Box sx={{ pt: 9 }} />
+        {/* This has height of text field (which is taller) to avoid jitter */}
+        <Box sx={{ height: "56px" }}>
+          {editingName || !playerState ? (
+            <form onSubmit={handleNameSubmitted}>
+              {/* TODO: Limit name length? */}
               <TextField
                 label="Enter Your Name"
                 variant="outlined"
@@ -163,58 +171,107 @@ export const GameLobbyView: FC<{
                 onChange={(e) => handleNameEdited(e.target.value)}
                 error={hasNameError}
                 helperText={hasNameError && "Name has already been claimed"}
+                slotProps={{
+                  input: {
+                    endAdornment: (
+                      <>
+                        <InputAdornment position="end">
+                          <IconButton
+                            disabled={!playerState}
+                            onClick={() => {
+                              setEditingName(false);
+                              setRequestedName(playerName);
+                            }}
+                            color="primary"
+                          >
+                            <Clear />
+                          </IconButton>
+                          <IconButton
+                            disabled={!requestedName || hasNameError}
+                            type="submit"
+                            color="primary"
+                          >
+                            <Check />
+                          </IconButton>
+                        </InputAdornment>
+                      </>
+                    ),
+                  },
+                }}
               />
-              <Box display="flex" justifyContent="space-evenly">
-                <Button
-                  disabled={!playerState}
-                  fullWidth
-                  onClick={() => setEditingName(false)}
+            </form>
+          ) : (
+            <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+              <Typography variant="h4">{playerName}</Typography>
+              <Tooltip title="Change name" placement="right">
+                <IconButton
+                  size="large"
+                  color="primary"
+                  onClick={() => setEditingName(true)}
                 >
-                  Cancel
-                </Button>
-                <Button
-                  disabled={!requestedName || hasNameError}
-                  type="submit"
-                  fullWidth
-                  onClick={handleNameSubmitted}
-                >
-                  Submit
-                </Button>
-              </Box>
-            </Box>
-          </form>
-        ) : (
-          <Typography variant="h4">{playerName}</Typography>
-        )}
-        <Box mt={3} mb={5}>
-          <ButtonGroup variant="text">
-            <Button disabled={editingName} onClick={() => setEditingName(true)}>
-              Edit Name
-            </Button>
-            <Button
-              disabled={statusChangeButtonDisabled}
-              onClick={() => handleStatusChange()}
-            >
-              {statusChangeButtonLabel}
-            </Button>
-            <Button
-              disabled={startDisabled}
-              onClick={() => gameClient.startGame(gameId)}
-            >
-              Start Game
-            </Button>
-          </ButtonGroup>
+                  <Edit />
+                </IconButton>
+              </Tooltip>
+            </Stack>
+          )}
         </Box>
-        <Button
-          startIcon={<FileCopy />}
-          onClick={() =>
-            navigator.clipboard
-              .writeText(window.location.href)
-              .then(() => setCopyToastOpen(true))
-          }
-        >
-          Copy Game Link
-        </Button>
+        <Box sx={{ pt: 2 }} />
+        {/* TODO: FSM sub-statuses */}
+        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+          <Typography
+            variant="overline"
+            color={
+              playerState?.status === "SPECTATING" ? "primary" : "textDisabled"
+            }
+          >
+            Spectator
+          </Typography>
+          <Switch
+            aria-labelledby={PLAY_OR_SPECTATE_SWITCH_LABEL_ID}
+            checked={
+              playerState
+                ? playerState.status === "READY_TO_START"
+                : getNumPlayingPlayers(players) < MAX_PLAYERS
+            }
+            // TODO: Fix jitter: consolidate game update and name claim responses (via player IDs)
+            disabled={
+              !playerState ||
+              (playerState?.status === "SPECTATING" &&
+                getNumPlayingPlayers(players) >= MAX_PLAYERS)
+            }
+            onClick={() => handleStatusChange()}
+          />
+          <Typography
+            id={PLAY_OR_SPECTATE_SWITCH_LABEL_ID}
+            variant="overline"
+            color={
+              playerState?.status === "SPECTATING" ? "textDisabled" : "primary"
+            }
+          >
+            Player
+          </Typography>
+        </Stack>
+        <Box sx={{ pt: 9 }} />
+        <Stack direction="row" spacing={1}>
+          <Button
+            variant="outlined"
+            startIcon={<FileCopy />}
+            onClick={() =>
+              navigator.clipboard
+                .writeText(window.location.href)
+                .then(() => setCopyToastOpen(true))
+            }
+          >
+            Copy Game Link
+          </Button>
+          <Button
+            variant="contained"
+            disabled={startDisabled}
+            onClick={() => gameClient.startGame(gameId)}
+          >
+            Start Game
+          </Button>
+        </Stack>
         <Snackbar
           open={copyToastOpen}
           onClose={() => setCopyToastOpen(false)}
@@ -307,7 +364,7 @@ export const GameLobbyView: FC<{
             <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
               <ToggleButtonGroup
                 exclusive
-                aria-labelledby={STARTING_TILES_HEADER_ID}
+                aria-labelledby={STARTING_TILES_LABEL_ID}
                 value={gameConfig.numStartingTiles}
               >
                 {NUM_STARTING_TILE_OPTIONS.map((value) => (
@@ -326,7 +383,7 @@ export const GameLobbyView: FC<{
                   </ToggleButton>
                 ))}
               </ToggleButtonGroup>
-              <Typography id={STARTING_TILES_HEADER_ID}>
+              <Typography id={STARTING_TILES_LABEL_ID}>
                 Starting tiles
               </Typography>
             </Stack>
