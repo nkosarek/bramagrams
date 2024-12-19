@@ -45,7 +45,11 @@ export const EndGameDialog: FC<{
       <DialogTitle>{title}</DialogTitle>
       <DialogContent>
         {additionalWinnerText && (
-          <DialogContentText>{additionalWinnerText}</DialogContentText>
+          <DialogContentText>
+            {additionalWinnerText}
+            <br />
+            <br />
+          </DialogContentText>
         )}
         <DialogContentText>{dialogBody}</DialogContentText>
       </DialogContent>
