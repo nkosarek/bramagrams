@@ -56,6 +56,15 @@ export const EndGameDialog: FC<{
       <DialogActions>
         <Button onClick={onClose}>Close</Button>
         <Button
+          onClick={() => {
+            onClose();
+            gameClient.backToLobby(gameId);
+          }}
+        >
+          Go Back to Lobby
+        </Button>
+        <Button
+          variant="contained"
           disabled={disableRematch}
           onClick={() => {
             onClose();
@@ -63,14 +72,6 @@ export const EndGameDialog: FC<{
           }}
         >
           Rematch
-        </Button>
-        <Button
-          onClick={() => {
-            onClose();
-            gameClient.backToLobby(gameId);
-          }}
-        >
-          Change Players
         </Button>
       </DialogActions>
     </Dialog>

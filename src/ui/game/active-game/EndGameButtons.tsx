@@ -1,7 +1,7 @@
 import { Player } from "@/shared/schema";
 import { GameClient } from "@/ui/game-client";
 import { useGameClient } from "@/ui/game/useGameClient";
-import { Box, Button, ButtonGroup, Typography } from "@mui/material";
+import { Box, Button, Stack, Typography } from "@mui/material";
 import { FC, useEffect, useState } from "react";
 
 const calculateMsLeft = (
@@ -81,21 +81,25 @@ export const EndGameButtons: FC<{
 
   return (
     <Box display="flex" alignItems="center">
-      <ButtonGroup variant="contained">
+      <Stack direction="row" spacing={1}>
+        {showBackToLobbyButton && (
+          <Button
+            variant="outlined"
+            onClick={() => gameClient.backToLobby(gameId)}
+          >
+            Go Back to Lobby
+          </Button>
+        )}
         <Button
           // Rerender button when label changes to ensure it loses focus
           key={endGameButtonLabel}
+          variant="contained"
           disabled={!playerState || playerState.status === "SPECTATING"}
           onClick={onEndGameButtonClicked}
         >
           {endGameButtonLabel}
         </Button>
-        {showBackToLobbyButton && (
-          <Button onClick={() => gameClient.backToLobby(gameId)}>
-            Change Players
-          </Button>
-        )}
-      </ButtonGroup>
+      </Stack>
       {showTimer && msLeft !== undefined && (
         <Box ml={3}>
           <Typography
