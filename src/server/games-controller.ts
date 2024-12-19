@@ -1,4 +1,5 @@
 import { isValidWord } from "@/shared/dictionary/isValidWord";
+import { exhaustiveSwitchCheck } from "@/shared/utils/exhaustiveSwitchCheck";
 import {
   GameConfig,
   GameState,
@@ -6,13 +7,19 @@ import {
   Player,
   PlayerWord,
 } from "../shared/schema";
-import { defaultStartingTiles as startingTiles } from "./tiles";
+import {
+  defaultStartingTiles,
+  fewerStartingTiles,
+  moreStartingTiles,
+} from "../shared/tiles";
 
 const isRunningInDev = () => process.env.NODE_ENV === "development";
 
-const DEFAULT_GAME_CONFIG: GameConfig = {
+const DEFAULT_GAME_CONFIG = {
   isPublic: false,
-};
+  numStartingTiles: 144,
+  validTypedWordFeedback: true,
+} as const satisfies GameConfig;
 
 interface ServerGameState {
   clientGameState: GameState;
@@ -20,6 +27,7 @@ interface ServerGameState {
   lastAccessed: number;
   endgameTimer: ReturnType<typeof setTimeout> | null;
 }
+
 export class GamesController {
   private games: { [gameId: string]: ServerGameState } = {};
 
@@ -71,6 +79,19 @@ export class GamesController {
       game.players.filter((player) => player.status === "READY_TO_START")
         .length > 1
     );
+  }
+
+  private getStartingTiles({ numStartingTiles }: GameConfig): Array<string> {
+    switch (numStartingTiles) {
+      case 91:
+        return [...fewerStartingTiles];
+      case 144:
+        return [...defaultStartingTiles];
+      case 288:
+        return [...moreStartingTiles];
+      default:
+        return exhaustiveSwitchCheck(numStartingTiles);
+    }
   }
 
   private addNewTileToPool(game: GameState, tilesLeft: string[]) {
@@ -194,7 +215,10 @@ export class GamesController {
     serverGameState: ServerGameState,
     toLobby: boolean = false
   ): GameState {
-    serverGameState.tilesLeft = [...startingTiles];
+    const startingTiles = this.getStartingTiles(
+      serverGameState.clientGameState.gameConfig
+    );
+    serverGameState.tilesLeft = startingTiles;
     if (serverGameState.endgameTimer) {
       clearTimeout(serverGameState.endgameTimer);
       serverGameState.endgameTimer = null;
@@ -224,7 +248,7 @@ export class GamesController {
     return game;
   }
 
-  createGame(gameConfig: GameConfig = DEFAULT_GAME_CONFIG): string {
+  createGame(): string {
     let id: string;
     let count: number = 0;
     this.cleanupAbandonedGames();
@@ -234,8 +258,10 @@ export class GamesController {
       }
       id = GamesController.generateGameId();
     } while (this.games[id]);
+    const gameConfig = DEFAULT_GAME_CONFIG;
+    const startingTiles = this.getStartingTiles(gameConfig);
     this.games[id] = {
-      tilesLeft: [...startingTiles],
+      tilesLeft: startingTiles,
       lastAccessed: Date.now(),
       endgameTimer: null,
       clientGameState: {
@@ -244,7 +270,6 @@ export class GamesController {
         status: "WAITING_TO_START",
         tiles: [],
         numTilesLeft: startingTiles.length,
-        totalTiles: startingTiles.length,
         timeoutTime: null,
         gameConfig,
       },
@@ -302,6 +327,22 @@ export class GamesController {
       return;
     }
     player.status = "SPECTATING";
+    return game;
+  }
+
+  updateGameConfig(
+    gameId: string,
+    gameConfig: GameConfig = DEFAULT_GAME_CONFIG
+  ): GameState | undefined {
+    const serverGameState = this.getGame(gameId);
+    const { clientGameState: game } = serverGameState;
+    if (game.status !== "WAITING_TO_START") {
+      return;
+    }
+    const startingTiles = this.getStartingTiles(gameConfig);
+    serverGameState.tilesLeft = startingTiles;
+    game.numTilesLeft = startingTiles.length;
+    game.gameConfig = { ...gameConfig };
     return game;
   }
 
