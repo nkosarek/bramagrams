@@ -171,6 +171,18 @@ io.on("connection", (socket) => {
     );
   });
 
+  socket.on(ClientEvents.BECOME_PLAYER, (gameId: string, player: string) => {
+    console.log(
+      "Received BECOME_PLAYER request with args: gameId=",
+      gameId,
+      "player=",
+      player
+    );
+    updateGameStateWrapper(socket, gameId, () =>
+      gamesController.setPlayerPlaying(gameId, player)
+    );
+  });
+
   socket.on(
     ClientEvents.UPDATE_GAME_CONFIG,
     (gameId: string, gameConfig: GameConfig) => {
@@ -193,18 +205,6 @@ io.on("connection", (socket) => {
     );
     updateGameStateWrapper(socket, gameId, () =>
       gamesController.updateGameConfig(gameId)
-    );
-  });
-
-  socket.on(ClientEvents.BECOME_PLAYER, (gameId: string, player: string) => {
-    console.log(
-      "Received BECOME_PLAYER request with args: gameId=",
-      gameId,
-      "player=",
-      player
-    );
-    updateGameStateWrapper(socket, gameId, () =>
-      gamesController.setPlayerPlaying(gameId, player)
     );
   });
 

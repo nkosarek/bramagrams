@@ -6,7 +6,9 @@ import {
   GameStateEnded,
   GameStateInLobby,
   GameStateInProgress,
+  MAX_ENDGAME_TIMEOUT_SECONDS,
   MAX_PLAYERS,
+  MIN_ENDGAME_TIMEOUT_SECONDS,
   PlayerInGameEnded,
   PlayerInGameInLobby,
   PlayerInGameInProgress,
@@ -20,12 +22,11 @@ import {
 
 const isRunningInDev = () => process.env.NODE_ENV === "development";
 
-const ENDGAME_TIMEOUT = 60000 as const;
-
 const DEFAULT_GAME_CONFIG = {
   isPublic: false,
   numStartingTiles: isRunningInDev() ? 91 : 144,
   validTypedWordFeedback: true,
+  endgameTimeoutSeconds: 60,
 } as const satisfies GameConfig;
 
 interface BaseServerGameState {
@@ -407,7 +408,11 @@ export class GamesController {
     gameConfig: GameConfig = { ...DEFAULT_GAME_CONFIG }
   ): GameStateInLobby | undefined {
     const game = this.getGameState(gameId);
-    if (game.status !== "IN_LOBBY") {
+    if (
+      game.status !== "IN_LOBBY" ||
+      gameConfig.endgameTimeoutSeconds < MIN_ENDGAME_TIMEOUT_SECONDS ||
+      gameConfig.endgameTimeoutSeconds > MAX_ENDGAME_TIMEOUT_SECONDS
+    ) {
       return;
     }
     game.gameConfig = gameConfig;
@@ -527,9 +532,8 @@ export class GamesController {
     }
     // If this is the first player to be ready, start endgame timer
     if (game.players.every((p) => p.status !== "READY_TO_END")) {
-      game.endgameTimeoutTime = new Date(
-        Date.now() + ENDGAME_TIMEOUT
-      ).toISOString();
+      const timeoutMs = game.gameConfig.endgameTimeoutSeconds * 1000;
+      game.endgameTimeoutTime = new Date(Date.now() + timeoutMs).toISOString();
       game.endgameTimeout = setTimeout(() => {
         console.log(`Endgame timer complete for ${gameId}. Ending game`);
         const latestGameState = this.getGameState(gameId);
@@ -537,7 +541,7 @@ export class GamesController {
           const newGameState = this.endGame(gameId, latestGameState);
           onEndgameTimerDone(gameId, this.convertToClientState(newGameState));
         }
-      }, ENDGAME_TIMEOUT);
+      }, timeoutMs);
     }
     player.status = "READY_TO_END";
     if (this.shouldGameEnd(game)) {

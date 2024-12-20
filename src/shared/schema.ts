@@ -7,6 +7,9 @@ import { keysSameAsValuesCheck } from "@/shared/utils/keysSameAsValuesCheck";
 
 export const MAX_PLAYERS = 4;
 
+export const MIN_ENDGAME_TIMEOUT_SECONDS = 10;
+export const MAX_ENDGAME_TIMEOUT_SECONDS = 120;
+
 export const NUM_STARTING_TILE_OPTIONS = [
   fewerStartingTiles.length,
   defaultStartingTiles.length,
@@ -88,4 +91,5 @@ export interface GameConfig {
   isPublic: boolean;
   numStartingTiles: (typeof NUM_STARTING_TILE_OPTIONS)[number];
   validTypedWordFeedback: boolean;
+  endgameTimeoutSeconds: number;
 }

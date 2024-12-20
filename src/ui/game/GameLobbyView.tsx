@@ -1,9 +1,9 @@
 import {
   GameStateInLobby,
   MAX_PLAYERS,
-  NUM_STARTING_TILE_OPTIONS,
   PlayerInGameInLobby,
 } from "@/shared/schema";
+import { GameSettingsPanel } from "@/ui/game/active-game/GameSettingsPanel";
 import { useGameClient } from "@/ui/game/useGameClient";
 import { PlayerIcon, SpectatorIcon } from "@/ui/shared/components/icons";
 import {
@@ -12,7 +12,6 @@ import {
   Close,
   Edit,
   FileCopy,
-  Refresh,
   Settings,
 } from "@mui/icons-material";
 import {
@@ -21,7 +20,6 @@ import {
   Divider,
   Drawer,
   drawerClasses,
-  FormControlLabel,
   IconButton,
   InputAdornment,
   Slide,
@@ -29,17 +27,12 @@ import {
   Stack,
   Switch,
   TextField,
-  ToggleButton,
-  ToggleButtonGroup,
   Tooltip,
   Typography,
 } from "@mui/material";
 import { FC, FormEvent, useEffect, useState } from "react";
 
 const DRAWER_WIDTH = 320;
-
-const STARTING_TILES_LABEL_ID = "num-starting-tiles-header" as const;
-const STARTING_TILES_BUTTON_WIDTH = 49;
 
 const PLAY_OR_SPECTATE_SWITCH_LABEL_ID =
   "play-or-spectate-switch-label" as const;
@@ -317,85 +310,7 @@ export const GameLobbyView: FC<{
         open={settingsDrawerOpen}
       >
         <Box sx={{ p: 3 }}>
-          <Stack spacing={2}>
-            <Typography variant="h5">Game Settings</Typography>
-            <Tooltip
-              arrow
-              title="When this setting is on, this game will be publicly accessible on the Join Game page."
-              placement="left"
-            >
-              <FormControlLabel
-                label="Public game"
-                control={
-                  <Switch
-                    checked={gameConfig.isPublic}
-                    onChange={() =>
-                      gameClient.updateGameConfig(gameId, {
-                        ...gameConfig,
-                        isPublic: !gameConfig.isPublic,
-                      })
-                    }
-                  />
-                }
-              />
-            </Tooltip>
-            <Tooltip
-              arrow
-              title="When this setting is on, typed letters will be highlighted if they form one of the words in the Bramagrams dictionary."
-              placement="left"
-            >
-              <FormControlLabel
-                label="Valid words highlighted"
-                control={
-                  <Switch
-                    checked={gameConfig.validTypedWordFeedback}
-                    onChange={() =>
-                      gameClient.updateGameConfig(gameId, {
-                        ...gameConfig,
-                        validTypedWordFeedback:
-                          !gameConfig.validTypedWordFeedback,
-                      })
-                    }
-                  />
-                }
-              />
-            </Tooltip>
-            <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
-              <ToggleButtonGroup
-                exclusive
-                aria-labelledby={STARTING_TILES_LABEL_ID}
-                value={gameConfig.numStartingTiles}
-              >
-                {NUM_STARTING_TILE_OPTIONS.map((value) => (
-                  <ToggleButton
-                    key={value}
-                    value={value}
-                    onClick={() => {
-                      gameClient.updateGameConfig(gameId, {
-                        ...gameConfig,
-                        numStartingTiles: value,
-                      });
-                    }}
-                    sx={{ width: STARTING_TILES_BUTTON_WIDTH }}
-                  >
-                    {value}
-                  </ToggleButton>
-                ))}
-              </ToggleButtonGroup>
-              <Typography id={STARTING_TILES_LABEL_ID}>
-                Starting tiles
-              </Typography>
-            </Stack>
-            <Box sx={{ pt: 2 }} />
-            <Button
-              startIcon={<Refresh />}
-              variant="outlined"
-              size="large"
-              onClick={() => gameClient.resetGameConfig(gameId)}
-            >
-              Reset to defaults
-            </Button>
-          </Stack>
+          <GameSettingsPanel gameId={gameId} gameConfig={gameConfig} />
         </Box>
       </Drawer>
     </Box>
