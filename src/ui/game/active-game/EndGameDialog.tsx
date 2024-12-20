@@ -24,7 +24,7 @@ export const EndGameDialog: FC<{
 
   const dialogBody = `You can ${
     !disableRematch ? "rematch with the current set of players or " : ""
-  }go back to the game lobby to change players.`;
+  }go back to the game lobby to change the game settings and players.`;
 
   const { winners, losers, spectators } =
     getWinnerLoserAndSpectatorNames(players);
