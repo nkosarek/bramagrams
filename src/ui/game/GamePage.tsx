@@ -67,7 +67,7 @@ export const GamePage: FC<{
         >
           <CircularProgress />
         </Box>
-      ) : gameState.status === "WAITING_TO_START" ? (
+      ) : gameState.status === "IN_LOBBY" ? (
         <GameLobbyView
           gameId={gameId}
           playerName={playerName}

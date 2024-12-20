@@ -42,7 +42,7 @@ export interface PlayerWord {
   wordIdx: number;
 }
 
-export interface PlayerInGameWaitingToStart {
+export interface PlayerInGameInLobby {
   name: string;
   status: "PLAYING" | "SPECTATING";
 }
@@ -59,10 +59,10 @@ export interface PlayerInGameEnded {
   words: Array<string>;
 }
 
-export interface GameStateWaitingToStart {
-  status: "WAITING_TO_START";
+export interface GameStateInLobby {
+  status: "IN_LOBBY";
   gameConfig: GameConfig;
-  players: Array<PlayerInGameWaitingToStart>;
+  players: Array<PlayerInGameInLobby>;
 }
 
 export interface GameStateInProgress {
@@ -82,10 +82,7 @@ export interface GameStateEnded {
   tiles: Array<string>;
 }
 
-export type GameState =
-  | GameStateWaitingToStart
-  | GameStateInProgress
-  | GameStateEnded;
+export type GameState = GameStateInLobby | GameStateInProgress | GameStateEnded;
 
 export interface GameConfig {
   isPublic: boolean;

@@ -1,8 +1,8 @@
 import {
-  GameStateWaitingToStart,
+  GameStateInLobby,
   MAX_PLAYERS,
   NUM_STARTING_TILE_OPTIONS,
-  PlayerInGameWaitingToStart,
+  PlayerInGameInLobby,
 } from "@/shared/schema";
 import { useGameClient } from "@/ui/game/useGameClient";
 import { PlayerIcon, SpectatorIcon } from "@/ui/shared/components/icons";
@@ -44,14 +44,14 @@ const STARTING_TILES_BUTTON_WIDTH = 49;
 const PLAY_OR_SPECTATE_SWITCH_LABEL_ID =
   "play-or-spectate-switch-label" as const;
 
-const getNumPlayingPlayers = (players: PlayerInGameWaitingToStart[]) => {
+const getNumPlayingPlayers = (players: PlayerInGameInLobby[]) => {
   return players.filter((p) => p.status !== "SPECTATING").length;
 };
 
 export const GameLobbyView: FC<{
   gameId: string;
   playerName: string;
-  gameState: GameStateWaitingToStart;
+  gameState: GameStateInLobby;
   onNameClaimed: (name: string) => void;
 }> = ({ gameId, playerName, gameState, onNameClaimed }) => {
   const gameClient = useGameClient();

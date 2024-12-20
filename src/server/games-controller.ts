@@ -4,12 +4,12 @@ import {
   GameConfig,
   GameState,
   GameStateEnded,
+  GameStateInLobby,
   GameStateInProgress,
-  GameStateWaitingToStart,
   MAX_PLAYERS,
   PlayerInGameEnded,
+  PlayerInGameInLobby,
   PlayerInGameInProgress,
-  PlayerInGameWaitingToStart,
   PlayerWord,
 } from "../shared/schema";
 import {
@@ -32,9 +32,9 @@ interface BaseServerGameState {
   lastAccessed: number;
 }
 
-interface ServerGameStateWaitingToStart extends BaseServerGameState {
-  status: "WAITING_TO_START";
-  players: Array<PlayerInGameWaitingToStart>;
+interface ServerGameStateInLobby extends BaseServerGameState {
+  status: "IN_LOBBY";
+  players: Array<PlayerInGameInLobby>;
   gameConfig: Readonly<GameConfig>;
 }
 
@@ -57,7 +57,7 @@ interface ServerGameStateEnded extends BaseServerGameState {
 }
 
 type ServerGameState =
-  | ServerGameStateWaitingToStart
+  | ServerGameStateInLobby
   | ServerGameStateInProgress
   | ServerGameStateEnded;
 
@@ -106,7 +106,7 @@ export class GamesController {
 
   private getNumPlayingPlayers({ status, players }: ServerGameState): number {
     switch (status) {
-      case "WAITING_TO_START":
+      case "IN_LOBBY":
         return players.filter((p) => p.status === "PLAYING").length;
       case "IN_PROGRESS":
         return players.filter(
@@ -251,17 +251,17 @@ export class GamesController {
     );
   }
 
-  private getClientGameState<S extends ServerGameState>(
+  private convertToClientState<S extends ServerGameState>(
     game: S
-  ): S extends ServerGameStateWaitingToStart
-    ? GameStateWaitingToStart
+  ): S extends ServerGameStateInLobby
+    ? GameStateInLobby
     : S extends ServerGameStateInProgress
     ? GameStateInProgress
     : S extends ServerGameStateEnded
     ? GameStateEnded
     : never {
     switch (game.status) {
-      case "WAITING_TO_START":
+      case "IN_LOBBY":
         return {
           status: game.status,
           gameConfig: game.gameConfig,
@@ -289,17 +289,13 @@ export class GamesController {
     }
   }
 
-  private getGame(gameId: string): ServerGameState {
+  private getGameState(gameId: string): ServerGameState {
     const game = this.games[gameId];
     if (!game) {
       throw Error("Game does not exist");
     }
     game.lastAccessed = Date.now();
     return game;
-  }
-
-  getGameState(gameId: string): GameState {
-    return this.getClientGameState(this.getGame(gameId));
   }
 
   createGame(): string {
@@ -313,7 +309,7 @@ export class GamesController {
       id = GamesController.generateGameId();
     } while (this.games[id]);
     this.games[id] = {
-      status: "WAITING_TO_START",
+      status: "IN_LOBBY",
       gameConfig: DEFAULT_GAME_CONFIG,
       players: [],
       lastAccessed: Date.now(),
@@ -325,16 +321,20 @@ export class GamesController {
     return Object.fromEntries(
       Object.entries(this.games)
         .filter(([, game]) => game.gameConfig.isPublic)
-        .map(([gameId, game]) => [gameId, this.getClientGameState(game)])
+        .map(([gameId, game]) => [gameId, this.convertToClientState(game)])
     );
   }
 
+  getGame(gameId: string): GameState {
+    return this.convertToClientState(this.getGameState(gameId));
+  }
+
   addPlayer(gameId: string, name: string): GameState | undefined {
-    const game = this.getGame(gameId);
+    const game = this.getGameState(gameId);
     if (!name || this.getPlayer(game, name)) {
       return;
     }
-    if (game.status === "WAITING_TO_START") {
+    if (game.status === "IN_LOBBY") {
       game.players.push({
         name,
         status:
@@ -349,16 +349,16 @@ export class GamesController {
         words: [],
       });
     }
-    return this.getClientGameState(game);
+    return this.convertToClientState(game);
   }
 
   renamePlayer(
     gameId: string,
     newName: string,
     oldName: string
-  ): GameStateWaitingToStart | undefined {
-    const game = this.getGame(gameId);
-    if (game.status !== "WAITING_TO_START" || !newName) {
+  ): GameStateInLobby | undefined {
+    const game = this.getGameState(gameId);
+    if (game.status !== "IN_LOBBY" || !newName) {
       return;
     }
     const player = this.getPlayer(game, oldName);
@@ -366,15 +366,15 @@ export class GamesController {
       return;
     }
     player.name = newName;
-    return this.getClientGameState(game);
+    return this.convertToClientState(game);
   }
 
   setPlayerSpectating(
     gameId: string,
     name: string
-  ): GameStateWaitingToStart | undefined {
-    const game = this.getGame(gameId);
-    if (game.status !== "WAITING_TO_START") {
+  ): GameStateInLobby | undefined {
+    const game = this.getGameState(gameId);
+    if (game.status !== "IN_LOBBY") {
       return;
     }
     const player = this.getPlayer(game, name);
@@ -382,15 +382,12 @@ export class GamesController {
       return;
     }
     player.status = "SPECTATING";
-    return this.getClientGameState(game);
+    return this.convertToClientState(game);
   }
 
-  setPlayerPlaying(
-    gameId: string,
-    name: string
-  ): GameStateWaitingToStart | undefined {
-    const game = this.getGame(gameId);
-    if (game.status !== "WAITING_TO_START") {
+  setPlayerPlaying(gameId: string, name: string): GameStateInLobby | undefined {
+    const game = this.getGameState(gameId);
+    if (game.status !== "IN_LOBBY") {
       return;
     }
     const player = this.getPlayer(game, name);
@@ -402,32 +399,32 @@ export class GamesController {
       return;
     }
     player.status = "PLAYING";
-    return this.getClientGameState(game);
+    return this.convertToClientState(game);
   }
 
   updateGameConfig(
     gameId: string,
     gameConfig: GameConfig = { ...DEFAULT_GAME_CONFIG }
-  ): GameStateWaitingToStart | undefined {
-    const game = this.getGame(gameId);
-    if (game.status !== "WAITING_TO_START") {
+  ): GameStateInLobby | undefined {
+    const game = this.getGameState(gameId);
+    if (game.status !== "IN_LOBBY") {
       return;
     }
     game.gameConfig = gameConfig;
-    return this.getClientGameState(game);
+    return this.convertToClientState(game);
   }
 
-  // TODO?: WAITING_TO_START -> IN_PROGRESS
+  // IN_LOBBY -> IN_PROGRESS
   startGame(gameId: string): GameStateInProgress | undefined {
-    const game = this.getGame(gameId);
+    const game = this.getGameState(gameId);
     if (
-      game.status !== "WAITING_TO_START" ||
+      game.status !== "IN_LOBBY" ||
       game.players.filter((player) => player.status === "PLAYING").length <= 1
     ) {
       return;
     }
     const getNewPlayerStatus = (
-      p: PlayerInGameWaitingToStart
+      p: PlayerInGameInLobby
     ): PlayerInGameInProgress["status"] => {
       switch (p.status) {
         case "PLAYING":
@@ -456,11 +453,11 @@ export class GamesController {
     } satisfies ServerGameStateInProgress;
 
     this.games[gameId] = newGameState;
-    return this.getClientGameState(newGameState);
+    return this.convertToClientState(newGameState);
   }
 
   addTile(gameId: string, playerName: string): GameStateInProgress | undefined {
-    const game = this.getGame(gameId);
+    const game = this.getGameState(gameId);
     if (game.status !== "IN_PROGRESS") {
       return;
     }
@@ -477,7 +474,7 @@ export class GamesController {
       game.currPlayerIdx,
       game.players
     );
-    return this.getClientGameState(game);
+    return this.convertToClientState(game);
   }
 
   claimWord(
@@ -486,7 +483,7 @@ export class GamesController {
     newWord: string,
     wordsToClaim?: PlayerWord[]
   ): GameStateInProgress | GameStateEnded | undefined {
-    const game = this.getGame(gameId);
+    const game = this.getGameState(gameId);
     if (game.status !== "IN_PROGRESS") {
       return;
     }
@@ -510,9 +507,9 @@ export class GamesController {
     player.words.push(newWord);
     player.status = "PLAYING";
     if (this.shouldGameEnd(game)) {
-      return this.getClientGameState(this.endGame(gameId, game));
+      return this.convertToClientState(this.endGame(gameId, game));
     }
-    return this.getClientGameState(game);
+    return this.convertToClientState(game);
   }
 
   setPlayerReadyToEnd(
@@ -520,7 +517,7 @@ export class GamesController {
     playerName: string,
     onEndgameTimerDone: (gameId: string, gameState: GameStateEnded) => void
   ): GameStateInProgress | GameStateEnded | undefined {
-    const game = this.getGame(gameId);
+    const game = this.getGameState(gameId);
     if (game.status !== "IN_PROGRESS" || game.tilesLeft.length) {
       return;
     }
@@ -535,25 +532,25 @@ export class GamesController {
       ).toISOString();
       game.endgameTimeout = setTimeout(() => {
         console.log(`Endgame timer complete for ${gameId}. Ending game`);
-        const latestGameState = this.getGame(gameId);
+        const latestGameState = this.getGameState(gameId);
         if (latestGameState.status === "IN_PROGRESS") {
           const newGameState = this.endGame(gameId, latestGameState);
-          onEndgameTimerDone(gameId, this.getClientGameState(newGameState));
+          onEndgameTimerDone(gameId, this.convertToClientState(newGameState));
         }
       }, ENDGAME_TIMEOUT);
     }
     player.status = "READY_TO_END";
     if (this.shouldGameEnd(game)) {
-      return this.getClientGameState(this.endGame(gameId, game));
+      return this.convertToClientState(this.endGame(gameId, game));
     }
-    return this.getClientGameState(game);
+    return this.convertToClientState(game);
   }
 
   setPlayerNotReadyToEnd(
     gameId: string,
     playerName: string
   ): GameStateInProgress | undefined {
-    const game = this.getGame(gameId);
+    const game = this.getGameState(gameId);
     if (game.status !== "IN_PROGRESS") {
       return;
     }
@@ -570,12 +567,12 @@ export class GamesController {
         game.endgameTimeout = null;
       }
     }
-    return this.getClientGameState(game);
+    return this.convertToClientState(game);
   }
 
-  // TODO?: ENDED -> IN_PROGRESS
+  // ENDED -> IN_PROGRESS
   rematch(gameId: string): GameStateInProgress | undefined {
-    const game = this.getGame(gameId);
+    const game = this.getGameState(gameId);
     if (game.status !== "ENDED") {
       return;
     }
@@ -609,19 +606,19 @@ export class GamesController {
     } satisfies ServerGameStateInProgress;
 
     this.games[gameId] = newGameState;
-    return this.getClientGameState(newGameState);
+    return this.convertToClientState(newGameState);
   }
 
-  // TODO?: ENDED -> WAITING_TO_START
-  backToLobby(gameId: string): GameStateWaitingToStart | undefined {
-    const game = this.getGame(gameId);
+  // ENDED -> IN_LOBBY
+  backToLobby(gameId: string): GameStateInLobby | undefined {
+    const game = this.getGameState(gameId);
     if (game.status !== "ENDED") {
       return;
     }
 
     const getNewPlayerStatus = (
       p: PlayerInGameEnded
-    ): PlayerInGameWaitingToStart["status"] => {
+    ): PlayerInGameInLobby["status"] => {
       switch (p.status) {
         case "ENDED":
           return "PLAYING";
@@ -635,15 +632,15 @@ export class GamesController {
       name: p.name,
       status: getNewPlayerStatus(p),
       words: [],
-    })) satisfies ServerGameStateWaitingToStart["players"];
+    })) satisfies ServerGameStateInLobby["players"];
     const newGameState = {
-      status: "WAITING_TO_START",
+      status: "IN_LOBBY",
       gameConfig: game.gameConfig,
       players,
       lastAccessed: game.lastAccessed,
-    } satisfies ServerGameStateWaitingToStart;
+    } satisfies ServerGameStateInLobby;
 
     this.games[gameId] = newGameState;
-    return this.getClientGameState(newGameState);
+    return this.convertToClientState(newGameState);
   }
 }

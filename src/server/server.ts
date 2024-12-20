@@ -113,7 +113,7 @@ io.on("connection", (socket) => {
       socket,
       gameId,
       () => {
-        const gameState = gamesController.getGameState(gameId);
+        const gameState = gamesController.getGame(gameId);
         socket.join(gameId);
         console.log(`Connected to game ${gameId}`);
         return gameState;

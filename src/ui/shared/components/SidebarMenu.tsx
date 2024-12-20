@@ -63,7 +63,7 @@ export const SidebarMenu: FC<{ gameState?: GameState }> = ({ gameState }) => {
       </Dialog>
 
       {gameState &&
-        gameState.status !== "WAITING_TO_START" &&
+        gameState.status !== "IN_LOBBY" &&
         !!spectatingPlayers?.length && (
           <>
             <Badge

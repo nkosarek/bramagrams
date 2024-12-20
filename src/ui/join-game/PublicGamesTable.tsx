@@ -143,7 +143,7 @@ const getGameStatusDisplay = ({
   status,
 }: GameState): { label: string; Icon: SvgIconComponent } => {
   switch (status) {
-    case "WAITING_TO_START":
+    case "IN_LOBBY":
       return { label: "In Lobby", Icon: MeetingRoom };
     case "IN_PROGRESS":
       return { label: "In Game", Icon: Pending };
