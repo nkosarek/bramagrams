@@ -24,7 +24,7 @@ const ENDGAME_TIMEOUT = 60000 as const;
 
 const DEFAULT_GAME_CONFIG = {
   isPublic: false,
-  numStartingTiles: 144,
+  numStartingTiles: isRunningInDev() ? 91 : 144,
   validTypedWordFeedback: true,
 } as const satisfies GameConfig;
 
