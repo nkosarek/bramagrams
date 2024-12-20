@@ -60,7 +60,7 @@ export class GameClient {
   }
 
   readyToStart(gameId: string, player: string) {
-    this.socket.emit(ClientEvents.READY_TO_START, gameId, player);
+    this.socket.emit(ClientEvents.BECOME_PLAYER, gameId, player);
   }
 
   startGame(gameId: string) {

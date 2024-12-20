@@ -1,8 +1,8 @@
 import {
-  GameState,
+  GameStateInLobby,
   MAX_PLAYERS,
   NUM_STARTING_TILE_OPTIONS,
-  Player,
+  PlayerInGameInLobby,
 } from "@/shared/schema";
 import { useGameClient } from "@/ui/game/useGameClient";
 import { PlayerIcon, SpectatorIcon } from "@/ui/shared/components/icons";
@@ -44,14 +44,14 @@ const STARTING_TILES_BUTTON_WIDTH = 49;
 const PLAY_OR_SPECTATE_SWITCH_LABEL_ID =
   "play-or-spectate-switch-label" as const;
 
-const getNumPlayingPlayers = (players: Player[]) => {
+const getNumPlayingPlayers = (players: PlayerInGameInLobby[]) => {
   return players.filter((p) => p.status !== "SPECTATING").length;
 };
 
 export const GameLobbyView: FC<{
   gameId: string;
   playerName: string;
-  gameState: GameState;
+  gameState: GameStateInLobby;
   onNameClaimed: (name: string) => void;
 }> = ({ gameId, playerName, gameState, onNameClaimed }) => {
   const gameClient = useGameClient();
@@ -94,7 +94,7 @@ export const GameLobbyView: FC<{
   const handleStatusChange = () => {
     if (playerState?.status === "SPECTATING") {
       gameClient.readyToStart(gameId, playerName);
-    } else if (playerState?.status === "READY_TO_START") {
+    } else if (playerState?.status === "PLAYING") {
       gameClient.becomeSpectator(gameId, playerName);
     }
   };
@@ -216,7 +216,6 @@ export const GameLobbyView: FC<{
           )}
         </Box>
         <Box sx={{ pt: 2 }} />
-        {/* TODO: FSM sub-statuses */}
         <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
           <Typography
             variant="overline"
@@ -230,7 +229,7 @@ export const GameLobbyView: FC<{
             aria-labelledby={PLAY_OR_SPECTATE_SWITCH_LABEL_ID}
             checked={
               playerState
-                ? playerState.status === "READY_TO_START"
+                ? playerState.status === "PLAYING"
                 : getNumPlayingPlayers(players) < MAX_PLAYERS
             }
             // TODO: Fix jitter: consolidate game update and name claim responses (via player IDs)

@@ -1,5 +1,5 @@
 import { isValidWord } from "@/shared/dictionary/isValidWord";
-import { GameState } from "@/shared/schema";
+import { GameStateEnded, GameStateInProgress } from "@/shared/schema";
 import { useGameClient } from "@/ui/game/useGameClient";
 import { animated, useSpring } from "@react-spring/web";
 import { FC, useEffect, useRef, useState } from "react";
@@ -10,7 +10,7 @@ import {
 } from "./wordClaimUtils";
 
 export const TypedWord: FC<{
-  gameState: GameState;
+  gameState: GameStateInProgress | GameStateEnded;
   gameId: string;
   playerName: string;
   disableHandlers: boolean;

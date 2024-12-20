@@ -1,12 +1,15 @@
-import { GameState } from "@/shared/schema";
+import { GameStateEnded, GameStateInProgress } from "@/shared/schema";
 import { Close } from "@mui/icons-material";
 import { IconButton, Slide, Snackbar } from "@mui/material";
 import { FC } from "react";
 
 export const initToastAcked = (
-  game: GameState,
+  game: GameStateInProgress | GameStateEnded,
   playerName: string
 ): boolean => {
+  if (game.status === "ENDED") {
+    return true;
+  }
   const player = game.players.find((p) => p.name === playerName);
   const tilesFlipped = game.gameConfig.numStartingTiles - game.numTilesLeft;
   const numPlayingPlayers = game.players.reduce(

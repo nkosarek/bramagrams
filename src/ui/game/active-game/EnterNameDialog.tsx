@@ -1,4 +1,4 @@
-import { Player } from "@/shared/schema";
+import { PlayerInGameEnded, PlayerInGameInProgress } from "@/shared/schema";
 import { useGameClient } from "@/ui/game/useGameClient";
 import {
   Button,
@@ -14,7 +14,7 @@ export const EnterNameDialog: FC<{
   open: boolean;
   gameId: string;
   playerName: string;
-  players: Player[];
+  players: PlayerInGameInProgress[] | PlayerInGameEnded[];
   onNameClaimed: (name: string) => void;
 }> = ({ open, gameId, playerName, players, onNameClaimed }) => {
   const gameClient = useGameClient();
