@@ -252,43 +252,94 @@ export class GamesController {
     );
   }
 
-  private convertToClientState<S extends ServerGameState>(
-    game: S
-  ): S extends ServerGameStateInLobby
-    ? GameStateInLobby
-    : S extends ServerGameStateInProgress
-    ? GameStateInProgress
-    : S extends ServerGameStateEnded
-    ? GameStateEnded
-    : never {
+  private convertInLobbyToClientState(
+    game: ServerGameStateInLobby
+  ): GameStateInLobby {
+    return {
+      status: game.status,
+      gameConfig: game.gameConfig,
+      players: game.players,
+    };
+  }
+
+  private convertInProgressToClientState(
+    game: ServerGameStateInProgress
+  ): GameStateInProgress {
+    return {
+      status: game.status,
+      gameConfig: game.gameConfig,
+      players: game.players,
+      currPlayerIdx: game.currPlayerIdx,
+      tiles: game.tiles,
+      numTilesLeft: game.tilesLeft.length,
+      endgameTimeoutTime: game.endgameTimeoutTime,
+    };
+  }
+
+  private convertEndedToClientState(
+    game: ServerGameStateEnded
+  ): GameStateEnded {
+    return {
+      status: game.status,
+      gameConfig: game.gameConfig,
+      players: game.players,
+      tiles: game.tiles,
+    };
+  }
+
+  private convertToClientState(game: ServerGameState): GameState {
     switch (game.status) {
       case "IN_LOBBY":
-        return {
-          status: game.status,
-          gameConfig: game.gameConfig,
-          players: game.players,
-        };
+        return this.convertInLobbyToClientState(game);
       case "IN_PROGRESS":
-        return {
-          status: game.status,
-          gameConfig: game.gameConfig,
-          players: game.players,
-          currPlayerIdx: game.currPlayerIdx,
-          tiles: game.tiles,
-          numTilesLeft: game.tilesLeft.length,
-          endgameTimeoutTime: game.endgameTimeoutTime,
-        };
+        return this.convertInProgressToClientState(game);
       case "ENDED":
-        return {
-          status: game.status,
-          gameConfig: game.gameConfig,
-          players: game.players,
-          tiles: game.tiles,
-        };
+        return this.convertEndedToClientState(game);
       default:
         return exhaustiveSwitchCheck(game);
     }
   }
+
+  // TODO: Use conditional return type when typescript 5.8 is released
+  // https://github.com/microsoft/TypeScript/milestone/212
+  // https://github.com/microsoft/TypeScript/pull/56941
+  // private convertToClientState<S extends ServerGameState>(
+  //   game: ServerGameState
+  // ): S extends ServerGameStateInLobby
+  //   ? GameStateInLobby
+  //   : S extends ServerGameStateInProgress
+  //   ? GameStateInProgress
+  //   : S extends ServerGameStateEnded
+  //   ? GameStateEnded
+  //   : never {
+  //   switch (game.status) {
+  //     case "IN_LOBBY":
+  //       return {
+  //         status: game.status,
+  //         gameConfig: game.gameConfig,
+  //         players: game.players,
+  //       };
+  //     case "IN_PROGRESS":
+  //       return {
+  //         status: game.status,
+  //         gameConfig: game.gameConfig,
+  //         players: game.players,
+  //         currPlayerIdx: game.currPlayerIdx,
+  //         tiles: game.tiles,
+  //         numTilesLeft: game.tilesLeft.length,
+  //         endgameTimeoutTime: game.endgameTimeoutTime,
+  //       };
+  //     case "ENDED":
+  //       return {
+  //         status: game.status,
+  //         gameConfig: game.gameConfig,
+  //         players: game.players,
+  //         tiles: game.tiles,
+  //       };
+  //     default:
+  //       return exhaustiveSwitchCheck(game);
+  //   }
+  // }
 
   private getGameState(gameId: string): ServerGameState {
     const game = this.games[gameId];
@@ -367,7 +418,7 @@ export class GamesController {
       return;
     }
     player.name = newName;
-    return this.convertToClientState(game);
+    return this.convertInLobbyToClientState(game);
   }
 
   setPlayerSpectating(
@@ -383,7 +434,7 @@ export class GamesController {
       return;
     }
     player.status = "SPECTATING";
-    return this.convertToClientState(game);
+    return this.convertInLobbyToClientState(game);
   }
 
   setPlayerPlaying(gameId: string, name: string): GameStateInLobby | undefined {
@@ -400,7 +451,7 @@ export class GamesController {
       return;
     }
     player.status = "PLAYING";
-    return this.convertToClientState(game);
+    return this.convertInLobbyToClientState(game);
   }
 
   updateGameConfig(
@@ -416,7 +467,7 @@ export class GamesController {
       return;
     }
     game.gameConfig = gameConfig;
-    return this.convertToClientState(game);
+    return this.convertInLobbyToClientState(game);
   }
 
   // IN_LOBBY -> IN_PROGRESS
@@ -458,7 +509,7 @@ export class GamesController {
     } satisfies ServerGameStateInProgress;
 
     this.games[gameId] = newGameState;
-    return this.convertToClientState(newGameState);
+    return this.convertInProgressToClientState(newGameState);
   }
 
   addTile(gameId: string, playerName: string): GameStateInProgress | undefined {
@@ -479,7 +530,7 @@ export class GamesController {
       game.currPlayerIdx,
       game.players
     );
-    return this.convertToClientState(game);
+    return this.convertInProgressToClientState(game);
   }
 
   claimWord(
@@ -512,9 +563,9 @@ export class GamesController {
     player.words.push(newWord);
     player.status = "PLAYING";
     if (this.shouldGameEnd(game)) {
-      return this.convertToClientState(this.endGame(gameId, game));
+      return this.convertEndedToClientState(this.endGame(gameId, game));
     }
-    return this.convertToClientState(game);
+    return this.convertInProgressToClientState(game);
   }
 
   setPlayerReadyToEnd(
@@ -539,15 +590,18 @@ export class GamesController {
         const latestGameState = this.getGameState(gameId);
         if (latestGameState.status === "IN_PROGRESS") {
           const newGameState = this.endGame(gameId, latestGameState);
-          onEndgameTimerDone(gameId, this.convertToClientState(newGameState));
+          onEndgameTimerDone(
+            gameId,
+            this.convertEndedToClientState(newGameState)
+          );
         }
       }, timeoutMs);
     }
     player.status = "READY_TO_END";
     if (this.shouldGameEnd(game)) {
-      return this.convertToClientState(this.endGame(gameId, game));
+      return this.convertEndedToClientState(this.endGame(gameId, game));
     }
-    return this.convertToClientState(game);
+    return this.convertInProgressToClientState(game);
   }
 
   setPlayerNotReadyToEnd(
@@ -571,7 +625,7 @@ export class GamesController {
         game.endgameTimeout = null;
       }
     }
-    return this.convertToClientState(game);
+    return this.convertInProgressToClientState(game);
   }
 
   // ENDED -> IN_PROGRESS
@@ -610,7 +664,7 @@ export class GamesController {
     } satisfies ServerGameStateInProgress;
 
     this.games[gameId] = newGameState;
-    return this.convertToClientState(newGameState);
+    return this.convertInProgressToClientState(newGameState);
   }
 
   // ENDED -> IN_LOBBY
@@ -645,6 +699,6 @@ export class GamesController {
     } satisfies ServerGameStateInLobby;
 
     this.games[gameId] = newGameState;
-    return this.convertToClientState(newGameState);
+    return this.convertInLobbyToClientState(newGameState);
   }
 }
