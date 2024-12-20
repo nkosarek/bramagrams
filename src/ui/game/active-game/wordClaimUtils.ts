@@ -1,4 +1,4 @@
-import { GameState, PlayerWord } from "@/shared/schema";
+import { GameStateInProgress, PlayerWord } from "@/shared/schema";
 import { maxBy } from "lodash";
 
 interface Claim {
@@ -6,7 +6,7 @@ interface Claim {
 }
 
 export const getAllPossibleClaims = (
-  game: GameState,
+  game: GameStateInProgress,
   newWord: string
 ): Claim[] => {
   if (!newWord) return [];
@@ -24,7 +24,7 @@ export const getAllPossibleClaims = (
 };
 
 export const getClaimWithMostStealsAndWords = (
-  game: GameState,
+  game: GameStateInProgress,
   playerName: string,
   claims: Claim[]
 ): Claim | undefined => {
@@ -81,7 +81,7 @@ const getClaims = (
   newWord: string,
   claimableWords: PlayerWord[],
   wordsAlreadyClaimed: PlayerWord[],
-  game: GameState
+  game: GameStateInProgress
 ): Claim[] => {
   const claims: Claim[] = [];
   claimableWords.forEach((playerWord, i) => {

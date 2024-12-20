@@ -1,4 +1,4 @@
-import { Player } from "@/shared/schema";
+import { PlayerInGameEnded } from "@/shared/schema";
 import { useGameClient } from "@/ui/game/useGameClient";
 import {
   Button,
@@ -15,7 +15,7 @@ const MAYBE_EMILY_NAMES: string[] = ["emmy", "pusheen"];
 
 export const EndGameDialog: FC<{
   gameId: string;
-  players: Player[];
+  players: PlayerInGameEnded[];
   open: boolean;
   disableRematch: boolean;
   onClose: () => void;
@@ -78,7 +78,7 @@ export const EndGameDialog: FC<{
   );
 };
 
-const getWinnerLoserAndSpectatorNames = (players: Array<Player>) => {
+const getWinnerLoserAndSpectatorNames = (players: Array<PlayerInGameEnded>) => {
   let maxWords = -1;
   return players.reduce<{
     winners: Array<string>;

@@ -8,7 +8,6 @@ export const PlayerHand: FC<{
   words: string[];
   isSelf: boolean;
   isCurrPlayer: boolean;
-  isWaiting?: boolean;
   isReady?: boolean;
   disabled?: boolean;
   small?: boolean;

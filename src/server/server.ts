@@ -2,6 +2,7 @@ import {
   ClientEvents,
   GameConfig,
   GameState,
+  GameStateEnded,
   PlayerWord,
   ServerEvents,
 } from "@/shared/schema";
@@ -112,7 +113,7 @@ io.on("connection", (socket) => {
       socket,
       gameId,
       () => {
-        const { clientGameState: gameState } = gamesController.getGame(gameId);
+        const gameState = gamesController.getGameState(gameId);
         socket.join(gameId);
         console.log(`Connected to game ${gameId}`);
         return gameState;
@@ -195,15 +196,15 @@ io.on("connection", (socket) => {
     );
   });
 
-  socket.on(ClientEvents.READY_TO_START, (gameId: string, player: string) => {
+  socket.on(ClientEvents.BECOME_PLAYER, (gameId: string, player: string) => {
     console.log(
-      "Received READY_TO_START request with args: gameId=",
+      "Received BECOME_PLAYER request with args: gameId=",
       gameId,
       "player=",
       player
     );
     updateGameStateWrapper(socket, gameId, () =>
-      gamesController.setPlayerReadyToStart(gameId, player)
+      gamesController.setPlayerPlaying(gameId, player)
     );
   });
 
@@ -269,7 +270,7 @@ io.on("connection", (socket) => {
       player
     );
     updateGameStateWrapper(socket, gameId, () => {
-      const onEndgameTimerDone = (gameId: string, game: GameState) => {
+      const onEndgameTimerDone = (gameId: string, game: GameStateEnded) => {
         io.to(gameId).emit(ServerEvents.GAME_UPDATED, game);
       };
       return gamesController.setPlayerReadyToEnd(

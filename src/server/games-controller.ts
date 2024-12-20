@@ -3,8 +3,13 @@ import { exhaustiveSwitchCheck } from "@/shared/utils/exhaustiveSwitchCheck";
 import {
   GameConfig,
   GameState,
+  GameStateEnded,
+  GameStateInProgress,
+  GameStateWaitingToStart,
   MAX_PLAYERS,
-  Player,
+  PlayerInGameEnded,
+  PlayerInGameInProgress,
+  PlayerInGameWaitingToStart,
   PlayerWord,
 } from "../shared/schema";
 import {
@@ -15,18 +20,46 @@ import {
 
 const isRunningInDev = () => process.env.NODE_ENV === "development";
 
+const ENDGAME_TIMEOUT = 60000 as const;
+
 const DEFAULT_GAME_CONFIG = {
   isPublic: false,
   numStartingTiles: 144,
   validTypedWordFeedback: true,
 } as const satisfies GameConfig;
 
-interface ServerGameState {
-  clientGameState: GameState;
-  tilesLeft: string[];
+interface BaseServerGameState {
   lastAccessed: number;
-  endgameTimer: ReturnType<typeof setTimeout> | null;
 }
+
+interface ServerGameStateWaitingToStart extends BaseServerGameState {
+  status: "WAITING_TO_START";
+  players: Array<PlayerInGameWaitingToStart>;
+  gameConfig: Readonly<GameConfig>;
+}
+
+interface ServerGameStateInProgress extends BaseServerGameState {
+  status: "IN_PROGRESS";
+  players: Array<PlayerInGameInProgress>;
+  currPlayerIdx: number;
+  tiles: Array<string>;
+  tilesLeft: Array<string>;
+  endgameTimeoutTime: string | null;
+  endgameTimeout: ReturnType<typeof setTimeout> | null;
+  readonly gameConfig: Readonly<GameConfig>;
+}
+
+interface ServerGameStateEnded extends BaseServerGameState {
+  status: "ENDED";
+  players: Array<PlayerInGameEnded>;
+  tiles: Array<string>;
+  readonly gameConfig: Readonly<GameConfig>;
+}
+
+type ServerGameState =
+  | ServerGameStateWaitingToStart
+  | ServerGameStateInProgress
+  | ServerGameStateEnded;
 
 export class GamesController {
   private games: { [gameId: string]: ServerGameState } = {};
@@ -56,29 +89,34 @@ export class GamesController {
     gamesToDelete.forEach((gameId) => delete this.games[gameId]);
   }
 
-  private resetCurrPlayerIdx(game: GameState) {
-    game.currPlayerIdx = 0;
-    if (game.players[game.currPlayerIdx]?.status === "SPECTATING") {
-      this.advanceCurrPlayer(game);
+  private resetCurrPlayerIdx(players: ServerGameState["players"]) {
+    if (players[0]?.status === "SPECTATING") {
+      return this.advanceCurrPlayer(0, players);
+    } else {
+      return 0;
     }
   }
 
-  private getPlayer(game: GameState, name: string): Player | undefined {
+  private getPlayer<G extends ServerGameState>(
+    game: G,
+    name: string
+  ): G["players"][number] | undefined {
     return game?.players.find((p) => p.name === name);
   }
 
-  private getNumPlayingPlayers(game: GameState): number {
-    const playingStatus =
-      game.status === "WAITING_TO_START" ? "READY_TO_START" : "PLAYING";
-    return game.players.filter((p) => p.status === playingStatus).length;
-  }
-
-  private gameCanStart(game: GameState): boolean {
-    return (
-      game.status === "WAITING_TO_START" &&
-      game.players.filter((player) => player.status === "READY_TO_START")
-        .length > 1
-    );
+  private getNumPlayingPlayers({ status, players }: ServerGameState): number {
+    switch (status) {
+      case "WAITING_TO_START":
+        return players.filter((p) => p.status === "PLAYING").length;
+      case "IN_PROGRESS":
+        return players.filter(
+          (p) => p.status === "PLAYING" || p.status === "READY_TO_END"
+        ).length;
+      case "ENDED":
+        return players.filter((p) => p.status === "ENDED").length;
+      default:
+        return exhaustiveSwitchCheck(status);
+    }
   }
 
   private getStartingTiles({ numStartingTiles }: GameConfig): Array<string> {
@@ -94,21 +132,17 @@ export class GamesController {
     }
   }
 
-  private addNewTileToPool(game: GameState, tilesLeft: string[]) {
-    const tilesIdx = Math.floor(Math.random() * tilesLeft.length);
-    game.tiles.push(...tilesLeft.splice(tilesIdx, 1));
-    game.numTilesLeft = tilesLeft.length;
-  }
-
-  private advanceCurrPlayer(game: GameState) {
-    const advance = (idx: number) => (idx + 1) % game.players.length;
-    const isSpectating = (idx: number) =>
-      game.players[idx]?.status === "SPECTATING";
-    let newCurrPlayerIdx = advance(game.currPlayerIdx);
+  private advanceCurrPlayer(
+    currPlayerIdx: number,
+    players: ServerGameState["players"]
+  ) {
+    const advance = (idx: number) => (idx + 1) % players.length;
+    const isSpectating = (idx: number) => players[idx]?.status === "SPECTATING";
+    let newCurrPlayerIdx = advance(currPlayerIdx);
     while (isSpectating(newCurrPlayerIdx)) {
       newCurrPlayerIdx = advance(newCurrPlayerIdx);
     }
-    game.currPlayerIdx = newCurrPlayerIdx;
+    return newCurrPlayerIdx;
   }
 
   private getWordDiff(word1: string, word2: string): string | null {
@@ -127,9 +161,9 @@ export class GamesController {
   }
 
   private getNewTilePool(
-    game: GameState,
+    game: ServerGameStateInProgress,
     newWord: string,
-    wordsToClaim: PlayerWord[]
+    wordsToClaim: PlayerWord[] = []
   ): string[] | undefined {
     let newWordRemainder: string | null = newWord;
     for (const playerWord of wordsToClaim) {
@@ -165,7 +199,10 @@ export class GamesController {
     return poolRemainder;
   }
 
-  private removeClaimedWords(game: GameState, claimedWords?: PlayerWord[]) {
+  private removeClaimedWords(
+    game: ServerGameStateInProgress,
+    claimedWords?: PlayerWord[]
+  ) {
     if (!claimedWords) return;
 
     const wordsToRemoveByPlayer = claimedWords.reduce(
@@ -186,93 +223,100 @@ export class GamesController {
     });
   }
 
-  private endGame(game: GameState) {
-    game.status = "ENDED";
-    game.timeoutTime = null;
-    game.players.forEach((player) => {
-      if (player.status !== "SPECTATING") {
-        player.status = "ENDED";
-      }
-    });
+  private endGame(gameId: string, oldGame: ServerGameStateInProgress) {
+    if (oldGame.endgameTimeout) {
+      clearTimeout(oldGame.endgameTimeout);
+    }
+    const newGameState = {
+      status: "ENDED",
+      players: oldGame.players.map((p) => ({
+        status: p.status === "SPECTATING" ? p.status : "ENDED",
+        name: p.name,
+        words: p.words,
+      })),
+      gameConfig: oldGame.gameConfig,
+      tiles: oldGame.tiles,
+      lastAccessed: oldGame.lastAccessed,
+    } satisfies ServerGameStateEnded;
+    this.games[gameId] = newGameState;
+    return newGameState;
   }
 
-  private checkForGameEnd(
-    game: GameState,
-    endgameTimer: ReturnType<typeof setTimeout> | null
-  ) {
-    if (
-      (game.numTilesLeft === 0 && !game.tiles.length) ||
-      game.players.every((player) =>
-        ["READY_TO_END", "SPECTATING"].includes(player.status)
+  private shouldGameEnd(game: ServerGameStateInProgress): boolean {
+    return (
+      (game.tilesLeft.length === 0 && !game.tiles.length) ||
+      game.players.every(
+        (p) => p.status === "READY_TO_END" || p.status === "SPECTATING"
       )
-    ) {
-      if (endgameTimer) clearTimeout(endgameTimer);
-      this.endGame(game);
-    }
-  }
-
-  private restartGame(
-    serverGameState: ServerGameState,
-    toLobby: boolean = false
-  ): GameState {
-    const startingTiles = this.getStartingTiles(
-      serverGameState.clientGameState.gameConfig
     );
-    serverGameState.tilesLeft = startingTiles;
-    if (serverGameState.endgameTimer) {
-      clearTimeout(serverGameState.endgameTimer);
-      serverGameState.endgameTimer = null;
-    }
-    const { clientGameState: game } = serverGameState;
-    this.resetCurrPlayerIdx(game);
-    game.timeoutTime = null;
-    game.status = toLobby ? "WAITING_TO_START" : "IN_PROGRESS";
-    game.tiles = [];
-    game.numTilesLeft = startingTiles.length;
-    const newPlayingPlayerStatus = toLobby ? "READY_TO_START" : "PLAYING";
-    game.players.forEach((p) => {
-      p.words = [];
-      if (p.status !== "SPECTATING") {
-        p.status = newPlayingPlayerStatus;
-      }
-    });
-    return game;
   }
 
-  getGame(gameId: string): ServerGameState {
+  private getClientGameState<S extends ServerGameState>(
+    game: S
+  ): S extends ServerGameStateWaitingToStart
+    ? GameStateWaitingToStart
+    : S extends ServerGameStateInProgress
+    ? GameStateInProgress
+    : S extends ServerGameStateEnded
+    ? GameStateEnded
+    : never {
+    switch (game.status) {
+      case "WAITING_TO_START":
+        return {
+          status: game.status,
+          gameConfig: game.gameConfig,
+          players: game.players,
+        };
+      case "IN_PROGRESS":
+        return {
+          status: game.status,
+          gameConfig: game.gameConfig,
+          players: game.players,
+          currPlayerIdx: game.currPlayerIdx,
+          tiles: game.tiles,
+          numTilesLeft: game.tilesLeft.length,
+          endgameTimeoutTime: game.endgameTimeoutTime,
+        };
+      case "ENDED":
+        return {
+          status: game.status,
+          gameConfig: game.gameConfig,
+          players: game.players,
+          tiles: game.tiles,
+        };
+      default:
+        return exhaustiveSwitchCheck(game);
+    }
+  }
+
+  private getGame(gameId: string): ServerGameState {
     const game = this.games[gameId];
     if (!game) {
-      throw "Game does not exist";
+      throw Error("Game does not exist");
     }
     game.lastAccessed = Date.now();
     return game;
   }
 
+  getGameState(gameId: string): GameState {
+    return this.getClientGameState(this.getGame(gameId));
+  }
+
   createGame(): string {
     let id: string;
-    let count: number = 0;
+    let retries: number = 0;
     this.cleanupAbandonedGames();
     do {
-      if (++count > 5) {
+      if (++retries > 5) {
         return "";
       }
       id = GamesController.generateGameId();
     } while (this.games[id]);
-    const gameConfig = DEFAULT_GAME_CONFIG;
-    const startingTiles = this.getStartingTiles(gameConfig);
     this.games[id] = {
-      tilesLeft: startingTiles,
+      status: "WAITING_TO_START",
+      gameConfig: DEFAULT_GAME_CONFIG,
+      players: [],
       lastAccessed: Date.now(),
-      endgameTimer: null,
-      clientGameState: {
-        players: [],
-        currPlayerIdx: 0,
-        status: "WAITING_TO_START",
-        tiles: [],
-        numTilesLeft: startingTiles.length,
-        timeoutTime: null,
-        gameConfig,
-      },
     };
     return id;
   }
@@ -280,124 +324,160 @@ export class GamesController {
   getPublicGames(): { [gameId: string]: GameState } {
     return Object.fromEntries(
       Object.entries(this.games)
-        .filter((entry) => entry[1].clientGameState.gameConfig.isPublic)
-        .map(([gameId, serverGameState]) => [
-          gameId,
-          serverGameState.clientGameState,
-        ])
+        .filter(([, game]) => game.gameConfig.isPublic)
+        .map(([gameId, game]) => [gameId, this.getClientGameState(game)])
     );
   }
 
   addPlayer(gameId: string, name: string): GameState | undefined {
-    const { clientGameState: game } = this.getGame(gameId);
+    const game = this.getGame(gameId);
     if (!name || this.getPlayer(game, name)) {
       return;
     }
-    const status =
-      game.status === "WAITING_TO_START" &&
-      this.getNumPlayingPlayers(game) < MAX_PLAYERS
-        ? "READY_TO_START"
-        : "SPECTATING";
-    game.players.push({
-      name,
-      status,
-      words: [],
-    });
-    return game;
+    if (game.status === "WAITING_TO_START") {
+      game.players.push({
+        name,
+        status:
+          this.getNumPlayingPlayers(game) < MAX_PLAYERS
+            ? "PLAYING"
+            : "SPECTATING",
+      });
+    } else {
+      game.players.push({
+        name,
+        status: "SPECTATING",
+        words: [],
+      });
+    }
+    return this.getClientGameState(game);
   }
 
   renamePlayer(
     gameId: string,
     newName: string,
     oldName: string
-  ): GameState | undefined {
-    const { clientGameState: game } = this.getGame(gameId);
+  ): GameStateWaitingToStart | undefined {
+    const game = this.getGame(gameId);
+    if (game.status !== "WAITING_TO_START" || !newName) {
+      return;
+    }
     const player = this.getPlayer(game, oldName);
-    if (!player || !newName) {
+    if (!player) {
       return;
     }
     player.name = newName;
-    return game;
+    return this.getClientGameState(game);
   }
 
-  setPlayerSpectating(gameId: string, name: string): GameState | undefined {
-    const { clientGameState: game } = this.getGame(gameId);
-    const player = this.getPlayer(game, name);
-    if (!player || player.status !== "READY_TO_START") {
-      return;
-    }
-    player.status = "SPECTATING";
-    return game;
-  }
-
-  updateGameConfig(
+  setPlayerSpectating(
     gameId: string,
-    gameConfig: GameConfig = DEFAULT_GAME_CONFIG
-  ): GameState | undefined {
-    const serverGameState = this.getGame(gameId);
-    const { clientGameState: game } = serverGameState;
+    name: string
+  ): GameStateWaitingToStart | undefined {
+    const game = this.getGame(gameId);
     if (game.status !== "WAITING_TO_START") {
       return;
     }
-    const startingTiles = this.getStartingTiles(gameConfig);
-    serverGameState.tilesLeft = startingTiles;
-    game.numTilesLeft = startingTiles.length;
-    game.gameConfig = { ...gameConfig };
-    return game;
+    const player = this.getPlayer(game, name);
+    if (!player || player.status !== "PLAYING") {
+      return;
+    }
+    player.status = "SPECTATING";
+    return this.getClientGameState(game);
   }
 
-  setPlayerReadyToStart(gameId: string, name: string): GameState | undefined {
-    const serverGameState = this.getGame(gameId);
-    const { clientGameState: game } = serverGameState;
+  setPlayerPlaying(
+    gameId: string,
+    name: string
+  ): GameStateWaitingToStart | undefined {
+    const game = this.getGame(gameId);
+    if (game.status !== "WAITING_TO_START") {
+      return;
+    }
     const player = this.getPlayer(game, name);
     if (
       !player ||
-      game.status !== "WAITING_TO_START" ||
       player.status !== "SPECTATING" ||
       this.getNumPlayingPlayers(game) >= MAX_PLAYERS
     ) {
       return;
     }
-    player.status = "READY_TO_START";
-    return game;
+    player.status = "PLAYING";
+    return this.getClientGameState(game);
   }
 
-  rematch(gameId: string): GameState | undefined {
-    const serverGameState = this.getGame(gameId);
-    const { clientGameState: game } = serverGameState;
-    if (game.status === "ENDED") {
-      return this.restartGame(serverGameState);
-    }
-  }
-
-  startGame(gameId: string): GameState | undefined {
-    const { clientGameState: game } = this.getGame(gameId);
-    if (!this.gameCanStart(game)) {
+  updateGameConfig(
+    gameId: string,
+    gameConfig: GameConfig = { ...DEFAULT_GAME_CONFIG }
+  ): GameStateWaitingToStart | undefined {
+    const game = this.getGame(gameId);
+    if (game.status !== "WAITING_TO_START") {
       return;
     }
-    game.status = "IN_PROGRESS";
-    game.players.forEach((player) => {
-      if (player.status === "READY_TO_START") {
-        player.status = "PLAYING";
-      }
-    });
-    this.resetCurrPlayerIdx(game);
-    return game;
+    game.gameConfig = gameConfig;
+    return this.getClientGameState(game);
   }
 
-  addTile(gameId: string, playerName: string): GameState | undefined {
-    const serverGameState = this.getGame(gameId);
-    const { clientGameState: game, tilesLeft } = serverGameState;
+  // TODO?: WAITING_TO_START -> IN_PROGRESS
+  startGame(gameId: string): GameStateInProgress | undefined {
+    const game = this.getGame(gameId);
     if (
-      game.numTilesLeft === 0 ||
+      game.status !== "WAITING_TO_START" ||
+      game.players.filter((player) => player.status === "PLAYING").length <= 1
+    ) {
+      return;
+    }
+    const getNewPlayerStatus = (
+      p: PlayerInGameWaitingToStart
+    ): PlayerInGameInProgress["status"] => {
+      switch (p.status) {
+        case "PLAYING":
+          return "PLAYING";
+        case "SPECTATING":
+          return "SPECTATING";
+        default:
+          return exhaustiveSwitchCheck(p.status);
+      }
+    };
+    const players = game.players.map((p) => ({
+      name: p.name,
+      status: getNewPlayerStatus(p),
+      words: [],
+    })) satisfies ServerGameStateInProgress["players"];
+    const newGameState = {
+      status: "IN_PROGRESS",
+      gameConfig: game.gameConfig,
+      players,
+      currPlayerIdx: this.resetCurrPlayerIdx(players),
+      tiles: [],
+      tilesLeft: this.getStartingTiles(game.gameConfig),
+      endgameTimeoutTime: null,
+      endgameTimeout: null,
+      lastAccessed: game.lastAccessed,
+    } satisfies ServerGameStateInProgress;
+
+    this.games[gameId] = newGameState;
+    return this.getClientGameState(newGameState);
+  }
+
+  addTile(gameId: string, playerName: string): GameStateInProgress | undefined {
+    const game = this.getGame(gameId);
+    if (game.status !== "IN_PROGRESS") {
+      return;
+    }
+    if (
+      game.tilesLeft.length === 0 ||
       (!isRunningInDev() &&
         playerName !== game.players[game.currPlayerIdx]?.name)
     ) {
       return;
     }
-    this.addNewTileToPool(game, tilesLeft);
-    this.advanceCurrPlayer(game);
-    return game;
+    const tilesIdx = Math.floor(Math.random() * game.tilesLeft.length);
+    game.tiles.push(...game.tilesLeft.splice(tilesIdx, 1));
+    game.currPlayerIdx = this.advanceCurrPlayer(
+      game.currPlayerIdx,
+      game.players
+    );
+    return this.getClientGameState(game);
   }
 
   claimWord(
@@ -405,86 +485,165 @@ export class GamesController {
     playerName: string,
     newWord: string,
     wordsToClaim?: PlayerWord[]
-  ): GameState | undefined {
-    const { clientGameState: game, endgameTimer } = this.getGame(gameId);
+  ): GameStateInProgress | GameStateEnded | undefined {
+    const game = this.getGame(gameId);
+    if (game.status !== "IN_PROGRESS") {
+      return;
+    }
     const player = this.getPlayer(game, playerName);
-    const playerIsSpectating = player?.status === "SPECTATING";
     if (
       !player ||
-      !newWord ||
-      newWord.length < 3 ||
-      game.status !== "IN_PROGRESS" ||
-      (playerIsSpectating && this.getNumPlayingPlayers(game) >= MAX_PLAYERS)
+      (player.status === "SPECTATING" &&
+        this.getNumPlayingPlayers(game) >= MAX_PLAYERS)
     ) {
       return;
     }
-    const newPool = this.getNewTilePool(game, newWord, wordsToClaim || []);
-    if (!newPool) {
+    if (newWord.length < 3 || !isValidWord(newWord)) {
       return;
     }
-    if (!isValidWord(newWord)) {
+    const newPool = this.getNewTilePool(game, newWord, wordsToClaim);
+    if (!newPool) {
       return;
     }
     game.tiles = newPool;
     this.removeClaimedWords(game, wordsToClaim);
     player.words.push(newWord);
-    if (playerIsSpectating) {
-      player.status = "PLAYING";
+    player.status = "PLAYING";
+    if (this.shouldGameEnd(game)) {
+      return this.getClientGameState(this.endGame(gameId, game));
     }
-    this.checkForGameEnd(game, endgameTimer);
-    return game;
+    return this.getClientGameState(game);
   }
 
   setPlayerReadyToEnd(
     gameId: string,
     playerName: string,
-    onEndgameTimerDone: (gameId: string, gameState: GameState) => void
-  ): GameState | undefined {
-    const serverGameState = this.getGame(gameId);
-    const { clientGameState: game } = serverGameState;
+    onEndgameTimerDone: (gameId: string, gameState: GameStateEnded) => void
+  ): GameStateInProgress | GameStateEnded | undefined {
+    const game = this.getGame(gameId);
+    if (game.status !== "IN_PROGRESS" || game.tilesLeft.length) {
+      return;
+    }
     const player = this.getPlayer(game, playerName);
-    if (!player || game.numTilesLeft || player.status !== "PLAYING") {
+    if (!player || player.status !== "PLAYING") {
       return;
     }
     // If this is the first player to be ready, start endgame timer
-    if (!game.players.some((p) => p.status === "READY_TO_END")) {
-      game.timeoutTime = new Date(Date.now() + 60000).toISOString();
-      serverGameState.endgameTimer = setTimeout(() => {
+    if (game.players.every((p) => p.status !== "READY_TO_END")) {
+      game.endgameTimeoutTime = new Date(
+        Date.now() + ENDGAME_TIMEOUT
+      ).toISOString();
+      game.endgameTimeout = setTimeout(() => {
         console.log(`Endgame timer complete for ${gameId}. Ending game`);
-        if (game.status !== "ENDED") {
-          this.endGame(game);
-          onEndgameTimerDone(gameId, game);
+        const latestGameState = this.getGame(gameId);
+        if (latestGameState.status === "IN_PROGRESS") {
+          const newGameState = this.endGame(gameId, latestGameState);
+          onEndgameTimerDone(gameId, this.getClientGameState(newGameState));
         }
-      }, 60000);
+      }, ENDGAME_TIMEOUT);
     }
     player.status = "READY_TO_END";
-    this.checkForGameEnd(game, serverGameState.endgameTimer);
-    return game;
+    if (this.shouldGameEnd(game)) {
+      return this.getClientGameState(this.endGame(gameId, game));
+    }
+    return this.getClientGameState(game);
   }
 
   setPlayerNotReadyToEnd(
     gameId: string,
     playerName: string
-  ): GameState | undefined {
-    const { clientGameState: game, endgameTimer } = this.getGame(gameId);
+  ): GameStateInProgress | undefined {
+    const game = this.getGame(gameId);
+    if (game.status !== "IN_PROGRESS") {
+      return;
+    }
     const player = this.getPlayer(game, playerName);
     if (!player || player.status !== "READY_TO_END") {
       return;
     }
     player.status = "PLAYING";
     // If no players are ready to end, clear endgame timer
-    if (!game.players.some((p) => p.status === "READY_TO_END")) {
-      game.timeoutTime = null;
-      if (endgameTimer) clearTimeout(endgameTimer);
+    if (game.players.every((p) => p.status !== "READY_TO_END")) {
+      game.endgameTimeoutTime = null;
+      if (game.endgameTimeout) {
+        clearTimeout(game.endgameTimeout);
+        game.endgameTimeout = null;
+      }
     }
-    return game;
+    return this.getClientGameState(game);
   }
 
-  backToLobby(gameId: string): GameState | undefined {
-    const serverGameState = this.getGame(gameId);
-    const { clientGameState: game } = serverGameState;
-    if (game.status === "ENDED") {
-      return this.restartGame(serverGameState, true);
+  // TODO?: ENDED -> IN_PROGRESS
+  rematch(gameId: string): GameStateInProgress | undefined {
+    const game = this.getGame(gameId);
+    if (game.status !== "ENDED") {
+      return;
     }
+    const getNewPlayerStatus = (
+      p: PlayerInGameEnded
+    ): PlayerInGameInProgress["status"] => {
+      switch (p.status) {
+        case "ENDED":
+          return "PLAYING";
+        case "SPECTATING":
+          return "SPECTATING";
+        default:
+          return exhaustiveSwitchCheck(p.status);
+      }
+    };
+    const players = game.players.map((p) => ({
+      name: p.name,
+      status: getNewPlayerStatus(p),
+      words: [],
+    })) satisfies ServerGameStateInProgress["players"];
+    const newGameState = {
+      status: "IN_PROGRESS",
+      gameConfig: game.gameConfig,
+      players,
+      currPlayerIdx: this.resetCurrPlayerIdx(players),
+      tiles: [],
+      tilesLeft: this.getStartingTiles(game.gameConfig),
+      endgameTimeoutTime: null,
+      endgameTimeout: null,
+      lastAccessed: game.lastAccessed,
+    } satisfies ServerGameStateInProgress;
+
+    this.games[gameId] = newGameState;
+    return this.getClientGameState(newGameState);
+  }
+
+  // TODO?: ENDED -> WAITING_TO_START
+  backToLobby(gameId: string): GameStateWaitingToStart | undefined {
+    const game = this.getGame(gameId);
+    if (game.status !== "ENDED") {
+      return;
+    }
+
+    const getNewPlayerStatus = (
+      p: PlayerInGameEnded
+    ): PlayerInGameWaitingToStart["status"] => {
+      switch (p.status) {
+        case "ENDED":
+          return "PLAYING";
+        case "SPECTATING":
+          return "SPECTATING";
+        default:
+          return exhaustiveSwitchCheck(p.status);
+      }
+    };
+    const players = game.players.map((p) => ({
+      name: p.name,
+      status: getNewPlayerStatus(p),
+      words: [],
+    })) satisfies ServerGameStateWaitingToStart["players"];
+    const newGameState = {
+      status: "WAITING_TO_START",
+      gameConfig: game.gameConfig,
+      players,
+      lastAccessed: game.lastAccessed,
+    } satisfies ServerGameStateWaitingToStart;
+
+    this.games[gameId] = newGameState;
+    return this.getClientGameState(newGameState);
   }
 }

@@ -18,9 +18,9 @@ export const ClientEvents = keysSameAsValuesCheck({
   JOIN_GAME: "JOIN_GAME",
   CHANGE_NAME: "CHANGE_NAME",
   BECOME_SPECTATOR: "BECOME_SPECTATOR",
+  BECOME_PLAYER: "BECOME_PLAYER",
   UPDATE_GAME_CONFIG: "UPDATE_GAME_CONFIG",
   RESET_GAME_CONFIG: "RESET_GAME_CONFIG",
-  READY_TO_START: "READY_TO_START",
   START_GAME: "START_GAME",
   ADD_TILE: "ADD_TILE",
   CLAIM_WORD: "CLAIM_WORD",
@@ -37,37 +37,55 @@ export const ServerEvents = keysSameAsValuesCheck({
   WORD_CLAIMED: "WORD_CLAIMED",
 } as const);
 
-export type PlayerStatus =
-  // TODO?: rename READY_TO_START -> WAITING_TO_START
-  | "READY_TO_START"
-  | "PLAYING"
-  | "READY_TO_END"
-  | "ENDED"
-  | "SPECTATING"
-  | "DISCONNECTED";
-
-export type GameStatus = "WAITING_TO_START" | "IN_PROGRESS" | "ENDED";
-
 export interface PlayerWord {
   playerIdx: number;
   wordIdx: number;
 }
 
-export interface Player {
+export interface PlayerInGameWaitingToStart {
   name: string;
-  status: PlayerStatus;
-  words: string[];
+  status: "PLAYING" | "SPECTATING";
 }
 
-export interface GameState {
-  players: Player[];
-  currPlayerIdx: number;
-  status: GameStatus;
-  tiles: string[];
-  numTilesLeft: number;
-  timeoutTime: string | null;
-  gameConfig: GameConfig;
+export interface PlayerInGameInProgress {
+  name: string;
+  status: "PLAYING" | "READY_TO_END" | "SPECTATING";
+  words: Array<string>;
 }
+
+export interface PlayerInGameEnded {
+  name: string;
+  status: "ENDED" | "SPECTATING";
+  words: Array<string>;
+}
+
+export interface GameStateWaitingToStart {
+  status: "WAITING_TO_START";
+  gameConfig: GameConfig;
+  players: Array<PlayerInGameWaitingToStart>;
+}
+
+export interface GameStateInProgress {
+  status: "IN_PROGRESS";
+  gameConfig: GameConfig;
+  players: Array<PlayerInGameInProgress>;
+  currPlayerIdx: number;
+  tiles: Array<string>;
+  numTilesLeft: number;
+  endgameTimeoutTime: string | null;
+}
+
+export interface GameStateEnded {
+  status: "ENDED";
+  gameConfig: GameConfig;
+  players: Array<PlayerInGameEnded>;
+  tiles: Array<string>;
+}
+
+export type GameState =
+  | GameStateWaitingToStart
+  | GameStateInProgress
+  | GameStateEnded;
 
 export interface GameConfig {
   isPublic: boolean;

@@ -62,53 +62,53 @@ export const SidebarMenu: FC<{ gameState?: GameState }> = ({ gameState }) => {
         <HowToPlay />
       </Dialog>
 
-      {!gameState?.status ||
-      gameState.status === "WAITING_TO_START" ||
-      !spectatingPlayers?.length ? null : (
-        <>
-          <Badge
-            color="primary"
-            overlap="circular"
-            badgeContent={spectatingPlayers.length}
-          >
-            <Tooltip title="Spectators" placement="right">
-              <IconButton
-                ref={spectatorsButtonRef}
-                size="large"
-                onClick={() => setSpectatorsOpen((t) => !t)}
-              >
-                <SpectatorIcon />
-              </IconButton>
-            </Tooltip>
-          </Badge>
-          <Popper
-            open={spectatorsOpen}
-            anchorEl={spectatorsButtonRef.current}
-            placement="bottom-start"
-          >
-            <ClickAwayListener onClickAway={() => setSpectatorsOpen(false)}>
-              <Paper elevation={9} sx={{ pt: 1, overflow: "hidden" }}>
-                <Typography
-                  variant="overline"
-                  sx={{ mx: 1.5, lineHeight: "unset" }}
+      {gameState &&
+        gameState.status !== "WAITING_TO_START" &&
+        !!spectatingPlayers?.length && (
+          <>
+            <Badge
+              color="primary"
+              overlap="circular"
+              badgeContent={spectatingPlayers.length}
+            >
+              <Tooltip title="Spectators" placement="right">
+                <IconButton
+                  ref={spectatorsButtonRef}
+                  size="large"
+                  onClick={() => setSpectatorsOpen((t) => !t)}
                 >
-                  Spectators
-                </Typography>
-                {/* Last entry will be trancated making it obvious the list is scrollable */}
-                <List dense sx={{ maxHeight: "136px", overflow: "auto" }}>
-                  {spectatingPlayers.map((s) => (
-                    <ListItem key={s.name}>
-                      <Typography variant="body2" color="textSecondary">
-                        {s.name}
-                      </Typography>
-                    </ListItem>
-                  ))}
-                </List>
-              </Paper>
-            </ClickAwayListener>
-          </Popper>
-        </>
-      )}
+                  <SpectatorIcon />
+                </IconButton>
+              </Tooltip>
+            </Badge>
+            <Popper
+              open={spectatorsOpen}
+              anchorEl={spectatorsButtonRef.current}
+              placement="bottom-start"
+            >
+              <ClickAwayListener onClickAway={() => setSpectatorsOpen(false)}>
+                <Paper elevation={9} sx={{ pt: 1, overflow: "hidden" }}>
+                  <Typography
+                    variant="overline"
+                    sx={{ mx: 1.5, lineHeight: "unset" }}
+                  >
+                    Spectators
+                  </Typography>
+                  {/* Last entry will be trancated making it obvious the list is scrollable */}
+                  <List dense sx={{ maxHeight: "136px", overflow: "auto" }}>
+                    {spectatingPlayers.map((s) => (
+                      <ListItem key={s.name}>
+                        <Typography variant="body2" color="textSecondary">
+                          {s.name}
+                        </Typography>
+                      </ListItem>
+                    ))}
+                  </List>
+                </Paper>
+              </ClickAwayListener>
+            </Popper>
+          </>
+        )}
     </Stack>
   );
 };
