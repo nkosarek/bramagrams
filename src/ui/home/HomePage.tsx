@@ -1,5 +1,6 @@
 "use client";
 
+import { useIsGameServerUp } from "@/ui/GameServerStatusProvider";
 import { HowToPlay } from "@/ui/shared/components/HowToPlay";
 import { Clear, Close } from "@mui/icons-material";
 import {
@@ -13,6 +14,7 @@ import {
   buttonGroupClasses,
   CircularProgress,
   Dialog,
+  Fade,
   IconButton,
   Slide,
   Snackbar,
@@ -25,6 +27,8 @@ import { FC, forwardRef, useState } from "react";
 
 export const HomePage: FC = () => {
   const router = useRouter();
+
+  const isGameServerUp = useIsGameServerUp();
 
   const [isHowToPlayOpen, setIsHowToPlayOpen] = useState(false);
   const [isNewGamePending, setIsNewGamePending] = useState(false);
@@ -57,7 +61,7 @@ export const HomePage: FC = () => {
     <>
       <Box
         sx={{
-          flexGrow: 1,
+          height: "50vh",
           pb: 4,
           display: "flex",
           flexDirection: "column",
@@ -71,7 +75,7 @@ export const HomePage: FC = () => {
       <Box
         sx={{
           pt: 4,
-          flexGrow: 1,
+          height: "50vh",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -92,7 +96,9 @@ export const HomePage: FC = () => {
           }}
         >
           <Button onClick={() => handleNewGame()}>New Game</Button>
-          <Button href="/games">Join Game</Button>
+          <Button disabled={!isGameServerUp} href="/games">
+            Join Game
+          </Button>
           <Button onClick={() => setIsHowToPlayOpen(true)}>How To Play</Button>
         </ButtonGroup>
       </Box>
@@ -153,6 +159,20 @@ export const HomePage: FC = () => {
         sx={(theme) => ({ zIndex: theme.zIndex.drawer + 1 })}
       >
         <CircularProgress />
+        <Fade
+          in={isNewGamePending}
+          timeout={{ enter: 2000 }}
+          style={{
+            transitionDelay: "5000ms",
+            position: "absolute",
+            bottom: "15vh",
+          }}
+        >
+          <Typography color="textSecondary">
+            Sorry this may take a while. The game server is probably still
+            booting up. Give it like a minute before you give up.
+          </Typography>
+        </Fade>
       </Backdrop>
     </>
   );

@@ -44,6 +44,10 @@ app.use(cors({ origin: allowedOrigins }));
 app.use(express.json());
 app.set("port", port);
 
+app.get("/api/health", (_req: Request, res: Response) => {
+  res.sendStatus(200);
+});
+
 // Routing
 app.get("/api/public-games", (req, res) => {
   console.log("Received request to get public games");
